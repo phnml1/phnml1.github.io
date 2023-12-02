@@ -10,6 +10,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         opensans: ['var(--opensans)'],
+        kanit: ['var(--kanit)'],
       }
     },
   },
