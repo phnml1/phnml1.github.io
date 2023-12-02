@@ -1,6 +1,6 @@
 import React from "react";
 import Footer from "./Footer";
-import Navbar from "./Navbar";
+import Navbar from "./navbar/Navbar";
 import { cls } from "@/utils/Utils";
 import { Kanit, Noto_Sans_KR, Open_Sans } from 'next/font/google';
 const notoSansKr = Noto_Sans_KR({
