@@ -12,7 +12,12 @@ const Modal:React.FC<ModalProps> = (props:ModalProps) => {
       props.setModal(false);
     }
   };
-
+  const handleEscapeKey = (e) => {
+    if (e.key === 'Escape') {
+      props.setModal(false);
+    }
+  };
+  document.addEventListener('keydown',handleEscapeKey);
   return <div className='fixed z-20 flex justify-center items-start top-0 left-0 bottom-0 right-0 bg-black bg-opacity-40' onClick={handleOutsideClick} style={{padding:'12vh 16px'}}>
     <div ref={modalRef} className='w-full flex flex-col items-center justify-center max-w-2xl h-full bg-white rounded-lg shadow-xl transition-all z-30 transform-gpu'>
       <div className='w-full h-full my-2 flex flex-col items-start overflow-auto'>
