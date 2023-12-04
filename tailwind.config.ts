@@ -11,7 +11,7 @@ const config: Config = {
       fontFamily: {
         opensans: ['var(--opensans)'],
         kanit: ['var(--kanit)'],
-      }
+      },
     },
   },
   plugins: [],
