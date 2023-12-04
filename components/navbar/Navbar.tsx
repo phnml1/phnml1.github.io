@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import DarkModeButton from './components/DarkModeButton';
 import SideBarButton from './components/SideBarButton';
 import Link from 'next/link';
-import Sidebar from '../modal/Modal';
+import Modal from '../modal/Modal';
 const Navbar: React.FC = () => {
   const [darkmode, setDarkMode] = useState(false);
-  const [sidebar, setSideBar] = useState(false);
+  const [modal, setModal] = useState(false);
   return (
     <header className="w-full flex justify-center">
       <div className="flex w-full md:w-4/5 h-20 justify-between items-center">
@@ -15,10 +15,10 @@ const Navbar: React.FC = () => {
         </div>
         <div className='mr-3 flex gap-2'>
           <DarkModeButton setDarkMode = {setDarkMode} mode = {darkmode}/>
-          <SideBarButton setSideBar = {setSideBar}/>
+          <SideBarButton setModal = {setModal}/>
         </div>
       </div>
-      <Sidebar />
+      {modal && (<Modal setModal={setModal}/>)}
     </header>
   );
 };
