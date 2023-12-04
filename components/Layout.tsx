@@ -20,9 +20,9 @@ const kanit = Kanit({
 
 export default function Layout({ children }: React.PropsWithChildren) {
   return (
-    <main className={cls(notoSansKr.className, opensans.variable, kanit.variable)}>
+    <main className={cls(notoSansKr.className, opensans.variable, kanit.variable,'w-full flex flex-col items-center')}>
       <Navbar />
-      <div>{children}</div>
+      <div className="w-full md:w-4/5">{children}</div>
       <Footer />
     </main>
   );
