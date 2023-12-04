@@ -9,8 +9,8 @@ const DarkModeButton : React.FC<DarkModeButtonProps>  = (props: DarkModeButtonPr
   return (
     <div className = 'cursor-pointer transition-all w-auto h-auto p-1 rounded-lg hover:bg-slate-200' onClick={() => {props.setDarkMode((prev) => !prev)}}>
 
-      {!props.mode && (<Image src = '/day-mode.png' width={40} height={40} alt = 'switch to darkmode'/>)}
-      {props.mode && (<Image src = '/night-mode.png' width={40} height={40} alt = 'switch to daymode'/>)}
+      {!props.mode && (<Image src = '/navbar/day-mode.png' width={40} height={40} alt = 'switch to darkmode'/>)}
+      {props.mode && (<Image src = '/navbar/night-mode.png' width={40} height={40} alt = 'switch to daymode'/>)}
     </div>
   )
 }
