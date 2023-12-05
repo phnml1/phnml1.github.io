@@ -22,7 +22,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
   return (
     <main className={cls(notoSansKr.className, opensans.variable, kanit.variable,'w-full flex flex-col items-center')}>
       <Navbar />
-      <div className="w-full md:w-4/5">{children}</div>
+      <div className="w-full">{children}</div>
       <Footer />
     </main>
   );
