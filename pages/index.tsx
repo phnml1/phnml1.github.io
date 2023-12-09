@@ -1,8 +1,13 @@
 import Image from 'next/image';
 import FeaturedPosts from '@/components/home/FeaturedPost';
+import Head from 'next/head';
 export default function Home() {
   return (
     <main className={`flex min-h-screen flex-col items-center w-full `}>
+      <Head>
+        <title>홈페이지</title>
+        <meta name = "description" content = "phnml1" />
+      </Head>
       <div className="relative mt-4 w-full h-96 z-20 flex justify-center">
         <div className="absolute inset-0 z-20" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}></div>
         <Image
