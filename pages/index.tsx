@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import FeaturedPosts from '@/components/home/FeaturedPost';
 import Head from 'next/head';
+import NavButton from '@/components/NavButton';
+
 export default function Home() {
   return (
     <main className={`flex min-h-screen flex-col items-center w-full `}>
@@ -26,14 +28,14 @@ export default function Home() {
         </div>
       </div>
       <div className='w-full md:w-4/5'>
-       <div className='w-auto ml-4 mt-8 text-xl font-bold'>최근 포스트</div>
+       <div className='w-auto ml-4 mt-8 text-xl font-bold'>Featured Posts</div>
        <div className="w-full flex flex-col justify-center items-center flex-1 gap-6 mt-8 pl-3 pr-3 md:flex-row">
         <FeaturedPosts />
         <FeaturedPosts />
         <FeaturedPosts />
         </div>
-        <div className='w-full flex justify-center mt-16 mb-16'>
-          <div className='font-semibold'>더 보기</div>
+        <div className='w-full flex mt-16 mb-16 ml-3'>
+          <NavButton link="/posts" content="All Posts"/>
         </div>
       </div>
     </main>
