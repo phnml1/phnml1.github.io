@@ -29,12 +29,12 @@ export default function Home() {
       </div>
       <div className='w-full md:w-4/5'>
        <div className='w-auto ml-4 mt-8 text-xl font-bold'>Featured Posts</div>
-       <div className="w-full flex flex-col justify-center items-center flex-1 gap-6 mt-8 pl-3 pr-3 md:flex-row">
+       <div className="w-full flex flex-col justify-center items-center flex-1 gap-6 mt-8 md:flex-row">
         <FeaturedPosts />
         <FeaturedPosts />
         <FeaturedPosts />
         </div>
-        <div className='w-full flex mt-16 mb-16 ml-3'>
+        <div className='w-full flex mt-16 mb-16 ml-4'>
           <NavButton link="/posts" content="All Posts"/>
         </div>
       </div>
