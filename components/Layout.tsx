@@ -23,7 +23,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
     <main className={cls(notoSansKr.className, opensans.variable, kanit.variable,'w-full flex flex-col items-center')}>
       <Navbar />
       <div className="w-full flex flex-col items-center">{children}</div>
-      <Footer />
+      {/* <Footer /> */}
     </main>
   );
 }
