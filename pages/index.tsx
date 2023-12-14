@@ -34,8 +34,8 @@ export default function Home() {
         <FeaturedPosts />
         <FeaturedPosts />
         </div>
-        <div className='w-full flex mt-16 mb-16 ml-4'>
-          <NavButton link="/posts" content="All Posts"/>
+        <div className='w-full flex mt-16 mb-16 justify-center'>
+          <NavButton link="/posts" content="More Posts"/>
         </div>
       </div>
     </main>
