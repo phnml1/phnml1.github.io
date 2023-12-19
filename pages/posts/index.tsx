@@ -1,8 +1,8 @@
-import { Fragment, useState } from 'react';
+import { Fragment } from 'react';
 import Head from 'next/head';
 import CategorySwiper from '@/components/posts/CategorySwiper';
 import PostsContents from '@/components/posts/PostsContents';
-
+import {getAllPosts} from '@/utils/Post-Util';
 export default function AllPostsPage(props) {
   const DUMMY_CATEGORYS = [
     { id:0, text: 'React', image: '/next.svg' },
@@ -12,13 +12,6 @@ export default function AllPostsPage(props) {
     { id:4, text: 'Javascript', image: '/next.svg' },
     { id:5, text: 'Algorhythm', image: '/next.svg' },
   ];
-  const DUMMY_CONTENTS = [
-    { title: 'React DeepDive 정리 1', date: '23/12/02', summary: 'React deepdive에 대한 정리입니다', tag: ['React', 'Study', 'React', 'Study']},
-    { title: 'React DeepDive 정리 2', date: '23/12/02', summary: 'React deepdive에 대한 정리입니다', tag: ['React', 'Study']},
-    { title: 'React DeepDive 정리 3', date: '23/12/02', summary: 'React deepdive에 대한 정리입니다', tag: ['React', 'Study']},
-    { title: 'React DeepDive 정리 4', date: '23/12/02', summary: 'React deepdive에 대한 정리입니다', tag: ['React', 'Study']},
-    { title: 'React DeepDive 정리 5', date: '23/12/02', summary: 'React deepdive에 대한 정리입니다', tag: ['React', 'Study']}
-  ]
   return (
     <Fragment>
       <Head>
@@ -30,8 +23,16 @@ export default function AllPostsPage(props) {
           <CategorySwiper content={DUMMY_CATEGORYS} />
         </div>
         <div className="mt-16 text-3xl font-extrabold w-full ml-10 mb-12">All posts (39)</div>
-        <PostsContents contents = {DUMMY_CONTENTS}/>
+        <PostsContents contents = {props.posts}/>
       </div>
     </Fragment>
   );
+}
+export function getStaticProps() {
+  const allPosts = getAllPosts();
+  return {
+    props: {
+      posts: allPosts
+    }
+  }
 }
