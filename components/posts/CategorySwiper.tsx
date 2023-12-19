@@ -29,7 +29,7 @@ const CategorySwiper = (props) => {
   >
     {
       props.content.map((a,i) => {
-        return (<SwiperSlide key={a.id} className="h-32"><Link href={`/posts/${a.text}`}><Category text={a.text} image={a.image} /></Link></SwiperSlide>);
+        return (<SwiperSlide key={i} className="h-32"><Link href={`/posts/${a.name}`}><Category text={a.name} image={a.image} /></Link></SwiperSlide>);
       })
     }
   </Swiper>

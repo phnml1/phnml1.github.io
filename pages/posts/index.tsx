@@ -2,16 +2,9 @@ import { Fragment } from 'react';
 import Head from 'next/head';
 import CategorySwiper from '@/components/posts/CategorySwiper';
 import PostsContents from '@/components/posts/PostsContents';
-import {getAllPosts} from '@/utils/Post-Util';
+import {getAllPosts, getCategory} from '@/utils/Post-Util';
+import { transformCategory } from '@/utils/Utils';
 export default function AllPostsPage(props) {
-  const DUMMY_CATEGORYS = [
-    { id:0, text: 'React', image: '/next.svg' },
-    { id:1, text: 'Javascript', image: '/next.svg' },
-    { id:2, text: 'Algorhythm', image: '/next.svg' },
-    { id:3, text: 'React', image: '/next.svg' },
-    { id:4, text: 'Javascript', image: '/next.svg' },
-    { id:5, text: 'Algorhythm', image: '/next.svg' },
-  ];
   return (
     <Fragment>
       <Head>
@@ -20,9 +13,9 @@ export default function AllPostsPage(props) {
       </Head>
       <div className="w-full flex flex-col items-center md:w-4/5">
         <div className="w-full flex justify-center mt-4">
-          <CategorySwiper content={DUMMY_CATEGORYS} />
+          <CategorySwiper content={props.category} />
         </div>
-        <div className="mt-16 text-3xl font-extrabold w-full ml-10 mb-12">All posts (39)</div>
+        <div className="mt-16 text-3xl font-extrabold w-full ml-10 mb-12">All posts</div>
         <PostsContents contents = {props.posts}/>
       </div>
     </Fragment>
@@ -30,9 +23,12 @@ export default function AllPostsPage(props) {
 }
 export function getStaticProps() {
   const allPosts = getAllPosts();
+  const category = transformCategory(getCategory());
+  
   return {
     props: {
-      posts: allPosts
+      posts: allPosts,
+      category: category,
     }
   }
 }
