@@ -2,9 +2,9 @@ import { Fragment, useState } from 'react';
 import Head from 'next/head';
 import CategorySwiper from '@/components/posts/CategorySwiper';
 import PostsContents from '@/components/posts/PostsContents';
-import { useRouter } from 'next/router';
 import { getPostsByCategory, getCategory } from '@/utils/Post-Util';
 import { transformCategory } from '@/utils/Utils';
+import NavButton from '@/components/NavButton';
 
 export default function PostsCategoryPage(props) {
 
@@ -14,11 +14,15 @@ export default function PostsCategoryPage(props) {
         <title>{props.currentCategory}</title>
         <meta name="description" content="모든 포스트 보여주기" />
       </Head>
-      <div className="w-full flex flex-col items-center md:w-4/5">
-        <div className="w-full flex justify-center mt-4">
+      <div className="w-full h-fit flex flex-col items-center mb-8 md:w-4/5">
+        <div className="w-full flex flex-col items-center mt-8">
+        <div className='mb-8 '>
+          <NavButton link="/posts" content="Show All Posts"/>
+          </div>
           <CategorySwiper content={props.categorys} />
+          
         </div>
-        <div className="mt-16 text-3xl font-extrabold w-full ml-10 mb-12">{props.currentCategory} (39)</div>
+        <div className="mt-16 text-3xl font-extrabold w-full mb-16 text-center">{props.currentCategory} ({props.posts.length})</div>
         <PostsContents contents = {props.posts}/>
       </div>
     </Fragment>
