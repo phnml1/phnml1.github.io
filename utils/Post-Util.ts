@@ -5,6 +5,8 @@ const matter = require('gray-matter');
 
 const dir = 'posts';
 
+const postsDirectory = (category) => path.join(process.cwd(), `posts/${category}`);
+
 const getAllFiles = (dir:string) =>
     fs.readdirSync(dir).reduce((files, file) => {
         const name = path.join(dir, file);
@@ -12,10 +14,11 @@ const getAllFiles = (dir:string) =>
     return isDirectory ? [...files, ...getAllFiles(name)] : [...files, name];
     }, []);
 
-const getFiles = (category:string) => {
-  const postsDirectory  = path.join(process.cwd(),`posts/${category}`);
-  const postFiles = fs.readdirSync(postsDirectory);
-  console.log(postFiles);
+const getFilePaths = (category:string) => {
+  const postsDir  = postsDirectory(category);
+  const postFiles = fs.readdirSync(postsDir);
+  const filePaths = postFiles.map((postFile) => `${dir}/${category}/${postFile}`);
+  return filePaths;
 }
 
 function convertFilePathToURL(filePath) {
@@ -44,8 +47,9 @@ export function getAllPosts() {
 }
 
 export function getPostsByCategory(category) {
-  const postFiles = getFiles(category);
-  console.log(postFiles);
+  const postFiles = getFilePaths(category);
+  const postData = postFiles.map((postFile) => getPostData(postFile));
+  return postData;
 }
 
 export function getCategory() {

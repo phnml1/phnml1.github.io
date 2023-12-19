@@ -13,7 +13,7 @@ export default function AllPostsPage(props) {
       </Head>
       <div className="w-full flex flex-col items-center md:w-4/5">
         <div className="w-full flex justify-center mt-4">
-          <CategorySwiper content={props.category} />
+          <CategorySwiper content={props.categorys} />
         </div>
         <div className="mt-16 text-3xl font-extrabold w-full ml-10 mb-12">All posts</div>
         <PostsContents contents = {props.posts}/>
@@ -23,12 +23,12 @@ export default function AllPostsPage(props) {
 }
 export function getStaticProps() {
   const allPosts = getAllPosts();
-  const category = transformCategory(getCategory());
+  const categorys = transformCategory(getCategory());
   
   return {
     props: {
       posts: allPosts,
-      category: category,
+      categorys: categorys,
     }
   }
 }
