@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 interface FeaturedPostsProps {
   post: {
     slug: string,
@@ -10,8 +11,9 @@ interface FeaturedPostsProps {
   };
 }
 const FeaturedPosts: React.FC<FeaturedPostsProps> = (props) => {
+  console.log(props.post.slug);
   return (
-    <div className="cursor-pointer rounded-lg w-full h-80 relative overflow-hidden flex flex-col items-center transition-all hover:scale-105">
+    <Link className="cursor-pointer rounded-lg w-full h-80 relative overflow-hidden flex flex-col items-center transition-all hover:scale-105" href={`/${props.post.slug}`}>
       <div className='relative w-full h-2/3'>
         <Image
   src={`/${props.post.slug}/${props.post.image}`}
@@ -28,7 +30,7 @@ const FeaturedPosts: React.FC<FeaturedPostsProps> = (props) => {
       {props.post.date}
     </div>
 </div>
-    </div>
+    </Link>
   );
 };
 export default FeaturedPosts;

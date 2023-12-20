@@ -5,6 +5,7 @@ interface PostsContentsProps {
     date: string,
     summary: string,
     tag: string [],
+    slug: string,
   } [];
 }
 const PostsContents: React.FC<PostsContentsProps> = (props) => {

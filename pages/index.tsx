@@ -30,7 +30,7 @@ export default function Home(props) {
       </div>
       <div className='w-full md:w-4/5'>
        <div className='w-auto ml-4 mt-8 text-xl font-bold'>Featured Posts</div>
-       <div className="w-full flex flex-col justify-center items-center flex-1 gap-6 mt-8 md:flex-row">
+       <div className="w-full flex flex-col justify-center items-center flex-1 gap-16 mt-8 md:flex-row">
         {
           props.posts.map((post,i) => 
             <FeaturedPosts key={i} post = {post}/>
