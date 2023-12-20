@@ -14,7 +14,7 @@ const FeaturedPosts: React.FC<FeaturedPostsProps> = (props) => {
     <div className="cursor-pointer rounded-lg w-full h-80 relative overflow-hidden flex flex-col items-center transition-all hover:scale-105">
       <div className='relative w-full h-2/3'>
         <Image
-  src={`/posts/${props.post.slug}/${props.post.image}`}
+  src={`/${props.post.slug}/${props.post.image}`}
   alt="Featured post"
   layout='fill'
   objectFit="cover"

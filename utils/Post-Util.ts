@@ -27,12 +27,12 @@ function convertFilePathToURL(filePath) {
   return urlPath;
 }
 
-function getPostData(filePath) {
+export function getPostData(filePath) {
   const postSlug = convertFilePathToURL(filePath);
   const fileContent = fs.readFileSync(filePath, 'utf-8');
   const {data,content} = matter(fileContent);
   const postData = {
-      slug: postSlug,
+      slug: `${dir}/${postSlug}`,
       ...data,
       content,
   };
