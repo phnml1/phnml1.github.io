@@ -1,11 +1,20 @@
 import Image from 'next/image';
-
-const FeaturedPosts: React.FC = () => {
+interface FeaturedPostsProps {
+  post: {
+    slug: string,
+    title: string,
+    date: string,
+    summary: string,
+    tag: string [],
+    image: string,
+  };
+}
+const FeaturedPosts: React.FC<FeaturedPostsProps> = (props) => {
   return (
     <div className="cursor-pointer rounded-lg w-full h-80 relative overflow-hidden flex flex-col items-center transition-all hover:scale-105">
       <div className='relative w-full h-2/3'>
         <Image
-  src="/darkmode2.jpg"
+  src={`/posts/${props.post.slug}/${props.post.image}`}
   alt="Featured post"
   layout='fill'
   objectFit="cover"
@@ -13,10 +22,10 @@ const FeaturedPosts: React.FC = () => {
 </div>
 <div className='w-full h-1/3 bg-gray-300 flex flex-col items-center justify-center text-center gap-1'>
   <div className='font-bold text-lg'>
-    다익스트라 알고리즘에 대하여
+    {props.post.title}
     </div>
     <div className='text-sm'>
-      2023.02.10
+      {props.post.date}
     </div>
 </div>
     </div>

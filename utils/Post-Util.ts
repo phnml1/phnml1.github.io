@@ -27,7 +27,7 @@ function convertFilePathToURL(filePath) {
   return urlPath;
 }
 
-export function getPostData(filePath) {
+function getPostData(filePath) {
   const postSlug = convertFilePathToURL(filePath);
   const fileContent = fs.readFileSync(filePath, 'utf-8');
   const {data,content} = matter(fileContent);
@@ -55,4 +55,12 @@ export function getPostsByCategory(category) {
 export function getCategory() {
   const categorys = fs.readdirSync(dir);
   return categorys;
+}
+
+export function getFeaturedPosts() {
+  const allPosts = getAllPosts();
+
+  const featuredPosts = allPosts.filter(post => post.isFeatured);
+
+  return featuredPosts;
 }
