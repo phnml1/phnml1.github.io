@@ -4,7 +4,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
-import Category from "@/components/posts/category";
+import Category from "./Category";
 import { useState } from "react";
 import Link from "next/link";
 interface swiperProps {
@@ -29,7 +29,7 @@ const CategorySwiper = (props) => {
   >
     {
       props.content.map((a,i) => {
-        return (<SwiperSlide key={i} className="h-32"><Link href={`/posts/${a.name}`}><Category text={a.name} image={a.image} /></Link></SwiperSlide>);
+        return (<SwiperSlide key={i} className="h-32"><Category text={a.name} image={a.image} /></SwiperSlide>);
       })
     }
   </Swiper>
