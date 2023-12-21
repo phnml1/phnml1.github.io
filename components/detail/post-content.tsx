@@ -1,20 +1,29 @@
-import ReactMarkdown from "react-markdown";
-import Image from "next/image";
+import ReactMarkdown from 'react-markdown';
+import Image from 'next/image';
+import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import js from 'react-syntax-highlighter/dist/cjs/languages/prism/javascript';
+import python from 'react-syntax-highlighter/dist/cjs/languages/prism/python';
+import css from 'react-syntax-highlighter/dist/cjs/languages/prism/css';
+
+SyntaxHighlighter.registerLanguage('js', js);
+SyntaxHighlighter.registerLanguage('css', css);
+SyntaxHighlighter.registerLanguage('python', python);
+
 interface PostContentProps {
-  content : string;
-  slug: string
+  content: string;
+  slug: string;
 }
-const PostContent: React.FC <PostContentProps> = (props) => {
+
+const PostContent: React.FC<PostContentProps> = (props) => {
   const customRenderers = {
     p(paragraph) {
       const { node } = paragraph;
 
       if (node.children[0].tagName === 'img') {
         const image = node.children[0];
-        console.log(props.slug);
-        console.log(image.properties.src);
         return (
-          <div className='w-full max-w-xl my-8'>
+          <div className="w-full max-w-xl my-8">
             <Image
               src={`/${props.slug}/${image.properties.src}`}
               alt={image.alt}
@@ -25,14 +34,23 @@ const PostContent: React.FC <PostContentProps> = (props) => {
         );
       }
 
-      return <p className='my-8'>{paragraph.children}</p>;
+      return <p className="my-8">{paragraph.children}</p>;
     },
-    // code(code){
-    //   const {className, children} = code;
-    //   const language = className.split('-')[1];
-    //   return <SyntaxHighlighter style={atomDark} language={language} children={children} />
-    // }
+    code(code) {
+      const { className, children } = code;
+      const language = className.split('-')[1];
+
+      return (
+        <SyntaxHighlighter style={atomDark} language={language}>
+          {children}
+        </SyntaxHighlighter>
+      );
+    },
   };
-  return (<div className="w-full leading-relaxed"><ReactMarkdown components={customRenderers}>{props.content}</ReactMarkdown></div>)
-}
-export default PostContent; 
+  return (
+    <div className="w-full leading-relaxed">
+      <ReactMarkdown components={customRenderers}>{props.content}</ReactMarkdown>
+    </div>
+  );
+};
+export default PostContent;
