@@ -49,7 +49,11 @@ const PostContent: React.FC<PostContentProps> = (props) => {
   };
   return (
     <div className="w-full leading-relaxed">
-      <ReactMarkdown components={customRenderers}>{props.content}</ReactMarkdown>
+      <ReactMarkdown
+        components={customRenderers}
+      >
+        {props.content}
+      </ReactMarkdown>
     </div>
   );
 };
