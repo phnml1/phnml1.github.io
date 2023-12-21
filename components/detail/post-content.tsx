@@ -5,7 +5,9 @@ import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import js from 'react-syntax-highlighter/dist/cjs/languages/prism/javascript';
 import python from 'react-syntax-highlighter/dist/cjs/languages/prism/python';
 import css from 'react-syntax-highlighter/dist/cjs/languages/prism/css';
-
+import slug from 'rehype-slug'
+import { PluggableList } from 'unified'
+import raw from 'rehype-raw'
 SyntaxHighlighter.registerLanguage('js', js);
 SyntaxHighlighter.registerLanguage('css', css);
 SyntaxHighlighter.registerLanguage('python', python);
@@ -16,6 +18,8 @@ interface PostContentProps {
 }
 
 const PostContent: React.FC<PostContentProps> = (props) => {
+  
+
   const customRenderers = {
     p(paragraph) {
       const { node } = paragraph;
@@ -50,6 +54,7 @@ const PostContent: React.FC<PostContentProps> = (props) => {
   return (
     <div className="w-full leading-relaxed">
       <ReactMarkdown
+        rehypePlugins={[raw, slug] as PluggableList}
         components={customRenderers}
       >
         {props.content}
