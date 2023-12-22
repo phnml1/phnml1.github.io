@@ -1,17 +1,17 @@
+import TOC from '@/components/detail/Toc';
 import PostContent from '@/components/detail/post-content';
 import PostHeader from '@/components/detail/post-header';
 import { getAllPosts, getPostData } from '@/utils/Post-Util';
 
 export function PostDetailPage(props) {
+  
   return (
     <div className="mt-4 w-full md:w-4/5 px-8 flex flex-col items-center">
       <PostHeader title={props.post.title} category={props.category} date={props.post.date} tag={props.post.tag}/>
       <div className='w-full flex mt-8'>
         <PostContent content={props.post.content} slug = {props.post.slug}/>
       </div>
-      <a href='#javascript'>javascript</a> 
-      <a href='#code'>code</a> 
-      <a href='#loren'>loren</a>  
+      <TOC />
     </div>
   );
 }
