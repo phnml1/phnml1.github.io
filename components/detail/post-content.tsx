@@ -38,7 +38,7 @@ const PostContent: React.FC<PostContentProps> = (props) => {
         );
       }
 
-      return <p className="my-8">{paragraph.children}</p>;
+      return <p>{paragraph.children}</p>;
     },
     code(code) {
       const { className, children } = code;
@@ -52,7 +52,7 @@ const PostContent: React.FC<PostContentProps> = (props) => {
     },
   };
   return (
-    <div className="w-full leading-relaxed">
+    <div className="prose prose-zinc max-w-none w-full leading-loose">
       <ReactMarkdown
         rehypePlugins={[raw, slug] as PluggableList}
         components={customRenderers}
