@@ -19,7 +19,7 @@ const PostHeader:React.FC <PostHeaderProps> = (props) => {
             <Tag key={a} name={a} />
           ))}
         </div>
-        <div className="font-bold text-5xl mt-4 text-center">{props.title}</div>
+        <div className="font-bold text-3xl md:text-5xl mt-4 text-center leading-snug md:leading-snug">{props.title}</div>
         <div className="text-md mt-6">{`${date[0]}년 ${date[1]}월 ${date[2]}일`}</div>
         <hr className='border-1 w-full border-neutral-300 transition-all mt-6'/>
       </div>
