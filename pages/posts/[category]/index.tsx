@@ -12,7 +12,7 @@ export default function PostsCategoryPage(props) {
     <Fragment>
       <Head>
         <title>{props.currentCategory}</title>
-        <meta name="description" content="모든 포스트 보여주기" />
+        <meta name="description" content={`${props.currentCategory}의 카테고리와 관련한 글 모두 보여주기`} />
       </Head>
       <div className="w-full h-fit flex flex-col items-center mb-8 md:w-4/5">
         <div className="w-full flex flex-col items-center mt-8">

@@ -8,7 +8,7 @@ export default function Home(props) {
   return (
     <main className={`flex min-h-screen flex-col items-center w-full `}>
       <Head>
-        <title>홈페이지</title>
+        <title>홈 페이지</title>
         <meta name = "description" content = "phnml1" />
       </Head>
       <div className="relative mt-4 w-full h-96 z-20 flex justify-center">
