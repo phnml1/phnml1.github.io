@@ -15,7 +15,7 @@ const TOC:React.FC<PostContentProps> = (props) => {
   }, []);
   useObservation(setCurrentId, headingEls);
   return (
-    <div className="mt-12 ml-auto relative">
+    <div className="mt-12 ml-auto relative hidden lg:block">
       <div className='sticky top-32 w-60'>
       
         <div className='p-4  rounded-xl border-solid border-slate-300 border-2 items-start gap-6'>

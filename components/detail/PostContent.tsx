@@ -53,7 +53,7 @@ const PostContent: React.FC<PostContentProps> = (props) => {
     },
   };
   return (
-    <div className = "w-full flex gap-8">
+    <div className = "w-full gap-8 lg:flex">
     <div className="prose prose-zinc w-full leading-loose max-w-3xl">
       <ReactMarkdown
         rehypePlugins={[raw, slug] as PluggableList}

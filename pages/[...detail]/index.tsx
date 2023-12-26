@@ -1,5 +1,5 @@
-import PostContent from '@/components/detail/post-content';
-import PostHeader from '@/components/detail/post-header';
+import PostContent from '@/components/detail/PostContent';
+import PostHeader from '@/components/detail/PostHeader';
 import { getAllPosts, getPostData } from '@/utils/Post-Util';
 import Head from 'next/head';
 import { Fragment } from 'react';
