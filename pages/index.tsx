@@ -22,7 +22,7 @@ export default function Home(props) {
           className="w-full h-full"
         />
         <div className='w-full h-full md:w-4/5 z-20 relative text-white'>
-          <div className='absolute left-3 bottom-12'>
+          <div className='absolute left-8 bottom-12'>
           <div className='text-lg md:text-xl'>안녕하세요. 제 블로그에 와주셔서 감사합니다.</div>
           <div className='text-md md:text-lg mt-4'>저는 프론트엔드 개발과 알고리즘을 공부하고, 공부한 지식들을 이곳에 기록하고 있습니다.<br/>부족하지만 좋게 봐주시면 감사드리겠습니다.</div>
           </div>

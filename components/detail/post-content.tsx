@@ -8,6 +8,7 @@ import css from 'react-syntax-highlighter/dist/cjs/languages/prism/css';
 import slug from 'rehype-slug'
 import { PluggableList } from 'unified'
 import raw from 'rehype-raw'
+import TOC from './Toc';
 SyntaxHighlighter.registerLanguage('js', js);
 SyntaxHighlighter.registerLanguage('css', css);
 SyntaxHighlighter.registerLanguage('python', python);
@@ -15,11 +16,11 @@ SyntaxHighlighter.registerLanguage('python', python);
 interface PostContentProps {
   content: string;
   slug: string;
+  title: string;
 }
 
 const PostContent: React.FC<PostContentProps> = (props) => {
-  
-
+  console.log(props.title);
   const customRenderers = {
     p(paragraph) {
       const { node } = paragraph;
@@ -52,13 +53,16 @@ const PostContent: React.FC<PostContentProps> = (props) => {
     },
   };
   return (
-    <div className="prose prose-zinc max-w-none w-full leading-loose">
+    <div className = "w-full flex gap-8">
+    <div className="prose prose-zinc w-full leading-loose max-w-3xl">
       <ReactMarkdown
         rehypePlugins={[raw, slug] as PluggableList}
         components={customRenderers}
       >
         {props.content}
       </ReactMarkdown>
+    </div>
+    <TOC title={props.title}/>
     </div>
   );
 };

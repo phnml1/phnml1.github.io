@@ -11,7 +11,6 @@ export function PostDetailPage(props) {
       <div className='w-full flex mt-8'>
         <PostContent content={props.post.content} slug = {props.post.slug}/>
       </div>
-      <TOC />
     </div>
   );
 }
