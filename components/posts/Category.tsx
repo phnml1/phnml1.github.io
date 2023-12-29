@@ -6,7 +6,6 @@ interface CategoryProps {
 }
 
 const Category: React.FC<CategoryProps> = (props) => {
-  console.log(props.image);
   return (
     <div className="flex justify-center items-center h-full">
       <Link href={`/posts/${props.text}`} className="w-3/5 h-full flex flex-col items-center cursor-pointer">

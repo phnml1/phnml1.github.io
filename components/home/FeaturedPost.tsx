@@ -22,7 +22,7 @@ const FeaturedPosts: React.FC<FeaturedPostsProps> = (props) => {
             objectFit="cover"
           />
         </div>
-        <div className="w-full h-1/3 bg-gray-300 flex flex-col items-center justify-center text-center gap-1">
+        <div className="w-full h-1/3 bg-gray-300 flex flex-col items-center justify-center text-center gap-1 dark:bg-neutral-800">
           <div className="font-bold text-lg">{props.post.title}</div>
           <div className="text-sm">{props.post.date}</div>
         </div>

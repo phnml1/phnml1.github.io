@@ -1,8 +1,10 @@
 import React from "react";
 import Footer from "./Footer";
 import Navbar from "./navbar/Navbar";
+import { ThemeProvider } from 'next-themes';
 import { cls } from "@/utils/Utils";
 import { Kanit, Noto_Sans_KR, Open_Sans } from 'next/font/google';
+import { Providers } from "./Providers";
 const notoSansKr = Noto_Sans_KR({
   subsets: ["latin"], 
   weight: ["100", "400", "700", "900"], // 가변 폰트가 아닌 경우, 사용할 fontWeight 배열
@@ -20,10 +22,12 @@ const kanit = Kanit({
 
 export default function Layout({ children }: React.PropsWithChildren) {
   return (
-    <main className={cls(notoSansKr.className, opensans.variable, kanit.variable,'w-full flex flex-col items-center')}>
+    <Providers>
+    <main className={cls(notoSansKr.className, opensans.variable, kanit.variable,'w-full flex flex-col items-center dark:bg-gray-900 dark:text-dark-primary transition-[background]')}>
       <Navbar />
       <div className="w-full flex flex-col items-center">{children}</div>
       {/* <Footer /> */}
     </main>
+    </Providers>
   );
 }
