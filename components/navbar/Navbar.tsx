@@ -3,20 +3,11 @@ import DarkModeButton from './components/DarkModeButton';
 import SideBarButton from './components/SideBarButton';
 import Link from 'next/link';
 import Modal from '../modal/Modal';
-import { useTheme } from 'next-themes';
 const Navbar: React.FC = () => {
-  const { theme, setTheme } = useTheme();
+  
   const [modal, setModal] = useState(false);
-  // const [mounted, setMounted] = useState(false)
+  
 
-  // // useEffect only runs on the client, so now we can safely show the UI
-  // useEffect(() => {
-  //   setMounted(true)
-  // }, [])
-
-  // if (!mounted) {
-  //   return null
-  // }
 
   return (
     <header className="w-full flex justify-center">
@@ -26,7 +17,7 @@ const Navbar: React.FC = () => {
           <Link href = '/posts' className='text-lg hidden md:block'>이주영의 개발 블로그</Link>
         </div>
         <div className='mr-8 flex gap-2'>
-          <DarkModeButton setTheme = {setTheme} theme = {theme}/>
+          <DarkModeButton/>
           <SideBarButton setModal = {setModal}/>
         </div>
       </div>

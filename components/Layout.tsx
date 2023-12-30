@@ -23,7 +23,7 @@ const kanit = Kanit({
 export default function Layout({ children }: React.PropsWithChildren) {
   return (
     <Providers>
-    <main className={cls(notoSansKr.className, opensans.variable, kanit.variable,'w-full flex flex-col items-center dark:bg-gray-900 dark:text-dark-primary transition-[background]')}>
+    <main className={cls(notoSansKr.className, opensans.variable, kanit.variable,'w-full flex flex-col items-center dark:bg-dark-primary dark:text-dark-primary transition-[background]')}>
       <Navbar />
       <div className="w-full flex flex-col items-center">{children}</div>
       {/* <Footer /> */}
