@@ -7,16 +7,16 @@ import { useTheme } from 'next-themes';
 const Navbar: React.FC = () => {
   const { theme, setTheme } = useTheme();
   const [modal, setModal] = useState(false);
-  const [mounted, setMounted] = useState(false)
+  // const [mounted, setMounted] = useState(false)
 
-  // useEffect only runs on the client, so now we can safely show the UI
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  // // useEffect only runs on the client, so now we can safely show the UI
+  // useEffect(() => {
+  //   setMounted(true)
+  // }, [])
 
-  if (!mounted) {
-    return null
-  }
+  // if (!mounted) {
+  //   return null
+  // }
 
   return (
     <header className="w-full flex justify-center">

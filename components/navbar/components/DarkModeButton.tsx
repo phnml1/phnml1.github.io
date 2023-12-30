@@ -9,7 +9,7 @@ const DarkModeButton : React.FC<DarkModeButtonProps>  = (props: DarkModeButtonPr
   console.log(props.theme);
   
   return (
-    <div className = 'cursor-pointer transition-all w-auto h-auto p-1 rounded-lg hover:bg-slate-200' onClick={()=>{
+    <div className = 'cursor-pointer transition-all w-auto h-auto p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-gray-700' onClick={()=>{
       props.setTheme(props.theme === 'dark' ? 'light' : 'dark');
   }}>
 
