@@ -1,11 +1,14 @@
 ---
-title: Mastering JavaScript
+title: 'Mastering JavaScript'
 summary: JavaScript is the most important programming language for web development. You probably don't know it well enough!
-image: mastering-javascript.jpg
-isFeatured: true
-date: '2022-10-30'
-tag: ['Dummy','React',]
+date: 2022-10-30
+tags:
+  - 'Dummy'
+  - 'React'
+image: 'mastering-javascript.jpg'
+isFeatured: 'featured'
 ---
+
 > Dorothy followed her through many of the beautiful rooms in her castle.
 > The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
 
