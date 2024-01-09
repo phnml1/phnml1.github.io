@@ -1,16 +1,16 @@
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const DarkModeButton: React.FC = () => {
   const { systemTheme, setTheme, resolvedTheme } = useTheme();
   const [prevsys, setPrevsys] = useState(systemTheme);
-  useEffect(()=> {
+  useEffect(() => {
     if (prevsys != systemTheme) {
       setTheme(systemTheme);
       setPrevsys(systemTheme);
     }
-  },[systemTheme]);
+  }, [systemTheme]);
 
   return (
     <div
