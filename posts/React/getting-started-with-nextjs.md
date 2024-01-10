@@ -5,8 +5,8 @@ summary: NextJS is a the React framework for production - it makes building full
 tags:
   - 'Dummy'
   - 'React'
-date: 2022-10-16
-isFeatured: 'featured'
+date: 2023-05-22 23:19:30
+isFeatured: true
 ---
 
 NextJS is a **framework for ReactJS**.

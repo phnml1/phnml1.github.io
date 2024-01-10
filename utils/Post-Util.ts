@@ -1,66 +1,71 @@
-import fs from 'fs';
-import path from 'path';
+import { allPosts } from 'contentlayer/generated';
+import { compareDesc } from 'date-fns';
+export const posts = allPosts.sort((a, b) => compareDesc(new Date(a.date), new Date(b.date)))
 
-const matter = require('gray-matter');
+export const allCategorys = Array.from(new Set(posts.map((post) => (post.category)))).sort();
 
-const dir = 'posts';
+export const recentPosts = posts.slice(0,3);
 
-const postsDirectory = (category) => path.join(process.cwd(), `posts/${category}`);
+// const matter = require('gray-matter');
 
-const getAllFiles = (dir:string) =>
-    fs.readdirSync(dir).reduce((files, file) => {
-        const name = path.join(dir, file);
-        const isDirectory = fs.statSync(name).isDirectory();
-    return isDirectory ? [...files, ...getAllFiles(name)] : [...files, name];
-    }, []);
+// const dir = 'posts';
 
-const getFilePaths = (category:string) => {
-  const postsDir  = postsDirectory(category);
-  const postFiles = fs.readdirSync(postsDir);
-  const filePaths = postFiles.map((postFile) => `${dir}/${category}/${postFile}`);
-  return filePaths;
-}
+// const postsDirectory = (category) => path.join(process.cwd(), `posts/${category}`);
 
-function convertFilePathToURL(filePath) {
-  const relativePath = path.relative('posts', filePath);
-  const urlPath = relativePath.replace(/\.md$/, '').replace(/\\/g, '/');
-  return urlPath;
-}
+// const getAllFiles = (dir:string) =>
+//     fs.readdirSync(dir).reduce((files, file) => {
+//         const name = path.join(dir, file);
+//         const isDirectory = fs.statSync(name).isDirectory();
+//     return isDirectory ? [...files, ...getAllFiles(name)] : [...files, name];
+//     }, []);
 
-export function getPostData(filePath) {
-  const postSlug = convertFilePathToURL(filePath);
-  const fileContent = fs.readFileSync(filePath, 'utf-8');
-  const {data,content} = matter(fileContent);
-  const postData = {
-      slug: `${dir}/${postSlug}`,
-      ...data,
-      content,
-  };
-  return postData;
-}
+// const getFilePaths = (category:string) => {
+//   const postsDir  = postsDirectory(category);
+//   const postFiles = fs.readdirSync(postsDir);
+//   const filePaths = postFiles.map((postFile) => `${dir}/${category}/${postFile}`);
+//   return filePaths;
+// }
 
-export function getAllPosts() {
-  const postFiles = getAllFiles(dir);
-  const PostData = postFiles.map((postFile) => { return getPostData(postFile)});
-  const sortedPosts = PostData.sort((postA, postB) => postA.date > postB.date ? -1: 1);
-  return sortedPosts;
-}
+// function convertFilePathToURL(filePath) {
+//   const relativePath = path.relative('posts', filePath);
+//   const urlPath = relativePath.replace(/\.md$/, '').replace(/\\/g, '/');
+//   return urlPath;
+// }
 
-export function getPostsByCategory(category) {
-  const postFiles = getFilePaths(category);
-  const postData = postFiles.map((postFile) => getPostData(postFile));
-  return postData;
-}
+// export function getPostData(filePath) {
+//   const postSlug = convertFilePathToURL(filePath);
+//   const fileContent = fs.readFileSync(filePath, 'utf-8');
+//   const {data,content} = matter(fileContent);
+//   const postData = {
+//       slug: `${dir}/${postSlug}`,
+//       ...data,
+//       content,
+//   };
+//   return postData;
+// }
 
-export function getCategory() {
-  const categorys = fs.readdirSync(dir);
-  return categorys;
-}
+// export function getAllPosts() {
+//   const postFiles = getAllFiles(dir);
+//   const PostData = postFiles.map((postFile) => { return getPostData(postFile)});
+//   const sortedPosts = PostData.sort((postA, postB) => postA.date > postB.date ? -1: 1);
+//   return sortedPosts;
+// }
 
-export function getFeaturedPosts() {
-  const allPosts = getAllPosts();
+// export function getPostsByCategory(category) {
+//   const postFiles = getFilePaths(category);
+//   const postData = postFiles.map((postFile) => getPostData(postFile));
+//   return postData;
+// }
 
-  const featuredPosts = allPosts.filter(post => post.isFeatured);
+// export function getCategory() {
+//   const categorys = fs.readdirSync(dir);
+//   return categorys;
+// }
 
-  return featuredPosts;
-}
+// export function getFeaturedPosts() {
+//   const allPosts = getAllPosts();
+
+//   const featuredPosts = allPosts.filter(post => post.isFeatured);
+
+//   return featuredPosts;
+// }

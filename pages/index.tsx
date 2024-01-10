@@ -2,10 +2,10 @@ import Image from 'next/image';
 import FeaturedPosts from '@/components/home/FeaturedPost';
 import Head from 'next/head';
 import NavButton from '@/components/NavButton';
-import { getFeaturedPosts } from '@/utils/Post-Util';
+import { recentPosts } from '@/utils/Post-Util';
 import HomeIntro from '@/components/home/HomeIntro';
-
 export default function Home(props) {
+
   return (
     <main className={`flex min-h-screen flex-col items-center w-full `}>
       <Head>
@@ -30,8 +30,8 @@ export default function Home(props) {
   );
 }
 export function getStaticProps() {
-  const FeaturedPosts = getFeaturedPosts();
-  
+  // const FeaturedPosts = getFeaturedPosts();
+  const FeaturedPosts = recentPosts;
   return {
     props: {
       posts: FeaturedPosts,

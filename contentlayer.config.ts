@@ -14,7 +14,8 @@ export const Post = defineDocumentType(() => ({
   filePathPattern: `**/*.md`,
   fields,
   computedFields: {
-    url: { type: 'string', resolve: (post) => `/posts/${post._raw.flattenedPath}` },
+    category: { type: 'string', resolve: (post) => `${post._raw.sourceFileDir}` },
+    slug: {type: 'string', resolve: (post) => `/posts/${post._raw.flattenedPath}`}
   },
   readingMinutes: {
     type: 'string',
