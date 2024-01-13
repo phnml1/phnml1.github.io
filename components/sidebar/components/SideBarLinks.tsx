@@ -29,7 +29,7 @@ const SideBarLinks: React.FC<SideBarLinksProps> = (props:SideBarLinksProps) => {
           if (props.theme === 'Page') {
             return (
               <Link key={i} href={`${PageLinksObj[a]}`} onClick={() => { props.setSideBar(false) }}>
-                <div className='w-full h-auto py-4 cursor-pointer rounded-lg hover:bg-slate-200 '>
+                <div className='w-full h-auto py-4 cursor-pointer rounded-lg hover:bg-slate-200 dark:hover:bg-dark-secondary'>
                   <div className='mx-12 text-md text-black dark:text-dark-primary'>{a}</div>
                 </div>
               </Link>
@@ -37,7 +37,7 @@ const SideBarLinks: React.FC<SideBarLinksProps> = (props:SideBarLinksProps) => {
           }
           if (props.theme == 'preference') {
             return (<div key={i} onClick={() => { setTheme(resolvedTheme === 'dark' ? 'light' : 'dark'); }}>
-            <div className='w-full h-auto py-4 cursor-pointer rounded-lg hover:bg-slate-200'>
+            <div className='w-full h-auto py-4 cursor-pointer rounded-lg hover:bg-slate-200 dark:hover:bg-dark-secondary'>
               <div className='mx-12 text-md text-black dark:text-dark-primary'>{(resolvedTheme == 'dark')? '라이트 모드': '다크 모드'}</div>
             </div>
           </div>)
@@ -45,7 +45,7 @@ const SideBarLinks: React.FC<SideBarLinksProps> = (props:SideBarLinksProps) => {
           else {
             return (
               <Link key={i} href={`/posts/${a}`} onClick={() => { props.setSideBar(false) }}>
-                <div className='w-full h-auto py-4 cursor-pointer rounded-lg hover:bg-slate-200'>
+                <div className='w-full h-auto py-4 cursor-pointer rounded-lg hover:bg-slate-200 dark:hover:bg-dark-secondary'>
                   <div className='mx-12 text-md text-black dark:text-dark-primary'>{a}</div>
                 </div>
               </Link>

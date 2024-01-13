@@ -53,7 +53,7 @@ const SideBar: React.FC<SidebarProps> = (props: SidebarProps) => {
             contents={['다크 모드']}
           />
           <div className="py-4 mt-8 w-full h-3">
-            <div className="mx-8 text-sm text-slate-800 dark:text-dark-primary">About me</div>
+            <div className="mx-8 text-sm text-slate-800 dark:text-dark-secondary">About me</div>
           </div>
           <div className="mt-4 w-full flex flex-col items-center">
             <div className="w-1/2 text-center mt-8">
