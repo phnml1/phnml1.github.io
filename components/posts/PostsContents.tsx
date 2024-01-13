@@ -1,12 +1,7 @@
+import { Post } from "@/.contentlayer/generated";
 import PostItem from "./PostItem";
 interface PostsContentsProps {
-  contents: {
-    title: string,
-    date: string,
-    summary: string,
-    tag: string [],
-    slug: string,
-  } [];
+  contents: Post[];
 }
 const PostsContents: React.FC<PostsContentsProps> = (props) => {
   return(

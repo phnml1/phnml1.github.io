@@ -1,4 +1,4 @@
-import { allPosts } from 'contentlayer/generated';
+import { Post, allPosts } from 'contentlayer/generated';
 import { compareDesc } from 'date-fns';
 export const posts = allPosts.sort((a, b) => compareDesc(new Date(a.date), new Date(b.date)))
 
@@ -6,6 +6,11 @@ export const allCategorys = Array.from(new Set(posts.map((post) => (post.categor
 
 export const recentPosts = posts.slice(0,3);
 
+export const getPostsByCategory = (category:string) => (posts.filter(post => post.category == category));
+
+export const getPostData = (filePath:string) => (
+  posts.filter((file:Post) => file._raw.sourceFilePath==filePath)[0]
+)
 // const matter = require('gray-matter');
 
 // const dir = 'posts';

@@ -2,12 +2,11 @@ import { Fragment, useState } from 'react';
 import Head from 'next/head';
 import CategorySwiper from '@/components/posts/CategorySwiper';
 import PostsContents from '@/components/posts/PostsContents';
-import { getPostsByCategory, getCategory } from '@/utils/Post-Util';
+import { getPostsByCategory, allCategorys } from '@/utils/Post-Util';
 import { transformCategory } from '@/utils/Utils';
 import NavButton from '@/components/NavButton';
 
 export default function PostsCategoryPage(props) {
-
   return (
     <Fragment>
       <Head>
@@ -32,7 +31,7 @@ export default function PostsCategoryPage(props) {
 export function getStaticProps(context) {
   const { params } = context;
   const { category } = params;
-  const categorys = transformCategory(getCategory());
+  const categorys = transformCategory(allCategorys);
   const postData = getPostsByCategory(category);
   return {
     props: {
@@ -45,7 +44,7 @@ export function getStaticProps(context) {
 }
 
 export function getStaticPaths() {
-  const categorys = getCategory();
+  const categorys = allCategorys;
 
   return {
     paths: categorys.map(category => ({params: {category:category}})),

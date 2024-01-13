@@ -2,9 +2,11 @@ import { Fragment } from 'react';
 import Head from 'next/head';
 import CategorySwiper from '@/components/posts/CategorySwiper';
 import PostsContents from '@/components/posts/PostsContents';
-import {getAllPosts, getCategory} from '@/utils/Post-Util';
+import { allCategorys, posts} from '@/utils/Post-Util';
 import { transformCategory } from '@/utils/Utils';
+import { Post } from '@/.contentlayer/generated';
 export default function AllPostsPage(props) {
+  console.log(props.posts);
   return (
     <Fragment>
       <Head>
@@ -22,12 +24,12 @@ export default function AllPostsPage(props) {
   );
 }
 export function getStaticProps() {
-  const allPosts = getAllPosts();
-  const categorys = transformCategory(getCategory());
+  const allPosts = posts;
+  const categorys = transformCategory(allCategorys);
   
   return {
     props: {
-      posts: allPosts,
+      posts: posts,
       categorys: categorys,
     }
   }

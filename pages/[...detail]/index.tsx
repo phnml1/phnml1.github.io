@@ -1,10 +1,12 @@
 import PostContent from '@/components/detail/PostContent';
 import PostHeader from '@/components/detail/PostHeader';
-import { getAllPosts, getPostData } from '@/utils/Post-Util';
+import { getPostData, posts } from '@/utils/Post-Util';
 import Head from 'next/head';
 import { Fragment } from 'react';
+import { Post } from '@/.contentlayer/generated';
 
 export function PostDetailPage(props) {
+  console.log(props.post);
   return (
     <Fragment>
       <Head>
@@ -12,9 +14,9 @@ export function PostDetailPage(props) {
         <meta name="description" content={`${props.post.summary}`}></meta>
       </Head>
     <div className="mt-4 w-full md:w-4/5 px-8 flex flex-col items-center">
-      <PostHeader title={props.post.title} category={props.category} date={props.post.date} tag={props.post.tag}/>
+      <PostHeader title={props.post.title} category={props.category} date={props.post.date} tags={props.post.tags}/>
       <div className='w-full flex mt-8'>
-        <PostContent title = {props.post.title} content={props.post.content} slug = {props.post.slug}/>
+        <PostContent title = {props.post.title} content={props.post.body.code} slug = {props.post.slug}/>
       </div>
     </div>
     </Fragment>
@@ -23,8 +25,9 @@ export function PostDetailPage(props) {
 export function getStaticProps(context) {
   const { params } = context;
   const { detail } = params;
-  const detailPath = detail.join('/');
-  const postData = getPostData(`${detailPath}.md`);
+  const detailPath = detail.slice(1).join('/');
+  const postData = getPostData(`${detailPath}.mdx`);
+  console.log(postData);
   return {
     props: {
       post: postData,
@@ -34,11 +37,10 @@ export function getStaticProps(context) {
 }
 
 export function getStaticPaths() {
-  const allFiles = getAllPosts();
-  const slugs = allFiles.map((file) => file.slug);
+  const slugs = posts.map((file:Post) => file.slug);
   return {
     paths: slugs.map((slug:string) => {
-      const detail = slug.split('/');
+      const detail = slug.split('/').slice(1);
       return { params: { detail } };
     }),
     fallback: false,
