@@ -53,9 +53,11 @@ const useObservation = (setState: Dispatch<SetStateAction<string>>, headingEleme
     headingElements.map((header) => {
       observe.observe(header)
     })
-
+    
     // 컴포넌드가 언마운트 되었을 경우 observe의 관찰을 멈춘다.
-    return () => observe.disconnect()
+    return () => { 
+      observe.disconnect()
+    }
   }, [headingElements])
 }
 

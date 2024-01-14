@@ -6,7 +6,6 @@ import { Fragment } from 'react';
 import { Post } from '@/.contentlayer/generated';
 
 export function PostDetailPage(props) {
-  console.log(props.post);
   return (
     <Fragment>
       <Head>

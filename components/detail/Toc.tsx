@@ -12,8 +12,11 @@ const TOC: React.FC<PostContentProps> = (props) => {
   useEffect(() => {
     const headingElements: HTMLElement[] = Array.from(document.querySelectorAll('h1,h2,h3'));
     setHeadingEls(headingElements);
+    
   }, []);
-  useObservation(setCurrentId, headingEls);
+
+  useObservation(setCurrentId,headingEls);
+
   return (
     <div className="mt-12 ml-auto relative hidden lg:block">
       <div className="sticky top-32 w-60">
@@ -30,7 +33,7 @@ const TOC: React.FC<PostContentProps> = (props) => {
               if (elementType == 'H2') {
                 return (
                   <li key={i}>
-                    <Link
+                    <a
                       href={`#${tocId}`}
                       onClick={() => {
                         setCurrentId(tocId);
@@ -38,13 +41,13 @@ const TOC: React.FC<PostContentProps> = (props) => {
                       className={`${isCurrent} py-1`}
                     >
                       {elementContent}
-                    </Link>
+                    </a>
                   </li>
                 );
               } else {
                 return (
                   <li key={i} className={`${isCurrent} ml-4`}>
-                    <Link
+                    <a
                       href={`#${tocId}`}
                       onClick={() => {
                         setCurrentId(tocId);
@@ -52,7 +55,7 @@ const TOC: React.FC<PostContentProps> = (props) => {
                       className={`${isCurrent} py-1`}
                     >
                       {elementContent}
-                    </Link>
+                    </a>
                   </li>
                 );
               }

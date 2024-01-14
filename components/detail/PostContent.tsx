@@ -19,7 +19,6 @@ interface PostContentProps {
 }
 
 const PostContent: React.FC<PostContentProps> = (props) => {
-  console.log(props.slug);
   const customRenderers = {
     a: ({ href, children }) => <Link href={href as string}>{children}</Link>,
     pre: (code) => {
