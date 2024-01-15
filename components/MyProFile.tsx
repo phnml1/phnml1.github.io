@@ -22,19 +22,19 @@ const MyProFile: React.FC = () => {
           </div>
         </div>
         <div className="w-full flex gap-2">
-          <Link href='https://github.com/phnml1' target="_blank">
-          <GithubIcon
-            width="25"
-            height="25"
-            className="fill-slate-300 transition-all cursor-pointer hover:fill-black"
-          />
+          <Link href="https://github.com/phnml1" target="_blank">
+            <GithubIcon
+              width="25"
+              height="25"
+              className="fill-slate-300 transition-all cursor-pointer hover:fill-black dark:hover:fill-white"
+            />
           </Link>
-          <Link href='mailto:juyung0903@gmail.com' target='_blank'>
-          <GmailIcon
-            width="25"
-            height="25"
-            className="fill-slate-300 transition-all cursor-pointer hover:fill-black"
-          />
+          <Link href="mailto:juyung0903@gmail.com" target="_blank">
+            <GmailIcon
+              width="25"
+              height="25"
+              className="fill-slate-300 transition-all cursor-pointer hover:fill-black dark:hover:fill-white"
+            />
           </Link>
         </div>
       </div>
