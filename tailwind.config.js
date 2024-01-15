@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  mode: "jit",
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}', // Note the addition of the `app` directory.
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -21,6 +22,10 @@ module.exports = {
       colors: {
         'dark-primary': '#e5e5e5',
         'dark-secondary': '#a3a3a3'
+      },
+      borderColor: {
+        'darkdetailnav': '#4d4d4d',
+        'detailnav': '#dee2e6',
       },
       typography: ({ theme }) => ({
         invert: {
