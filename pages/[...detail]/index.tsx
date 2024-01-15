@@ -4,6 +4,8 @@ import { getPostData, posts } from '@/utils/Post-Util';
 import Head from 'next/head';
 import { Fragment } from 'react';
 import { Post } from '@/.contentlayer/generated';
+import PostFooter from '@/components/detail/PostFooter';
+import Line from '@/components/Line';
 
 export function PostDetailPage(props) {
   return (
@@ -12,12 +14,22 @@ export function PostDetailPage(props) {
         <title>{props.post.title}</title>
         <meta name="description" content={`${props.post.summary}`}></meta>
       </Head>
-    <div className="mt-4 w-full md:w-4/5 px-8 flex flex-col items-center">
-      <PostHeader title={props.post.title} category={props.category} date={props.post.date} tags={props.post.tags}/>
-      <div className='w-full flex mt-8'>
-        <PostContent title = {props.post.title} content={props.post.body.code} slug = {props.post.slug}/>
+      <div className="mt-4 w-full md:w-4/5 px-8 flex flex-col items-center">
+        <PostHeader
+          title={props.post.title}
+          category={props.category}
+          date={props.post.date}
+          tags={props.post.tags}
+        />
+        <PostContent
+          title={props.post.title}
+          content={props.post.body.code}
+          slug={props.post.slug}
+        />
+        {/* <Line mt='8'/> */}
+        <PostFooter />
+        
       </div>
-    </div>
     </Fragment>
   );
 }
@@ -36,9 +48,9 @@ export function getStaticProps(context) {
 }
 
 export function getStaticPaths() {
-  const slugs = posts.map((file:Post) => file.slug);
+  const slugs = posts.map((file: Post) => file.slug);
   return {
-    paths: slugs.map((slug:string) => {
+    paths: slugs.map((slug: string) => {
       const detail = slug.split('/').slice(1);
       return { params: { detail } };
     }),
