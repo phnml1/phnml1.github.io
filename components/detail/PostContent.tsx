@@ -35,11 +35,13 @@ const PostContent: React.FC<PostContentProps> = (props) => {
   };
   const MDXComtent = useMDXComponent(props.content)
   return (
+    <div className='w-full flex mt-8 mb-8'>
     <div className = "w-full gap-8 lg:flex">
     <div className="prose prose-zinc w-full leading-loose max-w-3xl dark:prose-invert">
       <MDXComtent components={customRenderers} />
     </div>
     <TOC title={props.title}/>
+    </div>
     </div>
   );
 };

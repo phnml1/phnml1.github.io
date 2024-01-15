@@ -12,7 +12,6 @@ interface FeaturedPostsProps {
   };
 }
 const FeaturedPosts: React.FC<FeaturedPostsProps> = (props) => {
-  console.log(new Date(props.post.date));
   const date = format(new Date(props.post.date),'yyyy년 MM월 dd일')
   return (
     <div className="cursor-pointer w-full h-80 px-8 relative overflow-hidden rounded-lg flex flex-col items-center transition-all hover:scale-105">

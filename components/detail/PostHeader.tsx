@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
 import Category from '../posts/Category';
 import Tag from '../posts/Tag';
+import Line from '../Line';
 interface PostHeaderProps {
   title: string;
   category: string;
@@ -22,7 +23,7 @@ const PostHeader:React.FC <PostHeaderProps> = (props) => {
         </div>
         <div className="font-bold text-3xl md:text-5xl mt-4 text-center leading-snug md:leading-snug">{props.title}</div>
         <div className="text-md mt-6">{date}</div>
-        <hr className='border-1 w-full border-neutral-300 transition-all mt-6'/>
+        <Line mt='6' />
       </div>
     
   )
