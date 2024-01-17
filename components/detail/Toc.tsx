@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 interface PostContentProps {
   title: string;
+  slug: string;
 }
 
 const TOC: React.FC<PostContentProps> = (props) => {
@@ -12,8 +13,8 @@ const TOC: React.FC<PostContentProps> = (props) => {
   useEffect(() => {
     const headingElements: HTMLElement[] = Array.from(document.querySelectorAll('h1,h2,h3'));
     setHeadingEls(headingElements);
-    
-  }, []);
+    setCurrentId('');
+   }, [props.slug]);
 
   useObservation(setCurrentId,headingEls);
 

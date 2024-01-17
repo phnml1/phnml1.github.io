@@ -40,7 +40,7 @@ const PostContent: React.FC<PostContentProps> = (props) => {
     <div className="prose prose-zinc w-full leading-loose max-w-3xl dark:prose-invert">
       <MDXComtent components={customRenderers} />
     </div>
-    <TOC title={props.title}/>
+    <TOC title={props.title} slug = {props.slug}/>
     </div>
     </div>
   );
