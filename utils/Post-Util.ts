@@ -11,6 +11,44 @@ export const getPostsByCategory = (category:string) => (posts.filter(post => pos
 export const getPostData = (filePath:string) => (
   posts.filter((file:Post) => file._raw.sourceFilePath==filePath)[0]
 )
+
+export const getPrevData = (filePath:string) => {
+  const blogposts = posts;
+  const index =  blogposts.findIndex((file:Post) => file._raw.sourceFilePath==filePath)-1;
+  if (index>=0) {
+    return { 
+      title: blogposts[index].title,
+      slug: blogposts[index].slug,
+      summary: blogposts[index].summary,
+    }
+  }
+  else {
+    return { 
+      title: blogposts[blogposts.length-1].title,
+      slug: blogposts[blogposts.length-1].slug,
+      summary: blogposts[blogposts.length-1].summary,
+    }
+  }
+}
+
+export const getNextData = (filePath:string) => {
+  const blogposts = posts;
+  const index =  blogposts.findIndex((file:Post) => file._raw.sourceFilePath==filePath)+1;
+  if (index<blogposts.length) {
+    return { 
+      title: blogposts[index].title,
+      slug: blogposts[index].slug,
+      summary: blogposts[index].summary,
+    }
+  }
+  else {
+    return { 
+      title: blogposts[0].title,
+      slug: blogposts[0].slug,
+      summary: blogposts[0].summary,
+    }
+  }
+}
 // const matter = require('gray-matter');
 
 // const dir = 'posts';

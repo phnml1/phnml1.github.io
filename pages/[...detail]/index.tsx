@@ -1,6 +1,6 @@
 import PostContent from '@/components/detail/PostContent';
 import PostHeader from '@/components/detail/PostHeader';
-import { getPostData, posts } from '@/utils/Post-Util';
+import { getNextData, getPostData, getPrevData, posts } from '@/utils/Post-Util';
 import Head from 'next/head';
 import { Fragment } from 'react';
 import { Post } from '@/.contentlayer/generated';
@@ -26,8 +26,8 @@ export function PostDetailPage(props) {
           content={props.post.body.code}
           slug={props.post.slug}
         />
-        {/* <Line mt='8'/> */}
-        <PostFooter />
+        <Line mt='8'/>
+        <PostFooter prevData = {props.prevData} nextData={props.nextData}/>
         
       </div>
     </Fragment>
@@ -38,11 +38,14 @@ export function getStaticProps(context) {
   const { detail } = params;
   const detailPath = detail.slice(1).join('/');
   const postData = getPostData(`${detailPath}.mdx`);
-  console.log(postData);
+  const prevData = getPrevData(`${detailPath}.mdx`);
+  const nextData = getNextData(`${detailPath}.mdx`);
   return {
     props: {
       post: postData,
       category: detail[1],
+      prevData: prevData,
+      nextData: nextData,
     },
   };
 }
