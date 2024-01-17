@@ -6,7 +6,7 @@ import SideBar from '../sidebar/SideBar';
 const Navbar: React.FC = () => {
   const [sidebar, setSideBar] = useState(false);
   return (
-    <header className="w-full flex justify-center">
+    <header className="w-full flex justify-center sticky top-0 z-40 backdrop-blur-lg">
       <div className="flex w-full md:w-4/5 h-20 justify-between items-center">
         <div className="flex gap-24 items-center ml-8">
           <Link href = '/'><div className="font-bold font-kanit text-2xl">Phnml1</div></Link>

@@ -6,6 +6,7 @@ import { Fragment } from 'react';
 import { Post } from '@/.contentlayer/generated';
 import PostFooter from '@/components/detail/PostFooter';
 import Line from '@/components/Line';
+import ReadingProgressBar from '@/components/detail/ReadingProgressBar';
 
 export function PostDetailPage(props) {
   return (
@@ -14,7 +15,9 @@ export function PostDetailPage(props) {
         <title>{props.post.title}</title>
         <meta name="description" content={`${props.post.summary}`}></meta>
       </Head>
+      <ReadingProgressBar />
       <div className="mt-4 w-full md:w-4/5 px-8 flex flex-col items-center">
+      
         <PostHeader
           title={props.post.title}
           category={props.category}
