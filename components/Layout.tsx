@@ -25,7 +25,7 @@ export default function Layout({ children }: React.PropsWithChildren) {
     <Providers>
     <main className={cls(notoSansKr.className, opensans.variable, kanit.variable,'w-full relative flex flex-col items-center dark:bg-dark-primary dark:text-dark-primary transition-[background]')}>
       <Navbar />
-      <div className="w-full flex flex-col items-center mt-20 z-10">{children}</div>
+      <div className="w-full flex flex-col items-center z-10">{children}</div>
       {/* <Footer /> */}
     </main>
     </Providers>

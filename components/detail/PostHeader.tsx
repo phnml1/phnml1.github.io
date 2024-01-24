@@ -2,11 +2,13 @@ import { format } from 'date-fns';
 import Category from '../posts/Category';
 import Tag from '../posts/Tag';
 import Line from '../Line';
+import Clock from '@/public/posts/clock.svg';
 interface PostHeaderProps {
   title: string;
   category: string;
   date: string;
   tags: string[];
+  readingTime: number;
 }
 const PostHeader:React.FC <PostHeaderProps> = (props) => {
   const date = format(new Date(props.date),'yyyy년 MM월 dd일');
@@ -23,6 +25,7 @@ const PostHeader:React.FC <PostHeaderProps> = (props) => {
         </div>
         <div className="font-bold text-3xl md:text-5xl mt-4 text-center leading-snug md:leading-snug">{props.title}</div>
         <div className="text-md mt-6">{date}</div>
+        <div className='flex text-sm mt-2 items-center gap-1 text-neutral-600'><Clock width={20} height={20}/><span>{props.readingTime}분</span></div>
         <Line mt='6' />
       </div>
     

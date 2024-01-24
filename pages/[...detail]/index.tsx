@@ -23,6 +23,7 @@ export function PostDetailPage(props) {
           category={props.category}
           date={props.post.date}
           tags={props.post.tags}
+          readingTime = {props.post.readingMinutes}
         />
         <PostContent
           title={props.post.title}

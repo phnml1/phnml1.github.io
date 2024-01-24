@@ -22,15 +22,16 @@ export const Post = defineDocumentType(() => ({
   computedFields: {
     category: { type: 'string', resolve: (post) => `${post._raw.sourceFileDir}` },
     slug: { type: 'string', resolve: (post) => `/posts/${post._raw.flattenedPath}` },
+    readingMinutes: {
+      type: 'string',
+      resolve: (post) => Math.ceil(readingTime(post.body.raw).minutes),
+    },
+    wordCount: {
+      type: 'number',
+      resolve: (post) => post.body.raw.split(/\s+/gu).length,
+    },
   },
-  readingMinutes: {
-    type: 'string',
-    resolve: (post) => Math.ceil(readingTime(post.body.raw).minutes),
-  },
-  wordCount: {
-    type: 'number',
-    resolve: (post) => post.body.raw.split(/\s+/gu).length,
-  },
+  
 }));
 
 export default makeSource({
