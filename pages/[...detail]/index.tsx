@@ -16,7 +16,7 @@ export function PostDetailPage(props) {
         <meta name="description" content={`${props.post.summary}`}></meta>
       </Head>
       <ReadingProgressBar />
-      <div className="mt-4 w-full md:w-4/5 px-8 flex flex-col items-center">
+      <div className="mt-4 w-full md:w-4/5 px-8 flex flex-col items-center mb-16">
       
         <PostHeader
           title={props.post.title}
