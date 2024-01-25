@@ -15,7 +15,7 @@ const HomeIntro: React.FC = () => {
       break
   }
   return (
-    <div className="relative mt-4 w-full h-96 z-20 flex justify-center">
+    <div className="relative w-full h-96 z-20 flex justify-center">
       <div className="absolute inset-0 z-20" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}></div>
       <Image
         alt="daymode"

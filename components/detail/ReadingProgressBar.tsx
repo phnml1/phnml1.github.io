@@ -16,6 +16,6 @@ const ReadingProgressBar: React.FC = () => {
     window.addEventListener('scroll', scrollHeight);
     return () => window.removeEventListener('scroll', scrollHeight);
   }, []);
-  return <div className="fixed z-50 top-20 left-0 h-1 bg-gradient-to-r from-sky-500 to-indigo-500" style = {{width: `${width}%`}}></div>;
+  return <div className='fixed z-50 top-17 -mt-1 left-0 h-1 bg-gradient-to-r from-sky-500 to-indigo-500' style = {{width: `${width}%`}}></div>;
 };
 export default ReadingProgressBar
