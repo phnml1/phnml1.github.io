@@ -18,8 +18,6 @@ export default function PostsCategoryPage(props) {
         <div className='mb-8 '>
           <NavButton link="/posts" content="Show All Posts"/>
           </div>
-          <CategorySwiper content={props.categorys} />
-          
         </div>
         <div className="mt-16 text-3xl font-extrabold w-full mb-16 text-center">{props.currentCategory} ({props.posts.length})</div>
         <PostsContents contents = {props.posts}/>
