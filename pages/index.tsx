@@ -23,7 +23,7 @@ export default function Home(props) {
         }
         </div>
         <div className='w-full flex mt-16 mb-16 justify-center'>
-          <NavButton link="/posts" content="More Posts"/>
+          <NavButton link="/posts/all" content="More Posts"/>
         </div>
       </div>
     </main>

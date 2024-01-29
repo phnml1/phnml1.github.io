@@ -6,7 +6,13 @@ export const allCategorys = Array.from(new Set(posts.map((post) => (post.categor
 
 export const recentPosts = posts.slice(0,3);
 
-export const getPostsByCategory = (category:string) => (posts.filter(post => post.category == category));
+export const getPostsByCategory = (category:string) => {
+  if (category === 'all') {
+    return posts;
+  } else {
+    return posts.filter(post => post.category == category)
+  }
+};
 
 export const getPostData = (filePath:string) => (
   posts.filter((file:Post) => file._raw.sourceFilePath==filePath)[0]
