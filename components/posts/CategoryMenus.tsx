@@ -5,32 +5,34 @@ import Link from 'next/link';
 interface CategoryMenusProps {
   categorys: string[];
   currentCategory: string;
+  visible: boolean;
+  position: number;
 }
 
-const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategory }) => {
-  const [scroll, setScroll] = useState(window.scrollY);
+const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategory, position, visible }) => {
+  const [scroll, setScroll] = useState(0);
   const [mt, setMt] = useState('mt-0');
   const { resolvedTheme } = useTheme();
-  const [] = useState();
+  const [scrollPos,setScrollPos] = useState('top-20');
   const [scrollBg, setScrollBg] = useState('custom-scroll');
-  const [scrollpos, setScrollPos] = useState('');
-
+  const [scrollHeight, setScrollHeight] = useState('');
+  console.log(position);
   useEffect(() => {
-    const handleScroll = () => {
-      setScroll(window.scrollY);
-    };
-    window.addEventListener('scroll', handleScroll);
-    if (scroll > 0) {
-      setMt('-translate-y-4');
-      setScrollPos('h-12 overflow-x-auto');
+    if (!visible) {
+      setScrollPos('top-0');
     } else {
-      setMt('-translate-y-0');
-      setScrollPos('h-auto flex-wrap');
+      setScrollPos('top-20');
     }
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [scroll]);
+  }, [visible]);
+
+  useEffect(()=>{
+    if(position>200) {
+      setScrollHeight('h-12 overflow-x-auto');
+    }
+    else {
+      setScrollHeight('h-auto flex-wrap');
+    }
+  },[position])
 
   useEffect(() => {
     if (resolvedTheme == 'dark') {
@@ -40,11 +42,11 @@ const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategor
     }
   }, [resolvedTheme]);
   return (
-    <div className="sticky w-full top-20 h-auto flex items-end lg:w-72 lg:h-[calc(100vh-5rem)] bg-white dark:bg-dark-primary">
+    <div className={`sticky w-full ${scrollPos} transition-all h-auto flex items-end lg:w-72 lg:h-[calc(100vh-5rem)] bg-white dark:bg-dark-primary`}>
       <div className={`w-full ${mt} transition-all lg:absolute lg:top-16 lg:block`}>
         <div className="text-lg font-bold mt-4 text-center pr-2 hidden lg:block">Categories</div>
         <div
-          className={`${scrollBg} rounded-xl ${scrollpos} mb-1 w-full pr-2 flex items-center cursor-pointer overflow-y-hidden lg:overflow-y-auto lg:flex-nowrap mt-4 lg:overflow-x-hidden lg:flex-col lg:h-80`}
+          className={`${scrollBg} rounded-xl h-auto ${scrollHeight} mb-1 w-full pr-2 py-2 gap-2 flex items-center cursor-pointer overflow-y-hidden lg:overflow-y-auto lg:flex-nowrap mt-4 lg:overflow-x-hidden lg:flex-col lg:h-80`}
         >
           {(currentCategory!=='all') && (<Link
                 href = {`/posts/all`}

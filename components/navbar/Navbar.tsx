@@ -5,31 +5,20 @@ import Link from 'next/link';
 import SideBar from '../sidebar/SideBar';
 import Line from '../Line';
 
-const Navbar: React.FC = () => {
+interface NavBarProps {
+  visible: boolean;
+}
+const Navbar: React.FC<NavBarProps> = (props) => {
   const [sidebar, setSideBar] = useState(false);
   const [scrollHeight, setScrollHeight] = useState('translate-y-0');
-  const [position, setPosition] = useState(0);
-  const [visible, setVisible] = useState(true);
-
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [position]);
-
-  const handleScroll = useCallback(() => {
-    const moving = window.scrollY;
-    setVisible(position > moving);
-    setPosition(moving);
-  }, [position]);
-  useEffect(() => {
-    if(visible) {
-      setScrollHeight('translate-y-0');
+    if (props.visible) {
+    setScrollHeight('translate-y-0');
     } else {
       setScrollHeight('-translate-y-full');
     }
-  },[visible])
+  },[props.visible]);
+  console.log(scrollHeight);
   return (
     <header className={`w-full sticky top-0 z-40 ${scrollHeight} transition-all backdrop-blur-lg`}>
       <div className='w-full flex justify-center '>
