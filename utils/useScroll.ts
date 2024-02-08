@@ -12,8 +12,8 @@ const useScroll = () => {
 
   const handleScroll = useCallback(() => {
     const moving = window.scrollY;
-    if (moving>200) {
-      setVisible(position > moving);
+    if(moving>200) {
+      setVisible(moving < position);
     } else {
       setVisible(true);
     }
