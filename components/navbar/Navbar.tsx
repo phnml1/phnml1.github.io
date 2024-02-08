@@ -18,7 +18,7 @@ const Navbar: React.FC<NavBarProps> = (props) => {
       setScrollHeight('-translate-y-full');
     }
   },[props.visible]);
-  console.log(scrollHeight);
+
   return (
     <header className={`w-full sticky top-0 z-40 ${scrollHeight} transition-all backdrop-blur-lg`}>
       <div className='w-full flex justify-center '>

@@ -16,9 +16,9 @@ export default function PostLayout(props) {
         <meta name="description" content={`${props.currentCategory}의 카테고리와 관련한 글 모두 보여주기`} />
       </Head>
       <Navbar visible={visible}/>
-      <div className='w-full h-auto flex items-start justify-center gap-8 mb-8 md:w-4/5 pl-8 pr-8 flex-col lg:flex-row lg:gap-16'>
+      <div className='w-full relative h-auto flex items-start justify-center mb-8 md:w-4/5 pl-8 pr-8 flex-col'>
       <CategoryMenus currentCategory={props.currentCategory} categorys = {props.categorys} visible={visible} position={position}/>
-      <div className='w-full h-auto'>
+      <div className='w-full h-auto mt-16'>
 
         <div className="mt-16 text-3xl font-extrabold w-full ml-5 mb-16">{
         (props.currentCategory==='all')? 'All Posts':props.currentCategory} ({props.posts.length})</div>
