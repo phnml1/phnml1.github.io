@@ -8,7 +8,7 @@ import Layout from '@/components/layouts/Layout';
 import NavBar from '@/components/navbar/Navbar';
 import useScroll from '@/utils/useScroll';
 export default function Home(props) {
-  const {visible} = useScroll();
+  const {visible} = useScroll('home');
   return (
     <Layout>
       <NavBar visible = {visible}/>

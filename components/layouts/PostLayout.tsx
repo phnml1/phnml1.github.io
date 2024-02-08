@@ -7,7 +7,7 @@ import Navbar from "../navbar/Navbar";
 import useScroll from "@/utils/useScroll";
 
 export default function PostLayout(props) {
-  const {visible,position} = useScroll();
+  const {visible,position} = useScroll('post');
   return (
     <Layout>
       <Fragment>
