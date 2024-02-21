@@ -4,20 +4,35 @@ import SideBarButton from './components/SideBarButton';
 import Link from 'next/link';
 import SideBar from '../sidebar/SideBar';
 import Line from '../Line';
-
-interface NavBarProps {
-  visible: boolean;
-}
-const Navbar: React.FC<NavBarProps> = (props) => {
+const Navbar: React.FC = () => {
   const [sidebar, setSideBar] = useState(false);
   const [scrollHeight, setScrollHeight] = useState('translate-y-0');
+  const [position, setPosition] = useState(0);
+  const [visible, setVisible] = useState(true);
+  const handleScroll = useCallback(() => {
+    
+    const moving = window.scrollY;
+    if(moving>200) {
+      setVisible(moving < position);
+    } else {
+      setVisible(true);
+    }
+    setPosition(moving);
+  }, [position]);
+
   useEffect(() => {
-    if (props.visible) {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleScroll]);
+  useEffect(() => {
+    if (visible) {
     setScrollHeight('translate-y-0');
     } else {
       setScrollHeight('-translate-y-full');
     }
-  },[props.visible]);
+  },[visible]);
 
   return (
     <header className={`w-full sticky top-0 z-40 ${scrollHeight} transition-all backdrop-blur-lg`}>

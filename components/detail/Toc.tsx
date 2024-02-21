@@ -1,6 +1,6 @@
-import useObservation from '@/utils/useObservation';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+'use client'
+import useObservation, { ObservationType } from '@/utils/useObservation';
+import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 
 interface PostContentProps {
   title: string;
@@ -14,10 +14,8 @@ const TOC: React.FC<PostContentProps> = (props) => {
     const headingElements: HTMLElement[] = Array.from(document.querySelectorAll('h1,h2,h3'));
     setHeadingEls(headingElements);
     setCurrentId('');
-   }, [props.slug]);
-
+   }, []);
   useObservation(setCurrentId,headingEls);
-
   return (
     <div className="mt-12 ml-auto relative hidden lg:block">
       <div className="sticky top-32 w-60">
