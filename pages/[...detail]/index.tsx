@@ -5,9 +5,8 @@ import PostDetailLayout from '@/components/layouts/PostDetailLayout';
 
 export function PostDetailPage(props) {
   return (
-    <Layout>
-      <PostDetailLayout post={props.post} category = {props.category} prevData = {props.prevData} nextData={props.nextData}/>
-    </Layout>
+      <PostDetailLayout post={props.post} category = {props.category} prevData = {props.prevData} nextData={props.nextData}>
+      </PostDetailLayout>
   );
 }
 export function getStaticProps(context) {

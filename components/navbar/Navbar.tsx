@@ -4,8 +4,10 @@ import SideBarButton from './components/SideBarButton';
 import Link from 'next/link';
 import SideBar from '../sidebar/SideBar';
 import Line from '../Line';
-const Navbar: React.FC = () => {
-  const [sidebar, setSideBar] = useState(false);
+interface NavBarProps {
+  setSideBar: React.Dispatch<React.SetStateAction<boolean>>;
+}
+const Navbar: React.FC<NavBarProps> = ({setSideBar}) => {
   const [scrollHeight, setScrollHeight] = useState('translate-y-0');
   const [position, setPosition] = useState(0);
   const [visible, setVisible] = useState(true);
@@ -47,8 +49,9 @@ const Navbar: React.FC = () => {
           <SideBarButton setSideBar = {setSideBar}/>
         </div>
       </div>
+      
       </div>
-      {sidebar && (<SideBar setSideBar={setSideBar}/>)}
+      
       <Line mt='0'/>
     </header>
   );

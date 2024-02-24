@@ -25,27 +25,29 @@ const SideBar: React.FC<SidebarProps> = (props: SidebarProps) => {
 
   return (
     <div
-      className="fixed z-40 flex justify-center items-start top-0 left-0 bottom-0 right-0 bg-black bg-opacity-40"
+      className="fixed z-40 flex top-0 left-0 right-0 bottom-0 justify-center items-center bg-black bg-opacity-40"
       onClick={handleOutsideClick}
       style={{ padding: '12vh 16px' }}
     >
       <div
         ref={sideBarRef}
-        className="relative w-full flex flex-col items-center justify-center max-w-2xl h-full bg-white bg-rounded-lg shadow-xl transition-all z-50 transform-gpu dark:bg-dark-primary"
+        className="w-full flex flex-col items-center justify-center max-w-2xl h-full bg-white rounded-lg shadow-xl transition-all z-50 transform-gpu dark:bg-dark-primary"
       >
         <div className="w-full h-full my-2 flex flex-col items-start overflow-auto">
-          <SideBarLinks
-            theme="Category"
-            setSideBar={props.setSideBar}
-            contents={allCategorys}
-          />
           <SideBarLinks
             theme="Page"
             setSideBar={props.setSideBar}
             contents={[
-              '메인',
-              '모든 포스트'
+              'Main',
+              'Category',
+              'Tag',
+              'Search'
             ]}
+          />
+          <SideBarLinks
+            theme="contact"
+            setSideBar={props.setSideBar}
+            contents={['Email','Github']}
           />
           <SideBarLinks
             theme="preference"
@@ -61,11 +63,8 @@ const SideBar: React.FC<SidebarProps> = (props: SidebarProps) => {
               <br /> 이주영 이라고 합니다.
             </div>
             <div className="mt-4 w-full flex flex-col items-center text-gray-400 dark:text-dark-primary">
-              <div className="w-1/2 mt-2 text-center text-sm ">
+              <div className="w-1/2 mt-2 text-center text-sm mb-8">
                 한국공학대학교 3학년
-              </div>
-              <div className="w-1/2 mt-2 mb-4 text-center text-sm text-gray-400">
-                juyung0903@gmail.com
               </div>
             </div>
           </div>
