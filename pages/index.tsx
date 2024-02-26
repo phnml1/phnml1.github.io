@@ -8,10 +8,8 @@ import Layout from '@/components/layouts/Layout';
 import NavBar from '@/components/navbar/Navbar';
 import useScroll from '@/utils/useScroll';
 export default function Home(props) {
-  const {visible} = useScroll('home');
   return (
     <Layout>
-      <NavBar visible = {visible}/>
       <main className={`flex min-h-screen flex-col items-center w-full `}>
         <Head>
           <title>phnml1{`'`}s blog</title>

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import SideBarLinks from './components/SideBarLinks';
 import { allCategorys } from '@/utils/Post-Util';
+import { useTheme } from 'next-themes';
 
 interface SidebarProps {
   setSideBar: React.Dispatch<React.SetStateAction<boolean>>;
@@ -8,7 +9,15 @@ interface SidebarProps {
 
 const SideBar: React.FC<SidebarProps> = (props: SidebarProps) => {
   const sideBarRef = useRef<HTMLDivElement | null>(null);
-
+  const [scrollbg, setScrollBg] = useState('custom-scroll');
+  const {resolvedTheme} = useTheme();
+  useEffect(() => {
+    if (resolvedTheme == 'dark') {
+      setScrollBg('custom-scroll-dark');
+    } else {
+      setScrollBg('custom-scroll');
+    }
+  }, [resolvedTheme]);
 
   const handleOutsideClick = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
     if (sideBarRef.current && !sideBarRef.current.contains(e.target as Node)) {
@@ -33,7 +42,7 @@ const SideBar: React.FC<SidebarProps> = (props: SidebarProps) => {
         ref={sideBarRef}
         className="w-full flex flex-col items-center justify-center max-w-2xl h-full bg-white rounded-lg shadow-xl transition-all z-50 transform-gpu dark:bg-dark-primary"
       >
-        <div className="w-full h-full my-2 flex flex-col items-start overflow-auto">
+        <div className={`${scrollbg} w-full h-full px-2 my-2 flex flex-col items-start overflow-auto`}>
           <SideBarLinks
             theme="Page"
             setSideBar={props.setSideBar}
@@ -45,12 +54,12 @@ const SideBar: React.FC<SidebarProps> = (props: SidebarProps) => {
             ]}
           />
           <SideBarLinks
-            theme="contact"
+            theme="Contact"
             setSideBar={props.setSideBar}
             contents={['Email','Github']}
           />
           <SideBarLinks
-            theme="preference"
+            theme="Preference"
             setSideBar={props.setSideBar}
             contents={['다크 모드']}
           />
