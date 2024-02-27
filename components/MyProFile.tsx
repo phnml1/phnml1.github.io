@@ -2,6 +2,7 @@ import Image from 'next/image';
 import GithubIcon from '@/public/profile/github-mark.svg';
 import GmailIcon from '@/public/profile/gmail-icon.svg';
 import Link from 'next/link';
+import { github } from '@/Constants';
 const MyProFile: React.FC = () => {
   return (
     <div className="p-12 flex gap-4 justify-center items-center">
@@ -22,7 +23,7 @@ const MyProFile: React.FC = () => {
           </div>
         </div>
         <div className="w-full flex gap-2">
-          <Link href="https://github.com/phnml1" target="_blank">
+          <Link href={`${github.link}`} target="_blank">
             <GithubIcon
               width="25"
               height="25"

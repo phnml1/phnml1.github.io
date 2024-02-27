@@ -17,7 +17,9 @@ module.exports = {
       },
       backgroundColor: {
         'dark-primary': '#171717',
-        'dark-secondary': '#262626'
+        'dark-secondary': '#262626',
+        'tag-hover': '#e5e5e5',
+        'tag-dark-hover': '#363636'
       },
       colors: {
         'dark-primary': '#e5e5e5',
@@ -26,6 +28,9 @@ module.exports = {
       borderColor: {
         'darkdetailnav': '#4d4d4d',
         'detailnav': '#dee2e6',
+      },
+      dropShadow: {
+        'tag-hover': '0px 0px 10px rgba(99, 102, 241, .5)'
       },
       typography: ({ theme }) => ({
         invert: {
@@ -48,6 +53,7 @@ module.exports = {
   },
   plugins: [
     require('@tailwindcss/typography'),
+    require('tailwind-scrollbar'),
     // ...
   ],
   darkMode: 'class',

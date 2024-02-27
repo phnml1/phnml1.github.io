@@ -3,9 +3,7 @@ import Layout from "./Layout";
 import Head from "next/head";
 import CategoryMenus from "../posts/CategoryMenus";
 import PostsContents from "../posts/PostsContents";
-import Navbar from "../navbar/Navbar";
 import useScroll from "@/utils/useScroll";
-import SideBar from "../sidebar/SideBar";
 
 export default function PostLayout(props) {
   const {visible,position} = useScroll('post');
@@ -14,7 +12,7 @@ export default function PostLayout(props) {
     <Layout>
       <Fragment>
       <Head>
-        <title>{props.currentCategory}</title>
+        <title>phnml1{`'`}s blog</title>
         <meta name="description" content={`${props.currentCategory}의 카테고리와 관련한 글 모두 보여주기`} />
       </Head>
       {/* <Navbar setSideBar={setSideBar}/> */}

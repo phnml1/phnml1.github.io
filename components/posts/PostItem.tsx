@@ -9,8 +9,8 @@ interface PostsContentsProps {
 const PostItem: React.FC<PostsContentsProps> = (props) => {
   const date = format(new Date(props.content.date),'yyyy년 MM월 dd일')
   return (
-    <Link href={`/${props.content.slug}`} className="w-full h-auto cursor-pointer">
-      <div className="w-full ml-2 ">
+    <Link href={`/${props.content.slug}`} className="w-full h-auto cursor-pointer transition-all hover:drop-shadow-tag-hover">
+      <div className="w-full ml-2 transition-all dark:hover:drop-shadow-tag-hover">
         <div className="text-2xl font-bold">{props.content.title}</div>
         <div className="mt-8">{props.content.summary}</div>
         <div className="mt-8 flex justify-between flex-wrap gap-4 flex-col sm:flex-row">

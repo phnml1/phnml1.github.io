@@ -40,7 +40,7 @@ const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategor
     }
   }, [resolvedTheme]);
   return (
-    <div className={`sticky w-full ${scrollPos} transition-all h-auto flex items-end left-0 right-0 bg-white dark:bg-dark-primary`}>
+    <div className={`sticky w-full ${scrollPos} transition-all z-40 h-auto flex items-end left-0 right-0 bg-white dark:bg-dark-primary`}>
       <div className={`w-full h-auto ${mt} transition-all top-0`}>
         <div
           className={`top-0 ${scrollBg} rounded-xl h-auto ${scrollHeight} mb-1 w-full pr-2 py-2 gap-2 flex items-center cursor-pointer`}
