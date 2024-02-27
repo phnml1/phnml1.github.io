@@ -14,7 +14,7 @@ const TOC: React.FC<PostContentProps> = (props) => {
     const headingElements: HTMLElement[] = Array.from(document.querySelectorAll('h1,h2,h3'));
     setHeadingEls(headingElements);
     setCurrentId('');
-   }, []);
+   }, [props.slug]);
   useObservation(setCurrentId,headingEls);
   return (
     <div className="mt-12 ml-auto relative hidden lg:block">
