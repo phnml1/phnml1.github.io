@@ -7,7 +7,7 @@ import PostLayout from '@/components/layouts/PostLayout';
 
 export default function PostsCategoryPage(props) {
   return (
-    <PostLayout currentCategory={props.currentCategory} posts = {props.posts} categorys={props.categorys}>
+    <PostLayout currentCategory={props.currentCategory} posts = {props.posts} categorys={props.categorys} theme='category'>
     </PostLayout>
   );
 }

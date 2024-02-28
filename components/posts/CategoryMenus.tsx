@@ -7,10 +7,11 @@ interface CategoryMenusProps {
   categorys: string[];
   currentCategory: string;
   visible: boolean;
-  position: number
+  position: number;
+  theme: string;
 }
 
-const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategory, visible,position }) => {
+const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategory, visible, position, theme }) => {
   const [mt, setMt] = useState('mt-0');
   const { resolvedTheme } = useTheme();
   const [scrollPos,setScrollPos] = useState('top-20');
@@ -39,8 +40,16 @@ const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategor
       setScrollBg('custom-scroll');
     }
   }, [resolvedTheme]);
+
+  const categoryLink = (category:string):string => {
+    if(theme === 'tag') {
+      return `/posts/tag/${category}`;
+    } else {
+      return `/posts/${category}`
+    }
+  }
   return (
-    <div className={`sticky w-full ${scrollPos} transition-all z-40 h-auto flex items-end left-0 right-0 bg-white dark:bg-dark-primary`}>
+    <div className={`sticky w-full ${scrollPos} transition-all z-40 h-auto flex items-end left-0 right-0 backdrop-blur-lg border-r-0`}>
       <div className={`w-full h-auto ${mt} transition-all top-0`}>
         <div
           className={`top-0 ${scrollBg} rounded-xl h-auto ${scrollHeight} mb-1 w-full pr-2 py-2 gap-2 flex items-center cursor-pointer`}
@@ -56,7 +65,7 @@ const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategor
             if (a==currentCategory) {
             return (
               <Link
-                href = {`/posts/${a}`}
+                href = {`${categoryLink(a)}`}
                 key={i}
                 className="transition-all rounded-lg w-auto text-xs md:text-sm lg:text-md lg:w-48 text-center flex-wrap py-2 px-2 my-2 mx-2 bg-[#2196f3] text-white dark:bg-[#2196f3]"
               >
@@ -66,7 +75,7 @@ const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategor
             } else {
               return (
                 <Link
-                href = {`/posts/${a}`}
+                href = {`${categoryLink(a)}`}
                 key={i}
                 className="transition-all rounded-lg w-auto text-xs md:text-sm lg:text-md lg:w-48 text-center flex-wrap py-2 px-2 my-2 mx-2 bg-slate-100 hover:bg-[#2196f3] hover:text-white dark:bg-dark-secondary dark:hover:bg-[#2196f3]"
               >

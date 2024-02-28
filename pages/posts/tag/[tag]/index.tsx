@@ -3,7 +3,7 @@ import PostLayout from '@/components/layouts/PostLayout';
 
 export default function PostTagPage(props) {
   return (
-    <PostLayout currentCategory={props.currentTag} categorys={props.tags} posts = {props.posts}>
+    <PostLayout currentCategory={props.currentTag} categorys={props.tags} posts = {props.posts} theme='tag'>
     </PostLayout>
   );
 }
@@ -25,6 +25,7 @@ export function getStaticProps(context) {
 
 export function getStaticPaths() {
   const tags = allTags;
+  tags.push('all');
   return {
     paths: tags.map(tag => ({params: {tag:tag}})),
     fallback: false,
