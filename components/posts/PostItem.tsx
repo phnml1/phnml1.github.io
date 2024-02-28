@@ -11,15 +11,15 @@ const PostItem: React.FC<PostsContentsProps> = (props) => {
   return (
     <Link href={`/${props.content.slug}`} className="w-full h-auto cursor-pointer transition-all hover:drop-shadow-tag-hover">
       <div className="w-full ml-2 transition-all dark:hover:drop-shadow-tag-hover">
-        <div className="text-2xl font-bold">{props.content.title}</div>
-        <div className="mt-8">{props.content.summary}</div>
+        <div className="text-2xl font-bold sm:text-lg">{props.content.title}</div>
+        <div className="mt-8 sm:text-sm">{props.content.summary}</div>
         <div className="mt-8 flex justify-between flex-wrap gap-4 flex-col sm:flex-row">
         <div className="flex gap-4">
         {props.content.tags.map ((a,i) => (
           <Tag key = {i} name = {a}/>
         ))}
         </div>
-        <div className="mr-12">
+        <div className="mr-12 sm:text-sm">
           {date}
         </div>
         </div>

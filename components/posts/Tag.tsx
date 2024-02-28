@@ -5,7 +5,7 @@ interface TagProps {
 }
 const Tag:React.FC<TagProps> = (props) => {
   return (
-    <Link href={`/posts/${props.name}`} className='w-fit h-fit px-2 py-1 transition-all bg-gray-100 rounded-lg text-sm dark:bg-dark-secondary dark:hover:text-white hover:bg-tag-hover dark:hover:bg-tag-dark-hover'>
+    <Link href={`/posts/tag/${props.name}`} className='w-fit h-fit px-2 py-1 transition-all bg-gray-100 rounded-lg text-sm dark:bg-dark-secondary dark:hover:text-white hover:bg-tag-hover dark:hover:bg-tag-dark-hover'>
       {props.name}
     </Link>
   )

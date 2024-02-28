@@ -14,6 +14,9 @@ export const getPostsByCategory = (category:string) => {
   }
 };
 
+export const getPostsByTags = (tag:string) => {
+  return posts.filter(post => post.tags.includes(tag));
+}
 export const getPostData = (filePath:string) => (
   posts.filter((file:Post) => file._raw.sourceFilePath==filePath)[0]
 )
@@ -55,6 +58,13 @@ export const getNextData = (filePath:string) => {
     }
   }
 }
+
+export const allTags = Array.from(
+  posts.reduce((ac, v) => {
+    v.tags.forEach((tag) => ac.add(tag));
+    return ac;
+  }, new Set<string>([])),
+).filter(Boolean);
 // const matter = require('gray-matter');
 
 // const dir = 'posts';

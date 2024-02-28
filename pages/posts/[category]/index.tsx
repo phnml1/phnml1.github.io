@@ -1,7 +1,7 @@
 import { Fragment, useState } from 'react';
 import Head from 'next/head';
 import PostsContents from '@/components/posts/PostsContents';
-import { getPostsByCategory, allCategorys } from '@/utils/Post-Util';
+import { getPostsByCategory, allCategorys, allTags } from '@/utils/Post-Util';
 import CategoryMenus from '@/components/posts/CategoryMenus';
 import PostLayout from '@/components/layouts/PostLayout';
 

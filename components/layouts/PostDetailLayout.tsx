@@ -1,4 +1,3 @@
-import useScroll from "@/utils/useScroll";
 import Layout from "./Layout";
 import { Fragment } from "react";
 import Head from "next/head";
@@ -7,8 +6,6 @@ import PostHeader from "../detail/PostHeader";
 import PostContent from "../detail/PostContent";
 import Line from "../Line";
 import PostFooter from "../detail/PostFooter";
-import Navbar from "../navbar/Navbar";
-
 export default function PostDetailLayout(props) {
   return (<Layout>
     <Fragment>
