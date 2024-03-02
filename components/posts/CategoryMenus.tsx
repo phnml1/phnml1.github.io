@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import Line from '../Line';
@@ -6,18 +6,32 @@ import Line from '../Line';
 interface CategoryMenusProps {
   categorys: string[];
   currentCategory: string;
-  visible: boolean;
-  position: number;
   theme: string;
 }
 
-const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategory, visible, position, theme }) => {
+const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategory, theme }) => {
   const [mt, setMt] = useState('mt-0');
   const { resolvedTheme } = useTheme();
   const [scrollPos,setScrollPos] = useState('top-20');
   const [scrollBg, setScrollBg] = useState('custom-scroll');
   const [scrollHeight, setScrollHeight] = useState('');
-
+  const [position, setPosition] = useState(0);
+  const [visible, setVisible] = useState(true);
+  const handleScroll = useCallback(() => {
+    const moving = window.scrollY;
+    if(moving>200) {
+      setVisible(moving < position);
+    } else {
+      setVisible(true);
+    }
+    setPosition(moving);
+  },[position]);
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleScroll]);
   useEffect(()=>{
     if(!visible) {
       setScrollPos('top-0');
@@ -49,10 +63,10 @@ const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategor
     }
   }
   return (
-    <div className={`sticky w-full ${scrollPos} transition-all z-40 h-auto flex items-end left-0 right-0 backdrop-blur-lg border-r-0`}>
+    <div className={`sticky w-full ${scrollPos} transition-all pl-8 pr-8 md:w-4/5 z-40 h-auto flex items-end left-0 right-0 backdrop-blur-lg border-r-0`}>
       <div className={`w-full h-auto ${mt} transition-all top-0`}>
         <div
-          className={`top-0 ${scrollBg} rounded-xl h-auto ${scrollHeight} mb-1 w-full pr-2 py-2 gap-2 flex items-center cursor-pointer`}
+          className={`top-0 ${scrollBg} rounded-xl h-auto ${scrollHeight} mb-1 w-full pr-2 py-2 gap-2 flex justify-center items-center cursor-pointer`}
         >
           {(currentCategory!=='all') && (<Link
                 href = {`/posts/all`}

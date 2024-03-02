@@ -15,7 +15,11 @@ export const getPostsByCategory = (category:string) => {
 };
 
 export const getPostsByTags = (tag:string) => {
+  if (tag === 'all') {
+    return posts;
+  } else {
   return posts.filter(post => post.tags.includes(tag));
+}
 }
 export const getPostData = (filePath:string) => (
   posts.filter((file:Post) => file._raw.sourceFilePath==filePath)[0]

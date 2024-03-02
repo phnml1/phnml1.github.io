@@ -1,10 +1,15 @@
 import { allTags, getPostsByTags } from '@/utils/Post-Util';
 import PostLayout from '@/components/layouts/PostLayout';
+import Layout from '@/components/layouts/Layout';
+import CategoryMenus from '@/components/posts/CategoryMenus';
 
 export default function PostTagPage(props) {
   return (
+    <Layout>
+      <CategoryMenus currentCategory={props.currentTag} categorys={props.tags} theme='tag'/>
     <PostLayout currentCategory={props.currentTag} categorys={props.tags} posts = {props.posts} theme='tag'>
     </PostLayout>
+    </Layout>
   );
 }
 

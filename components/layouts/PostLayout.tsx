@@ -7,25 +7,17 @@ import useScroll from '@/utils/useScroll';
 import NavButton from '../NavButton';
 
 export default function PostLayout(props) {
-  const { visible, position } = useScroll('post');
   return (
-    <Layout>
       <Fragment>
         <Head>
           <title>phnml1{`'`}s blog</title>
           <meta
             name="description"
-            content={`${props.currentCategory}의 카테고리와 관련한 글 모두 보여주기`}
+            content={`${props.currentCategory}와 관련한 글 모두 보여주기`}
           />
         </Head>
         <div className="w-full relative h-auto flex items-start justify-center mb-8 md:w-4/5 pl-8 pr-8 flex-col">
-          <CategoryMenus
-            theme={props.theme}
-            currentCategory={props.currentCategory}
-            categorys={props.categorys}
-            visible={visible}
-            position={position}
-          />
+          
           <div className="w-full flex justify-center mt-6">
             <NavButton link={`/posts/${(props.theme==='category')?'tag/all':'all'}`} content={`Show Posts by ${(props.theme==='category')?'Tag':'Category'}`} />
           </div>
@@ -39,6 +31,5 @@ export default function PostLayout(props) {
           </div>
         </div>
       </Fragment>
-    </Layout>
   );
 }

@@ -1,14 +1,15 @@
-import { Fragment, useState } from 'react';
-import Head from 'next/head';
-import PostsContents from '@/components/posts/PostsContents';
-import { getPostsByCategory, allCategorys, allTags } from '@/utils/Post-Util';
+import { getPostsByCategory, allCategorys, } from '@/utils/Post-Util';
 import CategoryMenus from '@/components/posts/CategoryMenus';
 import PostLayout from '@/components/layouts/PostLayout';
+import Layout from '@/components/layouts/Layout';
 
 export default function PostsCategoryPage(props) {
   return (
-    <PostLayout currentCategory={props.currentCategory} posts = {props.posts} categorys={props.categorys} theme='category'>
+    <Layout>
+      <CategoryMenus currentCategory={props.currentCategory} categorys={props.categorys} theme='category'/>
+    <PostLayout currentCategory={props.currentCategory} posts = {props.posts} theme='category'>
     </PostLayout>
+    </Layout>
   );
 }
 
