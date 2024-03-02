@@ -12,7 +12,9 @@ interface SideBarLinksProps {
 }
 const PageLinksObj = {
   'Category': '/posts/all',
+  'Tag': '/posts/tag/all',
   'Main': '/',
+  'Search': '/posts/search'
 };
 
 const SideBarLinks: React.FC<SideBarLinksProps> = (props: SideBarLinksProps) => {

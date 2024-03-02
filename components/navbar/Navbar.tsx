@@ -1,9 +1,10 @@
-import React, { SetStateAction, useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import SearchButton from './components/SearchButton'  
 import DarkModeButton from './components/DarkModeButton';
 import SideBarButton from './components/SideBarButton';
 import Link from 'next/link';
-import SideBar from '../sidebar/SideBar';
 import Line from '../Line';
+import { useTheme } from 'next-themes';
 interface NavBarProps {
   setSideBar: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -11,6 +12,7 @@ const Navbar: React.FC<NavBarProps> = ({setSideBar}) => {
   const [scrollHeight, setScrollHeight] = useState('translate-y-0');
   const [position, setPosition] = useState(0);
   const [visible, setVisible] = useState(true);
+  const {resolvedTheme} = useTheme();
   const handleScroll = useCallback(() => {
     
     const moving = window.scrollY;
@@ -45,8 +47,9 @@ const Navbar: React.FC<NavBarProps> = ({setSideBar}) => {
           <Link href = '/posts/all' className='text-lg hidden md:block'>이주영의 개발 블로그</Link>
         </div>
         <div className='mr-8 flex gap-2'>
+          <SearchButton setSideBar = {setSideBar} theme={resolvedTheme}/>
           <DarkModeButton/>
-          <SideBarButton setSideBar = {setSideBar}/>
+          <SideBarButton setSideBar = {setSideBar} theme={resolvedTheme}/>
         </div>
       </div>
       
