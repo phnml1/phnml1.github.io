@@ -1,9 +1,6 @@
-import { Fragment, useState } from 'react';
-import Layout from './Layout';
+import { Fragment } from 'react';
 import Head from 'next/head';
-import CategoryMenus from '../posts/CategoryMenus';
 import PostsContents from '../posts/PostsContents';
-import useScroll from '@/utils/useScroll';
 import NavButton from '../NavButton';
 
 export default function PostLayout(props) {
@@ -22,15 +19,19 @@ export default function PostLayout(props) {
             <NavButton link={`/posts/${(props.theme==='category')?'tag/all':'all'}`} content={`Show Posts by ${(props.theme==='category')?'Tag':'Category'}`} />
           </div>
           <div className="w-full h-auto mt-10">
-            {
-            (props.theme != 'search') && (
-            <div className="mt-16 text-3xl font-extrabold w-full ml-5 mb-16">
-              {props.currentCategory === 'all' ? 'All Posts' : props.currentCategory} (
+          
+            <div className="mt-16 text-3xl font-extrabold w-full ml-5 mb-16 flex gap-2">
+              <div>
+              {props.currentCategory === 'all' ? 'All Posts' : props.currentCategory}
+              {(props.theme == 'search') && 'Filtered Posts'}
+              </div>
+              
+              <div>
+               (
               {props.posts.length})
               
               </div>
-            )
-            }
+            </div>
             <PostsContents contents={props.posts} />
           </div>
         </div>
