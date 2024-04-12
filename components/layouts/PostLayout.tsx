@@ -15,9 +15,6 @@ export default function PostLayout(props) {
         </Head>
         <div className="w-full relative h-auto flex items-start justify-center mb-8 md:w-4/5 px-8 flex-col">
           
-          <div className="w-full flex justify-center mt-6">
-            <NavButton link={`/posts/${(props.theme==='category')?'tag/all':'all'}`} content={`Show Posts by ${(props.theme==='category')?'Tag':'Category'}`} />
-          </div>
           <div className="w-full h-auto mt-10">
           
             <div className="mt-16 text-3xl font-extrabold w-full ml-5 mb-16 flex gap-2">
