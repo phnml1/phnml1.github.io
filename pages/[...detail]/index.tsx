@@ -1,6 +1,5 @@
 import { getNextData, getPostData, getPrevData, posts } from '@/utils/Post-Util';
 import { Post } from '@/.contentlayer/generated';
-import Layout from '@/components/layouts/Layout';
 import PostDetailLayout from '@/components/layouts/PostDetailLayout';
 
 export function PostDetailPage(props) {

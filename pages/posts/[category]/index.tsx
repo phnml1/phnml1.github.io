@@ -5,7 +5,6 @@ import Layout from '@/components/layouts/Layout';
 import BlogIntroduce from '@/components/posts/BlogIntroduce';
 
 export default function PostsCategoryPage(props) {
-  console.log(props.categorys);
   return (
     <Layout>
       <BlogIntroduce />

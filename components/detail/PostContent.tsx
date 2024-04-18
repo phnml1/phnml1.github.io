@@ -1,4 +1,3 @@
-import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
@@ -8,6 +7,7 @@ import css from 'react-syntax-highlighter/dist/cjs/languages/prism/css';
 import { useMDXComponent } from 'next-contentlayer/hooks'
 import TOC from './Toc';
 import Link from 'next/link';
+
 SyntaxHighlighter.registerLanguage('js', js);
 SyntaxHighlighter.registerLanguage('css', css);
 SyntaxHighlighter.registerLanguage('python', python);

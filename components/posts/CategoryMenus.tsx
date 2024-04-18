@@ -1,7 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useTheme } from 'next-themes';
 import Link from 'next/link';
-import Line from '../Line';
 
 interface CategoryMenusProps {
   categorys: string[];
@@ -10,8 +7,6 @@ interface CategoryMenusProps {
 }
 
 const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategory, theme }) => {
-  const [mt, setMt] = useState('mt-0');
-  const { resolvedTheme } = useTheme();
   const categoryLink = (category: string): string => {
     if (theme === 'tag') {
       return `/posts/tag/${category}`;

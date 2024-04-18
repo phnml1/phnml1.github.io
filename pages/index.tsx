@@ -1,12 +1,10 @@
-import Image from 'next/image';
 import FeaturedPosts from '@/components/home/FeaturedPost';
 import Head from 'next/head';
 import NavButton from '@/components/NavButton';
 import { recentPosts } from '@/utils/Post-Util';
 import HomeIntro from '@/components/home/HomeIntro';
 import Layout from '@/components/layouts/Layout';
-import NavBar from '@/components/navbar/Navbar';
-import useScroll from '@/utils/useScroll';
+
 export default function Home(props) {
   return (
     <Layout>

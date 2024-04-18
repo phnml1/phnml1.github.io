@@ -1,5 +1,5 @@
-import RightArrow from '@/public/rightarrow.svg'
 import Link from 'next/link';
+
 interface NavButtonProps {
   link: string;
   content: string;

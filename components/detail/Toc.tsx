@@ -1,6 +1,6 @@
 'use client'
-import useObservation, { ObservationType } from '@/utils/useObservation';
-import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
+import useObservation from '@/utils/useObservation';
+import { useEffect, useState } from 'react';
 
 interface PostContentProps {
   title: string;

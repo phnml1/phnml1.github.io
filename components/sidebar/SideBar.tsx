@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import SideBarLinks from './components/SideBarLinks';
-import { allCategorys } from '@/utils/Post-Util';
 import { useTheme } from 'next-themes';
 
 interface SidebarProps {

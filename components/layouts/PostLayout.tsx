@@ -1,7 +1,6 @@
 import { Fragment } from 'react';
 import Head from 'next/head';
 import PostsContents from '../posts/PostsContents';
-import NavButton from '../NavButton';
 
 export default function PostLayout(props) {
   return (

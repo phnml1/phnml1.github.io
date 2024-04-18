@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Footer from '../Footer';
 import Navbar from '../navbar/Navbar';
 import { cls } from '@/utils/Utils';
