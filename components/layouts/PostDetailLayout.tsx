@@ -7,6 +7,7 @@ import PostContent from "../detail/PostContent";
 import Line from "../Line";
 import PostFooter from "../detail/PostFooter";
 export default function PostDetailLayout(props) {
+  console.log(props.post);
   return (<Layout>
     <Fragment>
       <Head>
@@ -25,7 +26,7 @@ export default function PostDetailLayout(props) {
         />
         <PostContent
           title={props.post.title}
-          content={props.post.body.code}
+          content={props.post.content}
           slug={props.post.slug}
         />
         <Line mt='8'/>

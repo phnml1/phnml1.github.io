@@ -1,8 +1,16 @@
-import { getNextData, getPostData, getPrevData, posts } from '@/utils/Post-Util';
-import { Post } from '@/.contentlayer/generated';
+// import { getNextData, getPostData, getPrevData, posts } from '@/utils/Post-Util';
+// import { Post } from '@/.contentlayer/generated';
 import PostDetailLayout from '@/components/layouts/PostDetailLayout';
-
-export function PostDetailPage(props) {
+import { Post } from '@/types';
+import { getAllPosts, getNextData, getPostData, getPrevData, } from '@/utils/Post-Util';
+import readingTime from 'reading-time'
+interface PostDetailProps {
+  post: Post;
+  category: string;
+  prevData:Post;
+  nextData:Post;
+}
+export function PostDetailPage(props:PostDetailProps) {
   return (
       <PostDetailLayout post={props.post} category = {props.category} prevData = {props.prevData} nextData={props.nextData}>
       </PostDetailLayout>
@@ -11,25 +19,26 @@ export function PostDetailPage(props) {
 export function getStaticProps(context) {
   const { params } = context;
   const { detail } = params;
-  const detailPath = detail.slice(1).join('/');
-  const postData = getPostData(`${detailPath}.mdx`);
-  const prevData = getPrevData(`${detailPath}.mdx`);
-  const nextData = getNextData(`${detailPath}.mdx`);
+  const detailPath = detail.join('/');
+  const postData = getPostData(`${detailPath}`);
+  const prevData = getPrevData(`${detailPath}`);
+  const nextData = getNextData(`${detailPath}`);
+  postData.readingMinutes = Math.ceil(readingTime(postData.content).minutes)
   return {
     props: {
-      post: postData,
+      post: JSON.parse(JSON.stringify(postData)),
       category: detail[1],
-      prevData: prevData,
-      nextData: nextData,
+      prevData: JSON.parse(JSON.stringify(prevData)),
+      nextData: JSON.parse(JSON.stringify(nextData)),
     },
   };
 }
 
 export function getStaticPaths() {
-  const slugs = posts.map((file: Post) => file.slug);
+  const slugs = getAllPosts().map((file:Post) => file.slug);
   return {
     paths: slugs.map((slug: string) => {
-      const detail = slug.split('/').slice(1);
+      const detail = slug.split('/');
       return { params: { detail } };
     }),
     fallback: false,

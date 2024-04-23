@@ -57,6 +57,48 @@ export function getPostsByCategory(category:string) {
   return getAllPosts();
 }
 
+
+export const getPrevData = (filePath:string) => {
+  const blogposts = getAllPosts();
+  const index =  blogposts.findIndex((file) => file.slug==filePath)-1;
+  if (index>=0) {
+    return {
+      posts: blogposts, 
+      title: blogposts[index].title,
+      slug: blogposts[index].slug,
+      summary: blogposts[index].summary,
+    }
+  }
+  else {
+    return { 
+      title: blogposts[blogposts.length-1].title,
+      slug: blogposts[blogposts.length-1].slug,
+      summary: blogposts[blogposts.length-1].summary,
+    }
+  }
+}
+
+export const getNextData = (filePath:string) => {
+  const blogposts = getAllPosts();
+  const index =  blogposts.findIndex((file) => file.slug==filePath)+1;
+  if (index<blogposts.length) {
+    return { 
+      title: blogposts[index].title,
+      slug: blogposts[index].slug,
+      summary: blogposts[index].summary,
+    }
+  }
+  else {
+    return { 
+      title: blogposts[0].title,
+      slug: blogposts[0].slug,
+      summary: blogposts[0].summary,
+    }
+  }
+}
+
+
+
 export function getCategory() {
   const categorys = fs.readdirSync(dir);
   return categorys;
@@ -96,45 +138,6 @@ export function getCategory() {
 //     return ac;
 //   }, new Set<string>([])),
 // ).filter(Boolean);
-
-
-// export const getPrevData = (filePath:string) => {
-//   const blogposts = getAllPosts();
-//   const index =  blogposts.findIndex((file) => file._raw.sourceFilePath==filePath)-1;
-//   if (index>=0) {
-//     return { 
-//       title: blogposts[index].title,
-//       slug: blogposts[index].slug,
-//       summary: blogposts[index].summary,
-//     }
-//   }
-//   else {
-//     return { 
-//       title: blogposts[blogposts.length-1].title,
-//       slug: blogposts[blogposts.length-1].slug,
-//       summary: blogposts[blogposts.length-1].summary,
-//     }
-//   }
-// }
-
-// export const getNextData = (filePath:string) => {
-//   const blogposts = getAllPosts();
-//   const index =  blogposts.findIndex((file) => file._raw.sourceFilePath==filePath)+1;
-//   if (index<blogposts.length) {
-//     return { 
-//       title: blogposts[index].title,
-//       slug: blogposts[index].slug,
-//       summary: blogposts[index].summary,
-//     }
-//   }
-//   else {
-//     return { 
-//       title: blogposts[0].title,
-//       slug: blogposts[0].slug,
-//       summary: blogposts[0].summary,
-//     }
-//   }
-// }
 
 
 // export function getFeaturedPosts() {
