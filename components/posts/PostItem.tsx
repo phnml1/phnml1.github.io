@@ -1,10 +1,10 @@
 import Link from "next/link";
 import Tag from "./Tag";
 import { format } from "date-fns";
-import { Post } from "@/.contentlayer/generated";
+import { Post } from "@/types";
 
 interface PostsContentsProps {
-  content: Post
+  content:Post
 }
 const PostItem: React.FC<PostsContentsProps> = (props) => {
   const date = format(new Date(props.content.date),'yyyy년 MM월 dd일')

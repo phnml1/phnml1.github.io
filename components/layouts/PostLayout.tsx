@@ -1,8 +1,13 @@
 import { Fragment } from 'react';
 import Head from 'next/head';
 import PostsContents from '../posts/PostsContents';
-
-export default function PostLayout(props) {
+import { Post } from '@/types';
+interface PostLayoutProps {
+  posts: Post[];
+  currentCategory: string;
+  theme: string
+}
+export default function PostLayout(props:PostLayoutProps) {
   return (
       <Fragment>
         <Head>
