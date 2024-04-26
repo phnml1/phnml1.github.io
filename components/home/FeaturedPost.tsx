@@ -18,7 +18,7 @@ const FeaturedPosts: React.FC<FeaturedPostsProps> = (props) => {
       <Link className="w-full h-full rounded-lg overflow-hidden" href={`/${props.post.slug}`}>
         <div className="relative w-full h-2/3 ">
           <Image
-            src={`${props.post.slug}/${props.post.image}`}
+            src={`/${props.post.slug}/${props.post.image}`}
             alt="Featured post"
             layout="fill"
             objectFit="cover"

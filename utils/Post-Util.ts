@@ -118,12 +118,12 @@ export function getCategory() {
   return categorys;
 }
 
-
+export const recentPosts = getAllPosts().slice(0,3);
 // export const posts = allPosts.sort((a, b) => compareDesc(new Date(a.date), new Date(b.date)))
 
 // export const allCategorys = Array.from(new Set(posts.map((post) => (post.category)))).sort();
 
-// export const recentPosts = posts.slice(0,3);
+
 
 // export const getPostsByCategory = (category:string) => {
 //   if (category === 'all') {
