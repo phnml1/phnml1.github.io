@@ -1,19 +1,18 @@
-import { Post } from '@/.contentlayer/generated';
 import Layout from '@/components/layouts/Layout';
 import PostLayout from '@/components/layouts/PostLayout';
 import SearchInput from '@/components/search/SearchInput';
-import { posts } from '@/utils/Post-Util';
+import { Post } from '@/types';
+import { getAllPosts } from '@/utils/Post-Util';
 import { searchPosts } from '@/utils/Utils';
 import { useEffect, useState } from 'react';
 
 export default function PostSearchPage(props) {
-  const [posts,setPosts] = useState(props.posts);
-  const [keyword,setKeyword] = useState('');
+  const [posts,setPosts] = useState<Post[]>(props.posts);
+  const [keyword,setKeyword] = useState<string>('');
   useEffect(()=>{
     const filteredPosts:Post[] = searchPosts(props.posts,keyword);
-    
     setPosts(filteredPosts);
-  },[keyword]);
+  },[keyword, props.posts]);
   return (
     <Layout>
       <div className='w-full mt-8 md:w-4/5 px-8'>
@@ -26,11 +25,11 @@ export default function PostSearchPage(props) {
   );
 }
 
-export function getStaticProps(context) {
-  const allPosts = posts;
+export function getStaticProps() {
+  const allPosts = getAllPosts();
   return {
     props: {
-        posts:allPosts,
+        posts:JSON.parse(JSON.stringify(allPosts)),
     },
     revalidate: 600
   };

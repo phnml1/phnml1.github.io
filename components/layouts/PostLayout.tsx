@@ -23,8 +23,7 @@ export default function PostLayout(props:PostLayoutProps) {
           
             <div className="mt-16 text-3xl font-extrabold w-full ml-5 mb-16 flex gap-2">
               <div>
-              {props.currentCategory === 'all' ? 'All Posts' : props.currentCategory}
-              {(props.theme == 'search') && 'Filtered Posts'}
+            {((props.currentCategory === 'all')||(props.currentCategory==='')) ? 'All Posts' : props.currentCategory}
               </div>
               
               <div>
