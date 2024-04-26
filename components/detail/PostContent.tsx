@@ -7,6 +7,9 @@ import css from 'react-syntax-highlighter/dist/cjs/languages/prism/css';
 import TOC from './Toc';
 import Link from 'next/link';
 import ReactMarkdown from "react-markdown";
+import { PluggableList } from 'unified';
+import raw from 'rehype-raw';
+import slug from 'rehype-slug';
 SyntaxHighlighter.registerLanguage('js', js);
 SyntaxHighlighter.registerLanguage('css', css);
 SyntaxHighlighter.registerLanguage('python', python);
@@ -21,7 +24,6 @@ const PostContent: React.FC<PostContentProps> = (props) => {
   const customRenderers = {
     a: ({ href, children }) => <Link href={href as string}>{children}</Link>,
     pre: (code) => {
-      console.log(code);
       const language = code.children.props.className?.split('-')[1]
       return (
         <SyntaxHighlighter style={atomDark} language={language}>
@@ -37,7 +39,7 @@ const PostContent: React.FC<PostContentProps> = (props) => {
     <div className='w-full flex mt-8 mb-8'>
     <div className = "w-full gap-8 lg:flex">
     <div className="prose prose-zinc w-full leading-loose max-w-3xl dark:prose-invert">
-      <ReactMarkdown components={customRenderers}>{props.content}</ReactMarkdown>
+      <ReactMarkdown rehypePlugins={[raw, slug] as PluggableList} components={customRenderers}>{props.content}</ReactMarkdown>
     </div>
     <TOC title={props.title} slug = {props.slug}/>
     </div>
