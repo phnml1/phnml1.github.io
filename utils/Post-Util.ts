@@ -97,7 +97,21 @@ export const getNextData = (filePath:string) => {
   }
 }
 
+export const allTags = Array.from(
+  getAllPosts().reduce((ac, v) => {
+    v.tags.forEach((tag) => ac.add(tag));
+    return ac;
+  }, new Set<string>([])),
+).filter(Boolean);
 
+export const getPostsByTags = (tag:string) => {
+  const posts = getAllPosts();
+  if (tag === 'all') {
+    return posts;
+  } else {
+  return posts.filter(post => post.tags.includes(tag));
+}
+}
 
 export function getCategory() {
   const categorys = fs.readdirSync(dir);
@@ -119,25 +133,14 @@ export function getCategory() {
 //   }
 // };
 
-// export const getPostsByTags = (tag:string) => {
-//   if (tag === 'all') {
-//     return posts;
-//   } else {
-//   return posts.filter(post => post.tags.includes(tag));
-// }
-// }
+
 // export const getPostData = (filePath:string) => (
 //   posts.filter((file:Post) => file._raw.sourceFilePath==filePath)[0]
 // )
 
 
 
-// export const allTags = Array.from(
-//   posts.reduce((ac, v) => {
-//     v.tags.forEach((tag) => ac.add(tag));
-//     return ac;
-//   }, new Set<string>([])),
-// ).filter(Boolean);
+
 
 
 // export function getFeaturedPosts() {

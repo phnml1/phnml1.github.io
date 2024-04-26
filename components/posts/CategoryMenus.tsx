@@ -72,7 +72,7 @@ const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategor
       {
         theme === 'tag' && (
         <div
-          className={`top-0 flex-wrap rounded-xl h-auto mb-1 w-full pr-2 py-2 gap-2 flex justify-start items-center cursor-pointer`}
+          className={`top-0 flex-wrap rounded-xl h-auto mb-1 w-full ml-2 pr-2 py-2 gap-2 flex justify-start items-center cursor-pointer`}
         >
           {(currentCategory!=='all') && (<Link
                 href = {`/posts/tag/all`}
