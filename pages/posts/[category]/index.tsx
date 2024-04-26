@@ -1,10 +1,16 @@
-import { getPostsByCategory, allCategorys } from '@/utils/Post-Util';
-import CategoryMenus from '@/components/posts/CategoryMenus';
-import PostLayout from '@/components/layouts/PostLayout';
-import Layout from '@/components/layouts/Layout';
-import BlogIntroduce from '@/components/posts/BlogIntroduce';
+import Layout from "@/components/layouts/Layout";
+import PostLayout from "@/components/layouts/PostLayout";
+import BlogIntroduce from "@/components/posts/BlogIntroduce";
+import CategoryMenus from "@/components/posts/CategoryMenus";
+import { Post } from "@/types";
+import { getCategory, getPostsByCategory } from "@/utils/Post-Util";
 
-export default function PostsCategoryPage(props) {
+interface PostsCategoryPageProps {
+  currentCategory: string;
+  categorys: string[];
+  posts: Post[];
+}
+export default function PostsCategoryPage(props:PostsCategoryPageProps) {
   return (
     <Layout>
       <BlogIntroduce />
@@ -25,20 +31,19 @@ export default function PostsCategoryPage(props) {
 export function getStaticProps(context) {
   const { params } = context;
   const { category } = params;
-  const categorys = allCategorys;
-  const postData = getPostsByCategory(category);
+  const postData:Post[] = getPostsByCategory(category);
+  const categorys:string[] = getCategory();
   return {
     props: {
-      posts: postData,
+      posts: JSON.parse(JSON.stringify(postData)) ,
       categorys: categorys,
       currentCategory: category,
-    },
-    revalidate: 600,
+    }
   };
 }
 
 export function getStaticPaths() {
-  const categorys = allCategorys;
+  const categorys = getCategory();
   categorys.push('all');
 
   return {

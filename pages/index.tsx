@@ -4,8 +4,11 @@ import NavButton from '@/components/NavButton';
 import { recentPosts } from '@/utils/Post-Util';
 import HomeIntro from '@/components/home/HomeIntro';
 import Layout from '@/components/layouts/Layout';
-
-export default function Home(props) {
+import { Post } from '@/types';
+interface HomeProps {
+  posts:Post[];
+}
+export default function Home(props:HomeProps) {
   return (
     <Layout>
       <main className={`flex min-h-screen flex-col items-center w-full `}>
@@ -15,7 +18,7 @@ export default function Home(props) {
         </Head>
         <HomeIntro />
         <div className="w-full md:w-4/5">
-          <div className="w-auto ml-8 mt-8 text-xl font-bold">Featured Posts</div>
+          <div className="w-auto ml-8 mt-8 text-xl font-bold">Recent Posts</div>
           <div className="w-full flex flex-col justify-center items-center flex-1 gap-16 mt-8 md:flex-row">
             {props.posts.map((post, i) => (
               <FeaturedPosts key={i} post={post} />
@@ -30,11 +33,9 @@ export default function Home(props) {
   );
 }
 export function getStaticProps() {
-  // const FeaturedPosts = getFeaturedPosts();
-  const FeaturedPosts = recentPosts;
   return {
     props: {
-      posts: FeaturedPosts,
+      posts: JSON.parse(JSON.stringify(recentPosts)),
     },
   };
 }

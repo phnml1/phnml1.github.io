@@ -2,12 +2,17 @@ import { allTags, getPostsByTags } from '@/utils/Post-Util';
 import PostLayout from '@/components/layouts/PostLayout';
 import Layout from '@/components/layouts/Layout';
 import CategoryMenus from '@/components/posts/CategoryMenus';
-
-export default function PostTagPage(props) {
+import { Post } from '@/types';
+interface PostTagPageProps {
+  currentTag: string;
+  tags: string[];
+  posts: Post[];
+}
+export default function PostTagPage(props:PostTagPageProps) {
   return (
     <Layout>
       <CategoryMenus currentCategory={props.currentTag} categorys={props.tags} theme='tag'/>
-    <PostLayout currentCategory={props.currentTag} categorys={props.tags} posts = {props.posts} theme='tag'>
+    <PostLayout currentCategory={props.currentTag} posts = {props.posts} theme='tag'>
     </PostLayout>
     </Layout>
   );
@@ -22,7 +27,7 @@ export function getStaticProps(context) {
     props: {
         tags: tags,
         currentTag: tag,
-        posts:postData,
+        posts:JSON.parse(JSON.stringify(postData)),
     },
     revalidate: 600
   };
