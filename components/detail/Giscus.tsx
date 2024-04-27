@@ -41,5 +41,5 @@ export default function Giscus() {
     iframe?.contentWindow?.postMessage({ giscus: { setConfig: { term: router.asPath } } }, 'https://giscus.app');
   }, [router.asPath]);
 
-  return <section ref={ref} />;
+  return <section id='giscus' ref={ref} />;
 }

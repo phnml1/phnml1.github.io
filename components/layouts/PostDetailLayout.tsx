@@ -7,7 +7,6 @@ import PostContent from "../detail/PostContent";
 import Line from "../Line";
 import PostFooter from "../detail/PostFooter";
 export default function PostDetailLayout(props) {
-  console.log(props.post);
   return (<Layout>
     <Fragment>
       <Head>
