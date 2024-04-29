@@ -24,15 +24,20 @@ const PostContent: React.FC<PostContentProps> = (props) => {
   const customRenderers = {
     a: ({ href, children }) => <Link href={href as string}>{children}</Link>,
     pre: (code) => {
-      const language = code.children.props.className?.split('-')[1]
-      return (
-        <SyntaxHighlighter style={atomDark} language={language}>
-          {code.children.props.children}
-        </SyntaxHighlighter>
-      );
+      if (code.children.props.className) { 
+        const language = code.children.props.className?.split('-')[1];
+        return (
+          <SyntaxHighlighter style={atomDark} language={language}>
+            {code.children.props.children}
+          </SyntaxHighlighter>
+        );
+      }
     },
     img: (img) => {
       return (<Image src={`/${props.slug}/${img.src}`} alt={img.src} width={600} height={300}></Image>)
+    },
+    code: (code) => {
+      return (<code className='bg-[#f1f1f1] py-0.5 dark:bg-[#2b2b2b] font-semibold font-mono text-center px-1 rounded-sm before:hidden after:hidden'>{code.children}</code>)
     }
   };
   return (

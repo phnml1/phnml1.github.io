@@ -45,6 +45,7 @@ const TOC: React.FC<PostContentProps> = (props) => {
                       to={`${tocId}`}
                       spy={true} smooth={true} duration={400}
                       className={`${isCurrent} py-1 cursor-pointer transition-colors`}
+                      offset={-100}
                     >
                       {elementContent}
                     </Link>

@@ -5,9 +5,8 @@ interface FeaturedPostsProps {
   post: {
     slug: string;
     title: string;
-    date: string;
+    date: Date;
     summary: string;
-    tag: string[];
     image: string;
   };
 }
