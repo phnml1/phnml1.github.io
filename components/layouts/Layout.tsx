@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Footer from '../Footer';
 import Navbar from '../navbar/Navbar';
 import { cls } from '@/utils/Utils';
@@ -22,6 +22,28 @@ const kanit = Kanit({
 
 export default function Layout({ children }: React.PropsWithChildren) {
   const [sidebar,setSideBar] = useState(false);
+  useEffect(()=>{
+    if (sidebar) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+  },[sidebar]);
+
+  // ESC 키를 눌렀을 때 모달을 닫는 함수
+  const handleKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      setSideBar(false);
+    }
+  };
+  
+  // 이벤트 리스너 추가
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
   return (
     <Providers>
       
