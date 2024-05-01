@@ -1,5 +1,4 @@
-import { Post } from '@/.contentlayer/generated';
-
+import { Post } from "@/types";
 export const cls = (...classnames: string[]) => {
   return classnames.join(' ');
 };
