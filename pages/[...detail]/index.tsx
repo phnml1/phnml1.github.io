@@ -19,7 +19,7 @@ export function PostDetailPage(props:PostDetailProps) {
 export function getStaticProps(context) {
   const { params } = context;
   const { detail } = params;
-  const detailPath = detail.join('/');
+  const detailPath = detail.join('/')+'.mdx';
   const postData = getPostData(`${detailPath}`);
   const prevData = getPrevData(`${detailPath}`);
   const nextData = getNextData(`${detailPath}`);

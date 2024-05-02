@@ -28,11 +28,11 @@ function convertFilePathToURL(filePath) {
 }
 
 export function getPostData(filePath) {
-  const postSlug = convertFilePathToURL(filePath);
+  const postSlugs = convertFilePathToURL(filePath).split('/');
   const fileContent = fs.readFileSync(filePath, 'utf-8');
   const {data,content} = matter(fileContent);
   const postData = {
-      slug: `${dir}/${postSlug}`,
+      slug: `${dir}/${postSlugs[0]}/${postSlugs[1].split('.')[0]}`,
       ...data,
       content,
   };
