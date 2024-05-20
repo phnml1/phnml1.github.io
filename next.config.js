@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+	basePath: '/my-blog',
+	output: 'export',
   reactStrictMode: true,
   swcMinify: true,
   webpack: (config) => {
@@ -9,6 +11,10 @@ const nextConfig = {
 		});
 		return config;
 	},
+	images: {
+    loader: 'custom',
+    loaderFile: './utils/imageLoader.ts',
+  },
 }
 
 module.exports = nextConfig;
