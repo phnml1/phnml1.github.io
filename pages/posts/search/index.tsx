@@ -31,6 +31,5 @@ export function getStaticProps() {
     props: {
         posts:JSON.parse(JSON.stringify(allPosts)),
     },
-    revalidate: 600
   };
 }

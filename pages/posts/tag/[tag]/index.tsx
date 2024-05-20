@@ -23,13 +23,18 @@ export function getStaticProps(context) {
   const { tag } = params;
   const tags = allTags;
   const postData = getPostsByTags(tag);
+  if (!postData) {
+    return {
+      notFound: true,
+    };
+  }
+
   return {
     props: {
         tags: tags,
         currentTag: tag,
         posts:JSON.parse(JSON.stringify(postData)),
     },
-    revalidate: 600
   };
 }
 
