@@ -9,3 +9,9 @@ export interface Post {
     content: string;
     readingMinutes?: number;
 }
+
+export interface PrevNextDataInfo {
+    title: string;
+    summary:string;
+    slug:string
+}
