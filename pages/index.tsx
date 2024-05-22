@@ -5,6 +5,7 @@ import { recentPosts } from '@/utils/Post-Util';
 import HomeIntro from '@/components/home/HomeIntro';
 import Layout from '@/components/layouts/Layout';
 import { Post } from '@/types';
+import { GetStaticProps } from 'next';
 interface HomeProps {
   posts:Post[];
 }
@@ -32,7 +33,7 @@ export default function Home(props:HomeProps) {
     </Layout>
   );
 }
-export function getStaticProps() {
+export const getStaticProps:GetStaticProps = () => {
   return {
     props: {
       posts: JSON.parse(JSON.stringify(recentPosts)),

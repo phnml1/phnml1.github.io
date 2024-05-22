@@ -3,6 +3,7 @@
 import PostDetailLayout from '@/components/layouts/PostDetailLayout';
 import { Post } from '@/types';
 import { getAllPosts, getNextData, getPostData, getPrevData, } from '@/utils/Post-Util';
+import { GetStaticProps } from 'next';
 import readingTime from 'reading-time'
 interface PostDetailProps {
   post: Post;
@@ -16,9 +17,8 @@ export function PostDetailPage(props:PostDetailProps) {
       </PostDetailLayout>
   );
 }
-export function getStaticProps(context) {
-  const { params } = context;
-  const { detail } = params;
+export const getStaticProps :GetStaticProps = ({params}) => {
+  const {detail} = params as {detail:string[]};
   const detailPath = detail.join('/')+'.mdx';
   const postData = getPostData(`${detailPath}`);
   const prevData = getPrevData(`${detailPath}`);

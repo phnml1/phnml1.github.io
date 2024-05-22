@@ -3,6 +3,7 @@ import PostLayout from '@/components/layouts/PostLayout';
 import Layout from '@/components/layouts/Layout';
 import CategoryMenus from '@/components/posts/CategoryMenus';
 import { Post } from '@/types';
+import { GetStaticPaths, GetStaticProps } from 'next';
 interface PostTagPageProps {
   currentTag: string;
   tags: string[];
@@ -18,11 +19,10 @@ export default function PostTagPage(props:PostTagPageProps) {
   );
 }
 
-export function getStaticProps(context) {
-  const { params } = context;
-  const { tag } = params;
-  const tags = allTags;
-  const postData = getPostsByTags(tag);
+export const getStaticProps: GetStaticProps = ({params}) => {
+  const { tag } = params as {tag: string};
+  const tags:string[] = allTags;
+  const postData:Post[] = getPostsByTags(tag);
   if (!postData) {
     return {
       notFound: true,
@@ -38,8 +38,8 @@ export function getStaticProps(context) {
   };
 }
 
-export function getStaticPaths() {
-  const tags = allTags;
+export const getStaticPaths:GetStaticPaths = () => {
+  const tags:string[] = allTags;
   tags.push('all');
   return {
     paths: tags.map(tag => ({params: {tag:tag}})),

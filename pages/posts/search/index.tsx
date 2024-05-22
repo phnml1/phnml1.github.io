@@ -4,9 +4,10 @@ import SearchInput from '@/components/search/SearchInput';
 import { Post } from '@/types';
 import { getAllPosts } from '@/utils/Post-Util';
 import { searchPosts } from '@/utils/Utils';
+import { GetStaticProps } from 'next';
 import { useEffect, useState } from 'react';
 
-export default function PostSearchPage(props) {
+export default function PostSearchPage(props: {posts:Post[]}) {
   const [posts,setPosts] = useState<Post[]>(props.posts);
   const [keyword,setKeyword] = useState<string>('');
   useEffect(()=>{
@@ -25,8 +26,8 @@ export default function PostSearchPage(props) {
   );
 }
 
-export function getStaticProps() {
-  const allPosts = getAllPosts();
+export const getStaticProps:GetStaticProps = () => {
+  const allPosts:Post[] = getAllPosts();
   return {
     props: {
         posts:JSON.parse(JSON.stringify(allPosts)),

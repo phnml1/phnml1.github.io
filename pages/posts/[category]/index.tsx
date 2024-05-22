@@ -3,8 +3,8 @@ import PostLayout from "@/components/layouts/PostLayout";
 import BlogIntroduce from "@/components/posts/BlogIntroduce";
 import CategoryMenus from "@/components/posts/CategoryMenus";
 import { Post } from "@/types";
-import { getCategory, getPostsByCategory } from "@/utils/Post-Util";
-
+import { getCategorys, getPostsByCategory } from "@/utils/Post-Util";
+import { GetStaticPaths, GetStaticProps } from "next";
 interface PostsCategoryPageProps {
   currentCategory: string;
   categorys: string[];
@@ -27,12 +27,15 @@ export default function PostsCategoryPage(props:PostsCategoryPageProps) {
     </Layout>
   );
 }
+// 블로그하자
+export const getStaticProps: GetStaticProps = ({params}) => {
+  // 명시적 타입 단언
+  const {category} = params as {category: string};
 
-export function getStaticProps(context) {
-  const { params } = context;
-  const { category } = params;
-  const postData:Post[] = getPostsByCategory(category);
-  const categorys:string[] = getCategory();
+  const postData: Post[] = getPostsByCategory(category);
+  if(postData){
+  const categorys: string[] = getCategorys();
+  
   return {
     props: {
       posts: JSON.parse(JSON.stringify(postData)) ,
@@ -41,9 +44,15 @@ export function getStaticProps(context) {
     }
   };
 }
+  return {
+    notFound:true
+  }
+  
+} 
 
-export function getStaticPaths() {
-  const categorys = getCategory();
+
+export const getStaticPaths: GetStaticPaths = () => {
+  const categorys:string[] = getCategorys();
   categorys.push('all');
 
   return {
