@@ -22,8 +22,9 @@ const HomeIntro: React.FC = () => {
         src={src}
         quality={100}
         fill
-        objectFit="cover"
+        objectFit='cover'
         className="w-full h-full"
+        priority
       />
       <div className="w-full h-full md:w-4/5 z-20 relative text-white dark:text-[#E5E5E5]">
         <div className="absolute left-8 bottom-12">
