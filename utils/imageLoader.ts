@@ -1,9 +1,11 @@
-'use client'
-type imageLoaderType =  {
-  src:string
-  width: string
-  quality: string
-}
+'use client';
+
+
+type imageLoaderType = {
+  src: string;
+  width: string;
+  quality: string;
+};
 export default function myImageLoader({ src, width, quality }: imageLoaderType) {
-  return `https://phnml1.github.io/my-blog/${src}?w=${width}&q=${quality || 75}`
+  return `https://phnml1.github.io/${src}?w=${width}&q=${quality || 75}`;
 }

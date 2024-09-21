@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-	basePath: '/my-blog',
 	output: 'export',
   reactStrictMode: true,
   swcMinify: true,

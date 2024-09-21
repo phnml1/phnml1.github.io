@@ -11,7 +11,7 @@
     "predeploy": "npm run build",
     "deploy": "touch out/.nojekyll && gh-pages -d out --dotfiles"
   },
-  "homepage": "https://phnml1.github.io/my-blog/",
+  "homepage": "https://phnml1.github.io/",
   "dependencies": {
     "date-fns": "^3.2.0",
     "gray-matter": "^4.0.3",
