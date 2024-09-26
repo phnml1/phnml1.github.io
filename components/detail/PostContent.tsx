@@ -10,6 +10,7 @@ import ReactMarkdown from "react-markdown";
 import { PluggableList } from 'unified';
 import raw from 'rehype-raw';
 import slug from 'rehype-slug';
+import { isAbsolutePath } from '@/utils/isAbsolutePath';
 SyntaxHighlighter.registerLanguage('js', js);
 SyntaxHighlighter.registerLanguage('css', css);
 SyntaxHighlighter.registerLanguage('python', python);
@@ -27,18 +28,32 @@ const PostContent: React.FC<PostContentProps> = (props) => {
       if (code.children.props.className) { 
         const language = code.children.props.className?.split('-')[1];
         return (
-          <SyntaxHighlighter style={atomDark} language={language}>
+          <SyntaxHighlighter 
+          style={atomDark}
+          PreTag="pre"
+          language={language}
+          // customStyle={{
+          //     whiteSpace: 'pre-wrap',
+          //     overflowWrap: 'break-word',
+          // }}
+          CodeTag={({ children }) => (
+            <code className='whitespace-pre-wrap'>
+              {children}
+            </code>
+          )}
+          >
             {code.children.props.children}
           </SyntaxHighlighter>
         );
       }
     },
     img: (img) => {
-      return (<Image src={`/${props.slug}/${img.src}`} alt={img.src} width={600} height={300}></Image>)
+      console.log(img);
+      const width = (img.width)?img.width:'600';
+      const height = (img.height)?img.height:'300';
+
+      return (<Image src={`/${props.slug}/${img.src}`} alt={img.src} width={width} height={height}></Image>)
     },
-    code: (code) => {
-      return (<code className='bg-[#f1f1f1] py-0.5 dark:bg-[#2b2b2b] font-semibold font-mono text-center px-1 rounded-sm before:hidden after:hidden'>{code.children}</code>)
-    }
   };
   return (
     <div className='w-full flex mt-8 mb-8'>

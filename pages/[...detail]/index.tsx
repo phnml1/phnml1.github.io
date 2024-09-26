@@ -12,6 +12,7 @@ interface PostDetailProps {
   nextData:Post;
 }
 export function PostDetailPage(props:PostDetailProps) {
+console.log(props.post.slug);
   return (
       <PostDetailLayout post={props.post} category = {props.category} prevData = {props.prevData} nextData={props.nextData}>
       </PostDetailLayout>
