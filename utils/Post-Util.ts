@@ -59,28 +59,9 @@ export function getPostsByCategory(category:string):Post[] {
 
 export const getPrevData = (filePath:string):PrevNextDataInfo => {
   const blogposts = getAllPosts();
-  const index =  blogposts.findIndex((file) => file.slug==filePath)-1;
-  if (index>=0) {
-    return {
-      title: blogposts[index].title,
-      slug: blogposts[index].slug,
-      summary: blogposts[index].summary,
-    }
-  }
-  else {
-    return { 
-      title: blogposts[blogposts.length-1].title,
-      slug: blogposts[blogposts.length-1].slug,
-      summary: blogposts[blogposts.length-1].summary,
-    }
-  }
-}
-
-export const getNextData = (filePath:string):PrevNextDataInfo => {
-  const blogposts = getAllPosts();
-  const index =  blogposts.findIndex((file) => file.slug==filePath)+1;
+  const index =  blogposts.findIndex((file) => file.slug+'.mdx'===filePath)+1;
   if (index<blogposts.length) {
-    return { 
+    return {
       title: blogposts[index].title,
       slug: blogposts[index].slug,
       summary: blogposts[index].summary,
@@ -91,6 +72,25 @@ export const getNextData = (filePath:string):PrevNextDataInfo => {
       title: blogposts[0].title,
       slug: blogposts[0].slug,
       summary: blogposts[0].summary,
+    }
+  }
+}
+
+export const getNextData = (filePath:string):PrevNextDataInfo => {
+  const blogposts = getAllPosts();
+  const index =  blogposts.findIndex((file) => file.slug+'.mdx'==filePath)-1;
+  if (index>=0) {
+    return { 
+      title: blogposts[index].title,
+      slug: blogposts[index].slug,
+      summary: blogposts[index].summary,
+    }
+  }
+  else {
+    return { 
+      title: blogposts[blogposts.length-1].title,
+      slug: blogposts[blogposts.length-1].slug,
+      summary: blogposts[blogposts.length-1].summary,
     }
   }
 }
