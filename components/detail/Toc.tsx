@@ -2,7 +2,6 @@
 import useObservation from '@/utils/useObservation';
 import { useEffect, useState } from 'react';
 import { Link , animateScroll as scroll} from 'react-scroll';
-import Undo from '../../public/detail/undo.svg';
 import ArrowUpward from '../../public/detail/arrow_upward.svg';
 import Comment from '../../public/detail/comment.svg';
 import UndoButton from './UndoButton';
@@ -59,7 +58,7 @@ const TOC: React.FC<PostContentProps> = (props) => {
                       to={`${tocId}`}
                       spy={true} smooth={true} duration={400}
                       offset={-100}
-                      className={`${isCurrent} py-1 ml-2 cursor-pointer transition-colors`}
+                      className={`${isCurrent} py-1 pl-2 whitespace-pre-line cursor-pointer transition-colors block`}
                     >
                       {elementContent}
                       </Link>
@@ -72,7 +71,7 @@ const TOC: React.FC<PostContentProps> = (props) => {
                       to={`${tocId}`}
                       spy={true} smooth={true} duration={400}
                       offset={-50}
-                      className={`${isCurrent} py-1 ml-6 cursor-pointer transition-colors`}
+                      className={`${isCurrent} py-1 pl-6 whitespace-pre-line cursor-pointer transition-colors block`}
                     >
                       {elementContent}
                     </Link>
