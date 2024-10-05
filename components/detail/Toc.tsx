@@ -1,6 +1,6 @@
 'use client'
 import useObservation from '@/utils/useObservation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link , animateScroll as scroll} from 'react-scroll';
 import ArrowUpward from '../../public/detail/arrow_upward.svg';
 import Comment from '../../public/detail/comment.svg';
@@ -12,26 +12,37 @@ interface PostContentProps {
 }
 
 const TOC: React.FC<PostContentProps> = (props) => {
+  const listRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const textColor = {
-    light:'fill#666666',
-    dark:'fill-rgb(181,181,181)'
-  }
   const [currentId, setCurrentId] = useState<string>('');
   const [headingEls, setHeadingEls] = useState<HTMLElement[]>([]);
+  console.log(currentId)
+
   useEffect(() => {
     const headingElements: HTMLElement[] = Array.from(document.querySelectorAll('h1,h2,h3'));
     setHeadingEls(headingElements);
     setCurrentId('');
    }, [props.slug]);
+
+   useEffect(() => {
+    const currentItem = listRef.current?.querySelector('.font-bold.text-indigo-500');
+    if (currentItem && listRef.current) {
+      const parentBottom = listRef.current.getBoundingClientRect().bottom;
+      const itemBottom = currentItem.getBoundingClientRect().bottom;
+      // 차이만큼 스크롤 이동
+      listRef.current.scrollTop += (itemBottom - parentBottom);
+    }
+  }, [currentId]);
+
   useObservation(setCurrentId,headingEls);
   return (
     <div className="mt-12 ml-auto relative hidden lg:block">
-      <div className="sticky top-32 w-60">
-        <div className="p-4 rounded-t-xl border-solid border-slate-200 border-[0.5px] border-b-0 dark:border-gray-600 items-start gap-6">
+      <div className="sticky top-32 w-60 ">
+        <div className="p-4 max-h-[500px] rounded-t-xl border-solid border-slate-200 border-[0.5px] border-b-0 dark:border-gray-600 items-start gap-6">
           <div className="font-bold mb-2">{props.title}</div>
           <hr className='w-full border-neutral-400 dark:border-gray-600' />
-          <ul className="mb-2 text-sm flex flex-col gap-2 mt-4">
+          <div ref={listRef} className='custom-scroll overflow-y-auto max-h-[380px] mt-2 mb-2 px-2'>
+          <ul  className="mb-2 text-sm flex flex-col gap-2 mt-4 ">
             {headingEls.map((a:HTMLElement, i) => {
               const elementType: string = a.nodeName;
               const elementContent: string = a.innerHTML;
@@ -80,6 +91,7 @@ const TOC: React.FC<PostContentProps> = (props) => {
               }
             })}
           </ul>
+          </div>
         </div>
         <div className='rounded-b-xl border-[0.5px] px-6 w-full h-12 border-solid bg-slate-100 dark:bg-[#363636] dark:border-gray-600  flex items-center justify-between'>
             <UndoButton category = {router.query.detail[1]}/>
