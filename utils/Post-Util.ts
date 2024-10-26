@@ -50,8 +50,9 @@ export function getAllPosts():Post[] {
 export function getPostsByCategory(category:string):Post[] {
   if (category != 'all'){
   const postFiles:string[] = getFilePaths(category);
-  const postData:Post[] = postFiles.map((postFile) => getPostData(postFile));
-  return postData;
+  const PostData:Post[] = postFiles.map((postFile) => getPostData(postFile));
+  const sortedPosts:Post[] = PostData.sort((postA, postB) => postA.date > postB.date ? -1: 1);
+  return sortedPosts;
   }
   return getAllPosts();
 }
