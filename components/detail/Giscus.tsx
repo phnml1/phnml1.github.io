@@ -15,7 +15,7 @@ export default function Giscus() {
     scriptElem.async = true;
     scriptElem.crossOrigin = 'anonymous';
 
-    scriptElem.setAttribute('data-repo', 'phnml1/my-blog');
+    scriptElem.setAttribute('data-repo', 'phnml1/phnml1.github.io');
     scriptElem.setAttribute('data-repo-id', 'R_kgDOKznePw');
     scriptElem.setAttribute('data-category', 'General');
     scriptElem.setAttribute('data-category-id', 'DIC_kwDOKzneP84CcqiL');
