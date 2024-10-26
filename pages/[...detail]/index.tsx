@@ -5,6 +5,8 @@ import { Post } from '@/types';
 import { getAllPosts, getNextData, getPostData, getPrevData, } from '@/utils/Post-Util';
 import { GetStaticProps } from 'next';
 import readingTime from 'reading-time'
+import Head from 'next/head';
+
 interface PostDetailProps {
   post: Post;
   category: string;
@@ -12,10 +14,29 @@ interface PostDetailProps {
   nextData:Post;
 }
 export function PostDetailPage(props:PostDetailProps) {
-console.log(props.post.slug);
   return (
+    <>
+    <Head>
+          <title>{props.post.title}</title>
+          <meta name="description" content={`${props.post.summary}`} />
+          <meta property="og:title" content={props.post.title} />
+          <meta property="og:description" content={props.post.summary} />
+          <meta
+            property="og:image"
+            content={`https://phnml1.github.io/${props.post.slug}/${props.post.image}`}
+          />
+          <meta property="og:url" content={`https://phnml1.github.io/${props.post.slug}`} />
+          <meta property="og:type" content="article" />
+
+          {/* <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content={props.post.title} />
+          <meta name="twitter:description" content={props.post.summary} />
+          <meta name="twitter:image" content={`https://phnml1.github.io/${props.post.slug}/${props.post.image}`} /> */}
+
+        </Head>
       <PostDetailLayout post={props.post} category = {props.category} prevData = {props.prevData} nextData={props.nextData}>
       </PostDetailLayout>
+      </>
   );
 }
 export const getStaticProps :GetStaticProps = ({params}) => {
