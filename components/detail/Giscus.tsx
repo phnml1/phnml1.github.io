@@ -17,15 +17,15 @@ export default function Giscus() {
 
     scriptElem.setAttribute('data-repo', 'phnml1/phnml1.github.io');
     scriptElem.setAttribute('data-repo-id', 'R_kgDOKznePw');
-    scriptElem.setAttribute('data-category', 'General');
-    scriptElem.setAttribute('data-category-id', 'DIC_kwDOKzneP84CcqiL');
+    scriptElem.setAttribute('data-category', 'Announcements');
+    scriptElem.setAttribute('data-category-id', 'DIC_kwDOKzneP84CcqiK');
     scriptElem.setAttribute('data-mapping', 'pathname');
     scriptElem.setAttribute('data-strict', '0');
     scriptElem.setAttribute('data-reactions-enabled', '1');
     scriptElem.setAttribute('data-emit-metadata', '0');
     scriptElem.setAttribute('data-input-position', 'bottom');
     scriptElem.setAttribute('data-theme', theme);
-    scriptElem.setAttribute('data-lang', 'en');
+    scriptElem.setAttribute('data-lang', 'ko');
 
     ref.current.appendChild(scriptElem);
   }, []);
@@ -39,6 +39,7 @@ export default function Giscus() {
   useEffect(() => {
     const iframe = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
     iframe?.contentWindow?.postMessage({ giscus: { setConfig: { term: router.asPath } } }, 'https://giscus.app');
+    console.log(router.asPath);
   }, [router.asPath]);
 
   return <section id='giscus' ref={ref} />;
