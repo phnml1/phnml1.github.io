@@ -6,7 +6,7 @@ import Clock from '@/public/posts/clock.svg';
 interface PostHeaderProps {
   title: string;
   category: string;
-  date: string;
+  date: Date;
   tags: string[];
   readingTime: number;
 }
@@ -18,7 +18,7 @@ const PostHeader: React.FC<PostHeaderProps> = (props) => {
       <div className="font-bold text-3xl md:text-5xl mt-2 text-center leading-snug md:leading-snug">
         {props.title}
       </div>
-      <div className="flex gap-4 mt-4">
+      <div className="flex gap-4 mt-4 break-words flex-wrap w-full justify-center">
         {props.tags.map((a) => (
           <Tag key={a} name={a} />
         ))}

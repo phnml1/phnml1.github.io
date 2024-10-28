@@ -2,9 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-
 body {
   margin:0;
+}
+code {
+  word-break: break-all;
 }
 .custom-scroll::-webkit-scrollbar {
   width: 4px; /* 스크롤 바의 너비 */
