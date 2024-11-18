@@ -12,7 +12,7 @@ interface PostsCategoryPageProps {
 }
 export default function PostsCategoryPage(props:PostsCategoryPageProps) {
   return (
-    <Layout>
+    <>
       <BlogIntroduce />
       <CategoryMenus
         currentCategory={props.currentCategory}
@@ -24,7 +24,7 @@ export default function PostsCategoryPage(props:PostsCategoryPageProps) {
         posts={props.posts}
         theme="category"
       ></PostLayout>
-    </Layout>
+    </>
   );
 }
 // 블로그하자

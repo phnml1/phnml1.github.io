@@ -11,11 +11,11 @@ interface PostTagPageProps {
 }
 export default function PostTagPage(props:PostTagPageProps) {
   return (
-    <Layout>
+    <>
       <CategoryMenus currentCategory={props.currentTag} categorys={props.tags} theme='tag'/>
     <PostLayout currentCategory={props.currentTag} posts = {props.posts} theme='tag'>
     </PostLayout>
-    </Layout>
+    </>
   );
 }
 

@@ -6,6 +6,7 @@ import { getAllPosts, getNextData, getPostData, getPrevData, } from '@/utils/Pos
 import { GetStaticProps } from 'next';
 import readingTime from 'reading-time'
 import Head from 'next/head';
+import Layout from '@/components/layouts/Layout';
 
 interface PostDetailProps {
   post: Post;

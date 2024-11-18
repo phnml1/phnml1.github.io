@@ -1,12 +1,10 @@
 import Layout from './Layout';
 import { Fragment } from 'react';
-import Head from 'next/head';
 import ReadingProgressBar from '../detail/ReadingProgressBar';
 import PostHeader from '../detail/PostHeader';
 import PostContent from '../detail/PostContent';
 import Line from '../Line';
 import PostFooter from '../detail/PostFooter';
-import { Post } from '@/types';
 
 // interface PostDetailLayoutProps {
 //   post: Post;
@@ -16,9 +14,7 @@ import { Post } from '@/types';
 // }
 export default function PostDetailLayout(props) {
   return (
-    <Layout>
-      <Fragment>
-     
+     <>
         <ReadingProgressBar />
         <div className="mt-4 w-full md:w-4/5 px-8 flex flex-col items-center mb-16">
           <PostHeader
@@ -36,7 +32,6 @@ export default function PostDetailLayout(props) {
           <Line mt="8" />
           <PostFooter prevData={props.prevData} nextData={props.nextData} />
         </div>
-      </Fragment>
-    </Layout>
+        </>
   );
 }

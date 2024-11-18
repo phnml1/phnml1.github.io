@@ -11,7 +11,7 @@ interface HomeProps {
 }
 export default function Home(props:HomeProps) {
   return (
-    <Layout>
+    <>
       <main className={`flex min-h-screen flex-col items-center w-full `}>
         <Head>
           <title>phnml1{`'`}s blog</title>
@@ -30,7 +30,7 @@ export default function Home(props:HomeProps) {
           </div>
         </div>
       </main>
-    </Layout>
+    </>
   );
 }
 export const getStaticProps:GetStaticProps = () => {
