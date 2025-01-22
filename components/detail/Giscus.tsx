@@ -39,7 +39,7 @@ export default function Giscus() {
   useEffect(() => {
     const iframe = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
     iframe?.contentWindow?.postMessage({ giscus: { setConfig: { term: router.asPath } } }, 'https://giscus.app');
-    console.log(router.asPath);
+
   }, [router.asPath]);
 
   return <section id='giscus' ref={ref} />;

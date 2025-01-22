@@ -16,7 +16,6 @@ const TOC: React.FC<PostContentProps> = (props) => {
   const router = useRouter();
   const [currentId, setCurrentId] = useState<string>('');
   const [headingEls, setHeadingEls] = useState<HTMLElement[]>([]);
-  console.log(currentId)
 
   useEffect(() => {
     const headingElements: HTMLElement[] = Array.from(document.querySelectorAll('h1,h2,h3'));
@@ -27,8 +26,8 @@ const TOC: React.FC<PostContentProps> = (props) => {
    useEffect(() => {
     const currentItem = listRef.current?.querySelector('.font-bold.text-indigo-500');
     if (currentItem && listRef.current) {
-      const parentBottom = listRef.current.getBoundingClientRect().bottom;
-      const itemBottom = currentItem.getBoundingClientRect().bottom;
+      const parentBottom = listRef.current.getBoundingClientRect().top;
+      const itemBottom = currentItem.getBoundingClientRect().top;
       // 차이만큼 스크롤 이동
       listRef.current.scrollTop += (itemBottom - parentBottom);
     }

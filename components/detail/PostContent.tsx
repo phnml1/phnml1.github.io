@@ -48,7 +48,6 @@ const PostContent: React.FC<PostContentProps> = (props) => {
       }
     },
     img: (img) => {
-      console.log(img);
       const width = (img.width)?img.width:'600';
       const height = (img.height)?img.height:'300';
 
