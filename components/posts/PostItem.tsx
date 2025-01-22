@@ -14,7 +14,7 @@ const PostItem: React.FC<PostsContentsProps> = (props) => {
         <div className="text-lg font-bold md:text-3xl">{props.content.title}</div>
         <div className="mt-8 text-sm md:text-base">{props.content.summary}</div>
         <div className="mt-8 flex justify-between flex-wrap gap-4 flex-col sm:flex-row">
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap">
         {props.content.tags.map ((a,i) => (
           <Tag key = {i} name = {a}/>
         ))}
