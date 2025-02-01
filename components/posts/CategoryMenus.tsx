@@ -29,16 +29,16 @@ const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategor
        
       theme === 'category' && (
         <div
-          className={`top-0 flex-wrap rounded-xl h-auto mb-1 w-full pr-2 py-2 gap-2 flex justify-start items-center cursor-pointer`}
+          className={`top-0 flex-wrap rounded-xl h-auto mb-1 w-full pr-2 py-2 gap-2 flex md:justify-start justify-center items-center cursor-pointer`}
         >
           {(currentCategory === 'all')? (<Link
                   href='/posts/all'
-                  className="transition-all w-32 h-40 md:text-md lg:text-lg border-indigo-400  dark:text-indigo-200 bg-indigo-400 scale-110 text-white border-2 border-solid rounded-lg py-2 px-2 my-2 mx-2 text-center flex justify-center items-center cursor-pointer"
+                  className="transition-all w-20 h-28 md:w-32 md:h-40 sm:text-sm md:text-base lg:text-lg border-indigo-400  dark:text-indigo-200 bg-indigo-400 scale-110 text-white border-2 border-solid rounded-lg py-2 px-2 my-2 mx-2 text-center flex justify-center items-center cursor-pointer"
                 >
                   All Posts
                 </Link>): (<Link 
                 href='/posts/all'
-                className="transition-all w-32 h-40 md:text-md lg:text-lg border-indigo-400 text-indigo-400 dark:text-indigo-200 hover:scale-110 dark:bg-dark-secondary border-2 border-solid rounded-lg py-2 px-2 my-2 mx-2 text-center flex justify-center items-center cursor-pointer"
+                className="transition-all w-20 h-28 md:w-32 md:h-40 sm:text-sm md:text-base lg:text-lg border-indigo-400 text-indigo-400 dark:text-indigo-200 hover:scale-110 dark:bg-dark-secondary border-2 border-solid rounded-lg py-2 px-2 my-2 mx-2 text-center flex justify-center items-center cursor-pointer"
                 >
                   All Posts
                 </Link>)}
@@ -49,7 +49,7 @@ const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategor
                 <Link
                   href={`${categoryLink(a)}`}
                   key={i}
-                  className="transition-all w-32 h-40 md:text-md lg:text-lg border-indigo-400 dark:text-indigo-200 bg-indigo-400 scale-110 text-white border-2 border-solid rounded-lg py-2 px-2 my-2 mx-2 text-center flex justify-center items-center cursor-pointer"
+                  className="transition-all w-20 h-28 md:w-32 sm:text-sm md:h-40 md:text-base lg:text-lg border-indigo-400 dark:text-indigo-200 bg-indigo-400 scale-110 text-white border-2 border-solid rounded-lg py-2 px-2 my-2 mx-2 text-center flex justify-center items-center cursor-pointer"
                 >
                   {a}
                 </Link>
@@ -59,7 +59,7 @@ const CategoryMenus: React.FC<CategoryMenusProps> = ({ categorys, currentCategor
                 <Link
                   href={`${categoryLink(a)}`}
                   key={i}
-                  className="transition-all w-32 h-40 md:text-md lg:text-lg border-indigo-400 text-indigo-400 dark:border-indigo-4200 dark:text-indigo-200 hover:scale-110 dark:bg-dark-secondary border-2 border-solid rounded-lg py-2 px-2 my-2 mx-2 text-center flex justify-center items-center cursor-pointer"
+                  className="transition-all w-20 h-28 md:w-32 md:h-40 sm:text-sm md:text-base lg:text-lg border-indigo-400 text-indigo-400 dark:border-indigo-4200 dark:text-indigo-200 hover:scale-110 dark:bg-dark-secondary border-2 border-solid rounded-lg py-2 px-2 my-2 mx-2 text-center flex justify-center items-center cursor-pointer"
                 >
                   {a}
                 </Link>
