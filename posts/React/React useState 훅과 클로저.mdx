@@ -2,9 +2,10 @@
 title: 'React useState 훅과 클로저'
 date: 2024-10-26 18:00:24
 image: index.png
-summary: 클로저를 이용한 React useState 훅의 작동 원리를 이해해보자
+summary: 클로저를 이용한 React useState 훅의 작동 원리
 tags: ['react','JavaScript','deepdive','useState','hook','클로저']
 ---
+
 # React useState 훅과 클로저
 
 클로저에 대해 개념은 알고 있었지만, 사실 면접 질문때나 쓰이는 것이고, 실제로 어떻게 쓰이는지에 대해서는 와닿지 못한 부분도 있었다. 그러던 도중 react deep dive를 공부하며, react 개발자가 아마도 가장 많이 사용하는 **useState**에 클로저가 쓰인다는 사실을 알았다! 
@@ -24,7 +25,7 @@ const [state, setState] = useState
 
 
 **리액트에서 렌더링은 함수 컴포넌트의 return을 실행한 다음, 실행 결과를 이전의 리액트 트리와 비교해 리렌더링이 필요한 부분만 업데이트해 이뤄진다.**
-그렇기 때문에 렌더링 방식이랑 메커니즘이 다른 변수를 통해서 상태값을 관리하는 것은 적절하지 못하다. (이전 글 react virtualDOM 참고)
+그렇기 때문에 렌더링 방식이랑 메커니즘이 다른 **변수**를 통해서 상태값을 관리하는 것은 적절하지 못하다. (이전 글 react virtualDOM 참고)
 
 그렇다면 다음 코드를 살펴보자.
 
@@ -56,7 +57,11 @@ useState 반환값의 두 번째 원소를 실행해 리액트에 렌더링이 �
 
 근데 렌더링이 될 때마다 초기화되는 변수(값)와는 달리, useState의 결과값은 어떻게 그 값을 유지할까?
 
-useState의 결과 값이 유지되도록, state를 함수로 하여 state 값을 호출할 때마다 현재 state를 반환하게 해보자.
+
+
+그럼 우리가 알고있는 useState는 대체 어떻게 구현이 되있는 것일지 한번 최대한 비슷하게 구현한 코드를 살펴보자.
+
+**먼저 useState의 결과 값이 유지되도록, state를 함수로 하여 state 값을 호출할 때마다 현재 state를 반환하게 해보자.**
 ```js
 function useState(initialValue) {
 	let initialState = initialValue;
@@ -74,6 +79,7 @@ setValue(1);
 console.log(value()); // 1
 ```
 위의 코드도 나쁘진 않지만, 우리에게 익숙한 useState훅은 state를 함수가 아닌 상수처럼 사용하고 있다.
+어떻게 그게 가능한 걸까?
 
 ## 클로저를 이용해 상태를 관리하는 useState
 이를 위해서 리액트는 **클로저**를 이용한 것이다. 

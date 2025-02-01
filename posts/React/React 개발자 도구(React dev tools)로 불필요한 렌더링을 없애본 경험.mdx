@@ -146,8 +146,9 @@ Layout이 자식으로 있는걸 볼 수 있다.
 
 이에 대한 해결 방법으로 물론, `Layout`을  메모이제이션을 통해서 변경이 발생할 때만 렌더링 되도록 최적화 할 수도 있지만, `Layout` 컴포넌트가 모든 페이지에서 공통으로 사용되고, `Layout` 자체에서 각 페이지에 의존하는 상태가 없는 점을 고려하여 `_app.tsx`에서 이를 최상위 레이아웃으로 설정하는 것이 더 적절해 보였다.
 
-> Next.js의 page router에서 `_app.tsx` 파일은 애플리케이션 전체의 최상위 컴포넌트를 정의하는 역할을 한다.
-
+ ```
+ Next.js의 page router에서 `_app.tsx` 파일은 애플리케이션 전체의 최상위 컴포넌트를 정의하는 역할을 한다.
+```
 _app.tsx
 ```js
 export  default  function  App({ Component, pageProps }:  AppProps) {
