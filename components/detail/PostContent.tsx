@@ -10,7 +10,6 @@ import ReactMarkdown from "react-markdown";
 import { PluggableList } from 'unified';
 import raw from 'rehype-raw';
 import slug from 'rehype-slug';
-import { isAbsolutePath } from '@/utils/isAbsolutePath';
 SyntaxHighlighter.registerLanguage('js', js);
 SyntaxHighlighter.registerLanguage('css', css);
 SyntaxHighlighter.registerLanguage('python', python);
