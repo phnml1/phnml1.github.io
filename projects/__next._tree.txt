@@ -8,4 +8,5 @@
 :HL["/projects/codemate/%EB%8C%93%EA%B8%80%EC%BA%90%EC%8B%9C%EB%8F%99%EA%B8%B0%ED%99%94(1).png","image"]
 :HL["/projects/codemate/%EB%8C%93%EA%B8%80%EC%BA%90%EC%8B%9C%EB%8F%99%EA%B8%B0%ED%99%94(2).png","image"]
 :HL["/projects/codemate/%EB%8C%93%EA%B8%80%EC%9D%B4%EB%B2%A4%ED%8A%B8%20%EB%B0%98%EC%98%81%20latency.png","image"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"projects","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"a-stbhTn2PvftfQZfCSX-"}
+:HL["/projects/codemate/codemate-ai-review.gif","image"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"projects","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"9gK7NJtn2eyulY-UVZvYX"}
