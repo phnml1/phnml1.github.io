@@ -1,4 +1,4 @@
-:HL["/_next/static/chunks/0qfcdv8v4ch1p.css","style"]
+:HL["/_next/static/chunks/0t1ndere9_.m2.css","style"]
 :HL["/_next/static/chunks/0kx2eur82lpar.css","style"]
 :HL["/_next/static/chunks/0-ric-my-j508.css","style"]
 :HL["/_next/static/media/0c89a48fa5027cee-s.p.0rd3rjvnnhw7n.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
@@ -9,4 +9,4 @@
 :HL["/projects/codemate/%EB%8C%93%EA%B8%80%EC%BA%90%EC%8B%9C%EB%8F%99%EA%B8%B0%ED%99%94(2).png","image"]
 :HL["/projects/codemate/%EB%8C%93%EA%B8%80%EC%9D%B4%EB%B2%A4%ED%8A%B8%20%EB%B0%98%EC%98%81%20latency.png","image"]
 :HL["/projects/codemate/codemate-ai-review.gif","image"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"projects","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"9gK7NJtn2eyulY-UVZvYX"}
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"projects","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"ekEkAnxpkOGUi3dPatigY"}
