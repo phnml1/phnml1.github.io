@@ -1,7 +1,11 @@
-:HL["/_next/static/chunks/0tuu4j_mlq_96.css","style"]
+:HL["/_next/static/chunks/0qfcdv8v4ch1p.css","style"]
 :HL["/_next/static/chunks/0kx2eur82lpar.css","style"]
 :HL["/_next/static/chunks/0-ric-my-j508.css","style"]
 :HL["/_next/static/media/0c89a48fa5027cee-s.p.0rd3rjvnnhw7n.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/_next/static/media/fca78c2ee6cec166-s.p.0kizb7t94.kuf.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"projects","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"tPDe5G9uNRX8px1zfr5VB"}
+:HL["/projects/codemate/codemate-comment.gif","image"]
+:HL["/projects/codemate/%EB%8C%93%EA%B8%80%EC%BA%90%EC%8B%9C%EB%8F%99%EA%B8%B0%ED%99%94(1).png","image"]
+:HL["/projects/codemate/%EB%8C%93%EA%B8%80%EC%BA%90%EC%8B%9C%EB%8F%99%EA%B8%B0%ED%99%94(2).png","image"]
+:HL["/projects/codemate/%EB%8C%93%EA%B8%80%EC%9D%B4%EB%B2%A4%ED%8A%B8%20%EB%B0%98%EC%98%81%20latency.png","image"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"projects","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"8ltZ10fpajb7lNNWqSbYw"}
