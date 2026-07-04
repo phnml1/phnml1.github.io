@@ -1,33 +1,21 @@
-import Image from 'next/image';
-import SideBarIcon from '@/public/navbar/sidebar.svg';
-import { useEffect, useState } from 'react';
+'use client';
 
 interface SideBarButtonProps {
   setSideBar: React.Dispatch<React.SetStateAction<boolean>>;
-  theme: string
+  theme: string;
 }
 
-const SideBarButton: React.FC<SideBarButtonProps> = (props: SideBarButtonProps) => {
-  const [iconColor, setColor] = useState('');
-  useEffect(() => {
-    if(props.theme == 'dark') {
-      setColor('white');
-    } else {
-      setColor('black');
-    }
-  },[props.theme]);
-
+const SideBarButton: React.FC<SideBarButtonProps> = ({ setSideBar }) => {
   return (
-    <div
-      className="cursor-pointer transition-all w-auto h-auto p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-gray-700"
-      onClick={() => {
-        props.setSideBar((prev) => !prev);
-      }}
+    <button
+      type="button"
+      aria-label="Open menu"
+      className="grid h-10 w-10 place-items-center rounded-lg bg-surface-container text-primary transition-colors hover:bg-surface-high"
+      onClick={() => setSideBar((prev) => !prev)}
     >
-      <div>
-       {<SideBarIcon fill={iconColor} width={40} height={40} />}
-       </div>
-    </div>
+      <span className="block h-[2px] w-5 bg-current shadow-[0_6px_0_current,0_-6px_0_current]" />
+    </button>
   );
 };
+
 export default SideBarButton;

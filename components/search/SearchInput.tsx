@@ -1,9 +1,18 @@
-interface SearchInput {
-  keyword:string;
+interface SearchInputProps {
+  keyword: string;
   setKeyword: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const SearchInput:React.FC<SearchInput> = (props:SearchInput) => {
-  return (<input type="text" value={props.keyword} onChange={(e) => {props.setKeyword(e.target.value)}} placeholder="포스트 제목 검색" className='outline-none transition-all border-2 border-slate-200 focus:border-indigo-200 dark:border-dark-secondary dark:focus:border-indigo-200 border-solid rounded-lg px-6 w-full h-14 '/>);
-}
+const SearchInput: React.FC<SearchInputProps> = ({ keyword, setKeyword }) => {
+  return (
+    <input
+      type="text"
+      value={keyword}
+      onChange={(event) => setKeyword(event.target.value)}
+      placeholder="Search posts by title, summary, or tag"
+      className="h-14 w-full rounded-xl bg-surface-container px-5 font-label text-sm text-white outline-none transition-colors placeholder:text-text-secondary focus:bg-surface-high"
+    />
+  );
+};
+
 export default SearchInput;

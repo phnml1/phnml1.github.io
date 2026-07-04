@@ -1,80 +1,78 @@
-import React, { useEffect, useRef, useState } from 'react';
-import SideBarLinks from './components/SideBarLinks';
-import { useTheme } from 'next-themes';
+'use client';
+
+import React, { useEffect, useRef } from 'react';
+import Link from 'next/link';
 
 interface SidebarProps {
   setSideBar: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const SideBar: React.FC<SidebarProps> = (props: SidebarProps) => {
+const links = [
+  { href: '/', label: 'Home' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/posts/all', label: 'Blog' },
+  { href: '/posts/tag/all', label: 'Tags' },
+  { href: '/posts/search', label: 'Search' },
+];
+
+const SideBar: React.FC<SidebarProps> = ({ setSideBar }) => {
   const sideBarRef = useRef<HTMLDivElement | null>(null);
-  const [scrollbg, setScrollBg] = useState('custom-scroll');
-  const {resolvedTheme} = useTheme();
+
   useEffect(() => {
-    if (resolvedTheme == 'dark') {
-      setScrollBg('custom-scroll-dark');
-    } else {
-      setScrollBg('custom-scroll');
-    }
-  }, [resolvedTheme]);
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSideBar(false);
+    };
 
-  const handleOutsideClick = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
-    if (sideBarRef.current && !sideBarRef.current.contains(e.target as Node)) {
-      props.setSideBar(false);
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => document.removeEventListener('keydown', handleEscapeKey);
+  }, [setSideBar]);
+
+  const handleOutsideClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    if (sideBarRef.current && !sideBarRef.current.contains(event.target as Node)) {
+      setSideBar(false);
     }
   };
-
-  const handleEscapeKey = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      props.setSideBar(false);
-    }
-  };
-  document.addEventListener('keydown', handleEscapeKey);
 
   return (
     <div
-      className="fixed z-40 flex top-0 left-0 right-0 bottom-0 justify-center items-center bg-black bg-opacity-40"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 py-20 backdrop-blur-sm"
       onClick={handleOutsideClick}
-      style={{ padding: '12vh 16px' }}
     >
-      <div
-        ref={sideBarRef}
-        className="w-full flex flex-col items-center justify-center max-w-2xl h-full bg-white rounded-lg shadow-xl transition-all z-50 transform-gpu dark:bg-dark-primary"
-      >
-        <div className={`${scrollbg} w-full h-full px-2 my-2 flex flex-col items-start overflow-auto`}>
-          <SideBarLinks
-            theme="Page"
-            setSideBar={props.setSideBar}
-            contents={[
-              'Main',
-              'Category',
-              'Tag',
-              'Search'
-            ]}
-          />
-          <SideBarLinks
-            theme="Contact"
-            setSideBar={props.setSideBar}
-            contents={['Email','Github']}
-          />
-          <SideBarLinks
-            theme="Preference"
-            setSideBar={props.setSideBar}
-            contents={['다크 모드']}
-          />
-          <div className="py-4 mt-8 w-full h-3">
-            <div className="mx-8 text-sm text-slate-800 dark:text-dark-secondary">About me</div>
+      <div ref={sideBarRef} className="w-full max-w-xl rounded-xl bg-surface-container p-6 shadow-[0_20px_60px_rgba(173,198,255,0.08)]">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <div className="font-headline text-2xl font-black tracking-[-0.04em] text-primary">phnml1</div>
+            <p className="mt-1 text-sm text-text-secondary">Portfolio and tech journal</p>
           </div>
-          <div className="mt-4 w-full flex flex-col items-center">
-            <div className="w-1/2 text-center mt-8">
-              프론트엔드 개발을 공부하고 있는
-              <br /> 이주영 이라고 합니다.
-            </div>
-            <div className="mt-4 w-full flex flex-col items-center text-gray-400 dark:text-dark-primary">
-              <div className="w-1/2 mt-2 text-center text-sm mb-8">
-                한국공학대학교 3학년
-              </div>
-            </div>
+          <button
+            type="button"
+            className="rounded-lg bg-surface-high px-3 py-2 font-label text-xs uppercase tracking-[0.16em] text-primary"
+            onClick={() => setSideBar(false)}
+          >
+            Close
+          </button>
+        </div>
+        <nav className="flex flex-col gap-2">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setSideBar(false)}
+              className="rounded-lg px-4 py-4 font-label text-sm font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-surface-high hover:text-primary"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+        <div className="mt-10 rounded-lg bg-surface-low p-5">
+          <div className="font-label text-xs uppercase tracking-[0.22em] text-primary">Contact</div>
+          <div className="mt-4 flex flex-col gap-2 text-sm text-text-secondary">
+            <Link href="mailto:juyung0903@gmail.com" onClick={() => setSideBar(false)} className="hover:text-white">
+              juyung0903@gmail.com
+            </Link>
+            <Link href="https://github.com/phnml1" target="_blank" onClick={() => setSideBar(false)} className="hover:text-white">
+              github.com/phnml1
+            </Link>
           </div>
         </div>
       </div>

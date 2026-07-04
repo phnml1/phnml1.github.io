@@ -1,9 +1,12 @@
+'use client';
+
 import { useTheme } from 'next-themes';
-import router from 'next/router';
+import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
 export default function Giscus() {
   const ref = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
   const { resolvedTheme } = useTheme();
   const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
 
@@ -28,19 +31,17 @@ export default function Giscus() {
     scriptElem.setAttribute('data-lang', 'ko');
 
     ref.current.appendChild(scriptElem);
-  }, []);
+  }, [theme]);
 
   useEffect(() => {
     const iframe = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
     iframe?.contentWindow?.postMessage({ giscus: { setConfig: { theme } } }, 'https://giscus.app');
   }, [theme]);
 
-  // https://github.com/giscus/giscus/blob/main/ADVANCED-USAGE.md#isetconfigmessage
   useEffect(() => {
     const iframe = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
-    iframe?.contentWindow?.postMessage({ giscus: { setConfig: { term: router.asPath } } }, 'https://giscus.app');
+    iframe?.contentWindow?.postMessage({ giscus: { setConfig: { term: pathname } } }, 'https://giscus.app');
+  }, [pathname]);
 
-  }, [router.asPath]);
-
-  return <section id='giscus' ref={ref} />;
+  return <section id="giscus" ref={ref} />;
 }

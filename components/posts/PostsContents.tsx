@@ -1,15 +1,18 @@
-import { Post } from "@/types";
-import PostItem from "./PostItem";
+import { Post } from '@/types';
+import PostItem from './PostItem';
+
 interface PostsContentsProps {
   contents: Post[];
 }
-const PostsContents: React.FC<PostsContentsProps> = (props) => {
-  return(
-    <div className = 'w-full h-fit px-3 mt-12 grid gap-12'>
-      {props.contents.map((a,i) => (
-        <PostItem key = {i} content={a}/>)
-      )}
+
+const PostsContents: React.FC<PostsContentsProps> = ({ contents }) => {
+  return (
+    <div className="grid gap-x-12 gap-y-20 md:grid-cols-2">
+      {contents.map((post, index) => (
+        <PostItem key={post.slug} content={post} offset={index % 2 === 1} />
+      ))}
     </div>
-  )
-}
+  );
+};
+
 export default PostsContents;

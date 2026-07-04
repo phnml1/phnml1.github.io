@@ -1,19 +1,39 @@
 /** @type {import('next').NextConfig} */
+
+const isProd = process.env.NODE_ENV === 'production';
+
 const nextConfig = {
-	output: 'export',
+  ...(isProd && { output: 'export' }),
   reactStrictMode: true,
-  swcMinify: true,
-  webpack: (config) => {
-		config.module.rules.push({
-			test: /\.svg$/,
-			use: ['@svgr/webpack'],
-		});
-		return config;
-	},
-	images: {
-    loader: 'custom',
-    loaderFile: './utils/imageLoader.ts',
+  images: isProd
+    ? {
+        unoptimized: true,
+        remotePatterns: [
+          {
+            protocol: 'https',
+            hostname: 'github.com',
+            pathname: '/user-attachments/assets/**',
+          },
+        ],
+      }
+    : {
+        unoptimized: true,
+        remotePatterns: [
+          {
+            protocol: 'https',
+            hostname: 'github.com',
+            pathname: '/user-attachments/assets/**',
+          },
+        ],
+      },
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
   },
-}
+};
 
 module.exports = nextConfig;

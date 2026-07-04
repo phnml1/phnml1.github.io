@@ -8,6 +8,10 @@ export interface Post {
     isFeatured: boolean;
     content: string;
     readingMinutes?: number;
+    project?: {
+        title: string;
+        slug: string;
+    };
 }
 
 export interface PrevNextDataInfo {

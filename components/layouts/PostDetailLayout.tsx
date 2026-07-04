@@ -1,37 +1,26 @@
-import Layout from './Layout';
-import { Fragment } from 'react';
 import ReadingProgressBar from '../detail/ReadingProgressBar';
 import PostHeader from '../detail/PostHeader';
 import PostContent from '../detail/PostContent';
-import Line from '../Line';
 import PostFooter from '../detail/PostFooter';
 
-// interface PostDetailLayoutProps {
-//   post: Post;
-//   category: string;
-//   prevData: Post;
-//   nextData: Post;
-// }
 export default function PostDetailLayout(props) {
   return (
-     <>
-        <ReadingProgressBar />
-        <div className="mt-4 w-full md:w-4/5 px-8 flex flex-col items-center mb-16">
+    <>
+      <ReadingProgressBar />
+      <article className="w-full px-5 pb-20 pt-28 md:px-12 md:pt-36">
+        <div className="mx-auto w-full max-w-[1440px]">
           <PostHeader
             title={props.post.title}
             category={props.category}
             date={props.post.date}
             tags={props.post.tags}
             readingTime={props.post.readingMinutes}
+            project={props.post.project}
           />
-          <PostContent
-            title={props.post.title}
-            content={props.post.content}
-            slug={props.post.slug}
-          />
-          <Line mt="8" />
+          <PostContent title={props.post.title} content={props.post.content} slug={props.post.slug} />
           <PostFooter prevData={props.prevData} nextData={props.nextData} />
         </div>
-        </>
+      </article>
+    </>
   );
 }

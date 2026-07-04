@@ -1,0 +1,363 @@
+---
+title: AI 리뷰 비동기 상태 흐름과 실시간 알림 구조 정리
+date: 2026-05-03 20:43:16
+image: index.png
+project:
+  title: "CodeMate"
+  slug: "codemate"
+summary: AI 리뷰처럼 시간이 오래 걸리는 작업을 즉시 응답, 백그라운드 처리, 상태 기반 UI, 실시간 알림으로 연결한 과정을 정리했습니다.
+tags: ["react", "nextjs", "typescript"]
+---
+
+# AI 리뷰 비동기 상태 흐름과 실시간 알림 구조 정리
+
+## 들어가며
+
+CodeMate에는 GitHub Pull Request를 AI로 분석하는 기능이 있다. 사용자가 리뷰를 요청하면 서버는 PR의 변경 파일을 가져오고, diff를 구성한 뒤, AI 응답을 파싱하고 점수와 이슈 목록을 저장한다.
+
+이 흐름은 일반적인 CRUD 요청보다 오래 걸릴 수 있다. 그래서 처음에는 “요청 버튼을 누른 뒤 결과가 올 때까지 기다리면 된다”고 생각하기 쉽지만, 실제 화면에서는 몇 가지 문제가 생긴다.
+
+사용자는 요청이 제대로 시작됐는지 알아야 하고, 같은 PR에 대해 중복 요청이 발생하면 안 된다. 또 분석이 끝났을 때는 사용자가 화면을 계속 보고 있지 않아도 알림을 통해 결과를 확인할 수 있어야 한다.
+
+이번 글에서는 CodeMate에서 AI 리뷰 요청을 `PENDING → IN_PROGRESS → COMPLETED / FAILED` 상태 흐름으로 정리하고, 리뷰 패널 UI와 실시간 알림에 연결한 과정을 정리한다.
+
+## 문제 상황
+
+AI 리뷰 요청은 시간이 오래 걸릴 수 있는 작업이다. 그런데 이 작업을 일반적인 동기 API처럼 처리하면 API 응답이 늦어지고, 프론트엔드에서는 사용자가 현재 상태를 알기 어렵다.
+
+또 다른 문제는 중복 요청이다. 사용자가 버튼을 여러 번 누르거나 GitHub Webhook 이벤트가 반복해서 들어오면 같은 PR에 대해 여러 리뷰 분석이 동시에 실행될 수 있다. AI 분석은 외부 API 호출과 GitHub 파일 조회가 포함되기 때문에 중복 실행을 그대로 허용하면 데이터와 알림 흐름이 꼬일 수 있다.
+
+이 문제를 해결하려면 단순히 “로딩 상태를 보여준다” 수준이 아니라, 서버와 클라이언트가 같은 상태 모델을 기준으로 움직여야 했다.
+
+## 원인 분석
+
+코드상 AI 리뷰 흐름은 크게 두 경로에서 시작된다.
+
+첫 번째는 사용자가 직접 리뷰를 요청하는 API다.
+
+```ts
+// app/api/review/analyze/route.ts
+await upsertReviewNotifications({
+  userIds: pendingRecipientIds,
+  prId: pullRequestId,
+  prTitle: pr.title,
+  prNumber: pr.number,
+  status: "PENDING",
+});
+
+analyzeReview(pullRequestId)
+  .then(async (result) => {
+    if (result.status === "SKIPPED_ACTIVE") return;
+
+    await upsertReviewNotifications({
+      userIds: targetRecipients,
+      prId: pullRequestId,
+      prTitle: pr.title,
+      prNumber: pr.number,
+      status: result.status,
+    });
+  });
+
+return NextResponse.json({ status: "PENDING" });
+```
+
+두 번째는 GitHub Webhook에서 PR opened/synchronize 이벤트가 들어왔을 때다.
+
+```ts
+// app/api/webhook/github/route.ts
+after(async () => {
+  await upsertReviewNotifications({
+    userIds: pendingRecipients,
+    prId: pullRequest.id,
+    prTitle: pr.title,
+    prNumber: pr.number,
+    status: "PENDING",
+  });
+
+  const result = await analyzeReview(pullRequest.id);
+
+  if (result.status === "SKIPPED_ACTIVE") return;
+
+  await upsertReviewNotifications({
+    userIds: targetRecipients,
+    prId: pullRequest.id,
+    prTitle: pr.title,
+    prNumber: pr.number,
+    status: result.status,
+  });
+});
+
+return NextResponse.json({ message: "PR processed" });
+```
+
+두 코드 모두 공통적으로 먼저 `PENDING` 알림을 만들고, 실제 분석은 백그라운드에서 진행한다. 즉, API 응답과 분석 완료 시점이 분리되어 있다.
+
+이 구조에서는 “지금 분석이 진행 중인지”, “완료됐는지”, “실패했는지”를 별도 상태로 저장하고 UI에서 따라가야 한다.
+
+## 해결 방향
+
+해결 방향은 세 가지로 잡았다.
+
+첫째, 리뷰 분석 상태를 명확하게 나눈다. CodeMate에서는 Review 상태를 `PENDING`, `IN_PROGRESS`, `COMPLETED`, `FAILED`로 관리한다. 추가로 `stage`를 두어 `QUEUED`, `FETCHING_FILES`, `ANALYZING`, `FINALIZING` 같은 진행 단계를 표현한다.
+
+둘째, 중복 실행을 서버에서 막는다. 프론트에서 버튼 상태를 막는 것만으로는 충분하지 않다. API가 여러 경로에서 호출될 수 있기 때문에 `analyzeReview` 내부에서 진행 중 리뷰를 먼저 확인하고, DB partial unique index로 한 번 더 보호한다.
+
+셋째, 프론트엔드는 상태를 polling과 socket 알림으로 따라간다. 진행 중에는 3초 간격으로 리뷰 상태를 확인하고, 완료/실패 알림이 오면 해당 PR의 리뷰 query를 invalidate한다.
+
+## 구현 과정
+
+### 1. 진행 중 리뷰 확인으로 중복 실행 방지
+
+`analyzeReview`는 가장 먼저 같은 PR에 대해 진행 중인 리뷰가 있는지 확인한다.
+
+```ts
+// lib/ai/analyze.ts
+const activeReview = await prisma.review.findFirst({
+  where: {
+    pullRequestId,
+    status: { in: ["PENDING", "IN_PROGRESS"] },
+  },
+  select: { id: true },
+  orderBy: { reviewedAt: "desc" },
+});
+
+if (activeReview) {
+  return { status: "SKIPPED_ACTIVE" };
+}
+```
+
+그리고 DB migration에서도 같은 의도를 확인할 수 있다.
+
+```sql
+-- prisma/migrations/20260408000000_add_review_active_unique/migration.sql
+CREATE UNIQUE INDEX "review_active_unique"
+  ON "Review" ("pullRequestId")
+  WHERE status IN ('PENDING', 'IN_PROGRESS');
+```
+
+프론트엔드 버튼 제어만으로 중복 요청을 막으면 새로고침, 여러 탭, Webhook 등 다른 경로를 막기 어렵다. 그래서 서버 로직과 DB 제약을 함께 둔 구조가 더 안전하다고 판단했다.
+
+### 2. 분석 단계별 상태 업데이트
+
+리뷰가 새로 생성되면 처음에는 `PENDING`, `QUEUED` 상태로 저장된다.
+
+```ts
+// lib/ai/analyze.ts
+review = await prisma.review.create({
+  data: {
+    pullRequestId,
+    status: "PENDING",
+    stage: "QUEUED",
+    aiSuggestions: {},
+    qualityScore: 0,
+    severity: "LOW",
+    issueCount: 0,
+  },
+  select: { id: true },
+});
+```
+
+이후 파일 조회, AI 분석, 결과 정리 단계에서 `stage`가 바뀐다.
+
+```ts
+await updateReviewStage(reviewId, {
+  status: "IN_PROGRESS",
+  stage: "FETCHING_FILES",
+});
+
+await updateReviewStage(reviewId, {
+  status: "IN_PROGRESS",
+  stage: "ANALYZING",
+});
+
+await updateReviewStage(reviewId, {
+  status: "IN_PROGRESS",
+  stage: "FINALIZING",
+});
+```
+
+분석이 끝나면 결과를 저장하고 `COMPLETED`로 변경한다. 실패하면 `FAILED`로 변경한다.
+
+```ts
+await prisma.review.update({
+  where: { id: reviewId },
+  data: {
+    aiSuggestions: parsed,
+    qualityScore: score,
+    severity: overallSeverity,
+    issueCount,
+    status: "COMPLETED",
+    stage: "COMPLETED",
+  },
+});
+```
+
+### 3. 요청 직후 프론트 캐시에 PENDING 반영
+
+사용자가 직접 리뷰 요청을 누른 경우, API 응답이 성공하면 프론트에서도 `PENDING` 상태를 즉시 캐시에 반영한다.
+
+```ts
+// hooks/pr-detail/usePRReviewActions.ts
+queryClient.setQueryData<Review | null>(["review", prId], (current) =>
+  current
+    ? {
+        ...current,
+        status: "PENDING",
+        stage: "QUEUED",
+      }
+    : createPendingReview(prId)
+);
+
+await queryClient.invalidateQueries({ queryKey: ["review", prId] });
+```
+
+서버 응답을 기다린 뒤에야 화면이 바뀌는 것이 아니라, 요청이 시작됐다는 상태를 먼저 보여주기 위한 처리다.
+
+### 4. 리뷰 패널을 상태별 UI로 분리
+
+리뷰 패널은 `review.status`를 기준으로 화면을 분기한다.
+
+```tsx
+// components/review/ReviewPanel/index.tsx
+if (review.status === "FAILED") {
+  return <ReviewFailedState review={review} />;
+}
+
+if (review.status === "PENDING" || review.status === "IN_PROGRESS") {
+  return <ReviewProgressState stage={review.stage} />;
+}
+
+return <ReviewCompletedState review={review} />;
+```
+
+진행 중일 때는 `ReviewProgressState`가 `stage`를 받아 현재 단계를 보여준다.
+
+```tsx
+// components/review/ReviewPanel/ReviewProgressState.tsx
+export default function ReviewProgressState({ stage }: ReviewProgressStateProps) {
+  return (
+    <div className="space-y-4 py-2">
+      <ReviewProgressSteps stage={stage} />
+    </div>
+  );
+}
+```
+
+이렇게 상태별 컴포넌트를 나누니 로딩, 진행 중, 실패, 완료 화면의 책임이 분리됐다. 특히 장시간 작업에서는 단순 spinner보다 “현재 어떤 단계인지”를 표현하는 쪽이 사용자에게 더 명확하다.
+
+### 5. 진행 중에는 polling, 완료/실패는 socket 알림으로 갱신
+
+`useReviewQuery`는 리뷰 상태가 `PENDING` 또는 `IN_PROGRESS`일 때 3초마다 다시 조회한다.
+
+```ts
+// hooks/useReview.ts
+export function useReviewQuery(prId: string, options?: ReviewQueryOptions) {
+  return useQuery({
+    queryKey: reviewQueryKey(prId),
+    queryFn: () => fetchReview(prId),
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      if (status === "PENDING" || status === "IN_PROGRESS") return 3000;
+      return false;
+    },
+    ...options,
+  });
+}
+```
+
+그리고 socket으로 `notification:new` 이벤트가 들어오면 해당 PR의 리뷰 query를 invalidate한다.
+
+```ts
+// hooks/useReview.ts
+if (
+  (notification.type === "NEW_REVIEW" ||
+    notification.type === "REVIEW_FAILED") &&
+  notification.prId === prId
+) {
+  queryClient.invalidateQueries({ queryKey: reviewQueryKey(prId) });
+}
+```
+
+polling만 쓰면 완료 시점 반영이 최대 polling 주기에 묶인다. 반대로 socket만 믿으면 연결 실패 시 상태 갱신이 끊길 수 있다. 그래서 진행 중에는 polling을 유지하고, 완료/실패 알림은 socket 이벤트로 빠르게 반영하는 구조를 선택했다.
+
+### 6. 알림은 생성이 아니라 상태 갱신으로 처리
+
+AI 리뷰 알림은 매번 새로 쌓기보다 기존 `NEW_REVIEW` 알림을 찾아 갱신한다.
+
+```ts
+// lib/review-notifications.ts
+const existing = await prisma.notification.findFirst({
+  where: {
+    userId,
+    prId: params.prId,
+    type: "NEW_REVIEW",
+  },
+  orderBy: { createdAt: "desc" },
+  select: { id: true },
+});
+
+const notification = existing
+  ? await prisma.notification.update({
+      where: { id: existing.id },
+      data: {
+        title: content.title,
+        message: content.message,
+        isRead: false,
+        reviewStatus: params.status,
+        createdAt: new Date(),
+      },
+    })
+  : await prisma.notification.create({
+      data: {
+        type: "NEW_REVIEW",
+        reviewStatus: params.status,
+        title: content.title,
+        message: content.message,
+        isRead: false,
+        userId,
+        prId: params.prId,
+      },
+    });
+```
+
+이 방식은 같은 PR의 AI 리뷰 상태가 `PENDING`에서 `COMPLETED` 또는 `FAILED`로 바뀌는 흐름을 하나의 알림 안에서 표현하기 위한 선택이다.
+
+알림 목록에서는 `reviewStatus`에 따라 대기/완료/실패 표시를 다르게 보여준다.
+
+```tsx
+// components/notification/NotificationList.tsx
+const reviewStatusMeta =
+  notification.type === "NEW_REVIEW"
+    ? getReviewStatusMeta(notification)
+    : null;
+```
+
+## 결과
+
+코드상 확인 가능한 결과는 다음과 같다.
+
+- AI 리뷰 요청 API는 분석 완료를 기다리지 않고 `PENDING` 상태를 먼저 반환한다.
+- `analyzeReview`는 `PENDING`, `IN_PROGRESS` 상태의 기존 리뷰를 확인해 중복 실행을 건너뛴다.
+- DB partial unique index로 진행 중 리뷰가 PR당 하나만 생성되도록 제한한다.
+- 리뷰 패널은 `PENDING`, `IN_PROGRESS`, `FAILED`, `COMPLETED` 상태에 따라 다른 UI를 보여준다.
+- 진행 중 리뷰는 3초 간격으로 상태를 다시 조회한다.
+- 완료/실패 알림이 socket으로 들어오면 해당 PR 리뷰 query를 invalidate한다.
+- AI 리뷰 알림은 `reviewStatus`를 기준으로 `PENDING`, `COMPLETED`, `FAILED` 상태를 표현한다.
+
+정량 수치는 별도 측정 필요하다. 현재 코드에서는 상태 흐름과 알림 갱신 구조는 확인되지만, 이 작업으로 인한 처리 시간 단축, 사용자 반응 속도 개선, 요청 감소율 같은 수치는 문서나 코드에 고정된 측정 결과로 남아 있지 않다.
+
+## 배운 점
+
+이번 구현에서 가장 크게 느낀 점은 오래 걸리는 작업일수록 “요청 성공”과 “작업 완료”를 분리해서 생각해야 한다는 것이다.
+
+프론트엔드 입장에서는 버튼을 누른 직후의 상태, 작업이 진행 중인 상태, 실패했을 때 다시 시도할 수 있는 상태, 완료 후 결과를 보는 상태가 모두 다르다. 이 차이를 서버 상태와 맞추지 않으면 화면은 쉽게 애매해진다.
+
+또 하나는 중복 요청 방지는 프론트엔드만으로 해결할 수 없다는 점이다. 버튼 disabled 처리는 필요하지만, 실제로는 API가 여러 경로에서 호출될 수 있다. 그래서 서버에서 진행 중 리뷰를 확인하고, DB 제약까지 두는 방식이 더 안전했다.
+
+마지막으로 polling과 socket은 서로 대체 관계라기보다 보완 관계에 가깝다고 느꼈다. 진행 상태는 polling으로 안정적으로 따라가고, 완료/실패처럼 즉시 반영되면 좋은 이벤트는 socket 알림으로 연결하는 방식이 이 기능에는 잘 맞았다.
+
+## 마무리
+
+AI 리뷰 기능은 단순히 AI API를 호출하는 기능이 아니라, 오래 걸리는 작업의 상태를 사용자에게 어떻게 보여줄지 설계하는 문제에 가까웠다.
+
+CodeMate에서는 `PENDING → IN_PROGRESS → COMPLETED / FAILED` 상태 흐름을 기준으로 서버 처리, 리뷰 패널 UI, 실시간 알림을 연결했다. 이 구조 덕분에 사용자는 요청이 시작됐는지, 진행 중인지, 완료됐는지, 실패했는지를 같은 화면 흐름 안에서 확인할 수 있게 됐다.

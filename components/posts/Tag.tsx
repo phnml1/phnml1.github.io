@@ -1,14 +1,19 @@
-import Link from "next/link";
+import Link from 'next/link';
+import { tagHref } from '@/utils/Route-Util';
 
 interface TagProps {
-  name: string 
+  name: string;
 }
-const Tag:React.FC<TagProps> = (props) => {
-  return (
-    <Link href={`/posts/tag/${props.name}`} className='w-fit h-fit px-2 py-1 transition-all bg-gray-100 rounded-lg md:text-sm text-xs dark:bg-dark-secondary dark:hover:text-white hover:bg-tag-hover dark:hover:bg-tag-dark-hover'>
-      {props.name}
-    </Link>
-  )
 
-}
+const Tag: React.FC<TagProps> = ({ name }) => {
+  return (
+    <Link
+      href={tagHref(name)}
+      className="w-fit rounded-full bg-surface-container px-3 py-1 font-label text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary transition-colors hover:bg-surface-high hover:text-primary"
+    >
+      {name}
+    </Link>
+  );
+};
+
 export default Tag;

@@ -7,10 +7,10 @@ interface PostFooterProps {
   nextData: {title:string, summary:string, slug:string} | number;
 }
 const PostFooter:React.FC <PostFooterProps> = (props) => {
-  return (<div className="w-full mt-12">
+  return (<footer className="mt-20 w-full">
     <MyProFile />
     <DetailNav prevData = {props.prevData} nextData={props.nextData}/>
     <Giscus />
-  </div>);
+  </footer>);
 }
 export default PostFooter;

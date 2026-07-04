@@ -1,5 +1,3 @@
-import SearchIconLight from '@/public/navbar/searchIconLight.svg';
-import SearchIconDark from '@/public/navbar/searchIconDark.svg'
 import Link from 'next/link';
 
 interface SearchButtonProps {
@@ -7,19 +5,16 @@ interface SearchButtonProps {
   theme: string;
 }
 
-const SearchButton: React.FC<SearchButtonProps> = (props) => {
-
-
+const SearchButton: React.FC<SearchButtonProps> = () => {
   return (
     <Link
-    href={'/posts/search'}
-      className="cursor-pointer transition-all w-auto h-auto rounded-lg hover:bg-slate-200 dark:hover:bg-gray-700"
+      href="/posts/search"
+      aria-label="Search posts"
+      className="grid h-10 w-10 place-items-center rounded-lg bg-surface-container text-primary transition-colors hover:bg-surface-high"
     >
-      <div className='-mt-0.5'
-     >
-      {props.theme=='dark'?(<SearchIconDark  width={50} height={50}/>):(<SearchIconLight width={50} height={50}/>)}
-      </div>
+      <span className="text-lg leading-none">⌕</span>
     </Link>
   );
 };
+
 export default SearchButton;

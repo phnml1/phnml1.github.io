@@ -1,45 +1,30 @@
 import Image from 'next/image';
-import GithubIcon from '@/public/profile/github-mark.svg';
-import GmailIcon from '@/public/profile/gmail-icon.svg';
 import Link from 'next/link';
-import { github } from '@/Constants';
+
 const MyProFile: React.FC = () => {
   return (
-    <div className="p-12 flex gap-4 justify-center items-center">
-      <div>
+    <section className="rounded-xl bg-surface-container p-6 md:p-8">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
         <Image
           src="/profile/profile.png"
-          alt="my profile photo"
-          width={80}
-          height={80}
-          className="rounded-full"
+          alt="phnml1 profile"
+          width={88}
+          height={88}
+          className="rounded-full grayscale"
         />
-      </div>
-      <div className="flex flex-col w-auto gap-2">
         <div>
-          <div className="w-full font-bold text-base mb-1">Phnml1</div>
-          <div className="w-full text-sm text-slate-500 dark:text-dark-secondary">
-            더디더라도 조금씩 성장하는 프론트엔드 개발자
+          <div className="font-headline text-xl font-black tracking-[-0.04em]">phnml1</div>
+          <p className="mt-2 max-w-xl text-sm leading-7 text-text-secondary">
+            문제를 측정하고 구조로 해결하는 프론트엔드 개발자를 지향합니다. 구현 과정에서 배운 판단 기준을 글로 남깁니다.
+          </p>
+          <div className="mt-4 flex gap-4 font-label text-xs uppercase tracking-[0.18em] text-primary">
+            <Link href="https://github.com/phnml1" target="_blank">GitHub</Link>
+            <Link href="mailto:juyung0903@gmail.com">Email</Link>
           </div>
         </div>
-        <div className="w-full flex gap-2">
-          <Link href={`${github.link}`} target="_blank">
-            <GithubIcon
-              width="25"
-              height="25"
-              className="fill-slate-300 transition-all cursor-pointer hover:fill-black dark:hover:fill-white"
-            />
-          </Link>
-          <Link href="mailto:juyung0903@gmail.com" target="_blank">
-            <GmailIcon
-              width="25"
-              height="25"
-              className="fill-slate-300 transition-all cursor-pointer hover:fill-black dark:hover:fill-white"
-            />
-          </Link>
-        </div>
       </div>
-    </div>
+    </section>
   );
 };
+
 export default MyProFile;

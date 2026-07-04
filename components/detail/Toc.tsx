@@ -1,104 +1,89 @@
-'use client'
+'use client';
+
 import useObservation from '@/utils/useObservation';
 import { useEffect, useRef, useState } from 'react';
-import { Link , animateScroll as scroll} from 'react-scroll';
-import ArrowUpward from '../../public/detail/arrow_upward.svg';
-import Comment from '../../public/detail/comment.svg';
+import { Link, animateScroll as scroll } from 'react-scroll';
 import UndoButton from './UndoButton';
-import { useRouter } from 'next/router';
-interface PostContentProps {
+import { useParams } from 'next/navigation';
+
+interface TocProps {
   title: string;
   slug: string;
 }
 
-const TOC: React.FC<PostContentProps> = (props) => {
+const TOC: React.FC<TocProps> = (props) => {
   const listRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+  const params = useParams();
   const [currentId, setCurrentId] = useState<string>('');
   const [headingEls, setHeadingEls] = useState<HTMLElement[]>([]);
+  const tocHeadingEls = headingEls.filter((heading, index) => !(index === 0 && heading.nodeName === 'H1'));
 
   useEffect(() => {
     const headingElements: HTMLElement[] = Array.from(document.querySelectorAll('h1,h2,h3'));
     setHeadingEls(headingElements);
     setCurrentId('');
-   }, [props.slug]);
+  }, [props.slug]);
 
-   useEffect(() => {
-    const currentItem = listRef.current?.querySelector('.font-bold.text-indigo-500');
+  useEffect(() => {
+    const currentItem = listRef.current?.querySelector('[data-active="true"]');
     if (currentItem && listRef.current) {
-      const parentBottom = listRef.current.getBoundingClientRect().top;
-      const itemBottom = currentItem.getBoundingClientRect().top;
-      // 차이만큼 스크롤 이동
-      listRef.current.scrollTop += (itemBottom - parentBottom);
+      const parentTop = listRef.current.getBoundingClientRect().top;
+      const itemTop = currentItem.getBoundingClientRect().top;
+      listRef.current.scrollTop += itemTop - parentTop;
     }
   }, [currentId]);
 
-  useObservation(setCurrentId,headingEls);
+  useObservation(setCurrentId, tocHeadingEls);
+
+  const category = typeof params?.category === 'string' ? params.category : 'all';
+
   return (
-    <div className="mt-12 ml-auto relative hidden lg:block">
-      <div className="sticky top-32 w-60 ">
-        <div className="p-4 max-h-[500px] rounded-t-xl border-solid border-slate-200 border-[0.5px] border-b-0 dark:border-gray-600 items-start gap-6">
-          <div className="font-bold mb-2">{props.title}</div>
-          <hr className='w-full border-neutral-400 dark:border-gray-600' />
-          <div ref={listRef} className='custom-scroll overflow-y-auto max-h-[380px] mt-2 mb-2 px-2'>
-          <ul  className="mb-2 text-sm flex flex-col gap-2 mt-4 ">
-            {headingEls.map((a:HTMLElement, i) => {
-              const elementType: string = a.nodeName;
-              const elementContent: string = a.innerHTML;
-              const tocId: string = a.id;
-              const isCurrent: string = currentId == tocId ? 'font-bold text-indigo-500' : '';
-              if (elementType === 'H1'){
+    <aside className="relative hidden lg:block">
+      <div className="sticky top-28 overflow-hidden rounded-xl bg-surface-container">
+        <div className="p-5 pt-4">
+          <div ref={listRef} className="custom-scroll max-h-[420px] overflow-y-auto pr-2">
+            <ul className="flex flex-col gap-2 text-sm">
+              {tocHeadingEls.map((heading, index) => {
+                const tocId = heading.id;
+                const isCurrent = currentId === tocId;
+                const level = heading.nodeName === 'H1' ? 'pl-0' : heading.nodeName === 'H2' ? 'pl-3' : 'pl-6';
+
                 return (
-                  <li key={i} className={`${isCurrent}`}>
+                  <li key={`${tocId}-${index}`} data-active={isCurrent}>
                     <Link
-                      to={`${tocId}`}
-                      spy={true} smooth={true} duration={400}
-                      className={`${isCurrent} py-1 cursor-pointer transition-colors`}
+                      to={tocId}
+                      spy
+                      smooth
+                      duration={400}
                       offset={-100}
+                      className={`${level} block cursor-pointer py-1 leading-6 transition-colors ${
+                        isCurrent ? 'font-bold text-primary' : 'text-text-secondary hover:text-white'
+                      }`}
                     >
-                      {elementContent}
+                      {heading.textContent}
                     </Link>
                   </li>
                 );
-              }
-              if (elementType === 'H2') {
-                return (
-                  <li key={i}>
-                    <Link
-                      to={`${tocId}`}
-                      spy={true} smooth={true} duration={400}
-                      offset={-100}
-                      className={`${isCurrent} py-1 pl-2 whitespace-pre-line cursor-pointer transition-colors block`}
-                    >
-                      {elementContent}
-                      </Link>
-                  </li>
-                );
-              } else {
-                return (
-                  <li key={i}>
-                    <Link
-                      to={`${tocId}`}
-                      spy={true} smooth={true} duration={400}
-                      offset={-50}
-                      className={`${isCurrent} py-1 pl-6 whitespace-pre-line cursor-pointer transition-colors block`}
-                    >
-                      {elementContent}
-                    </Link>
-                  </li>
-                );
-              }
-            })}
-          </ul>
+              })}
+            </ul>
           </div>
         </div>
-        <div className='rounded-b-xl border-[0.5px] px-6 w-full h-12 border-solid bg-slate-100 dark:bg-[#363636] dark:border-gray-600  flex items-center justify-between'>
-            <UndoButton category = {router.query.detail[1]}/>
-            <ArrowUpward onClick={() => {scroll.scrollToTop()}} className='w-auto h-auto rounded-lg hover:bg-slate-200 p-2 cursor-pointer text-white transition-colors dark:hover:bg-gray-800 fill-[#666666] dark:fill-[rgb(181,181,181)]'/>
-            <Link to='giscus' spy={true} smooth={true} duration={400}><Comment className='w-auto h-auto rounded-lg p-2 hover:bg-slate-200 cursor-pointer text-neutral-700 transition-colors dark:hover:bg-slate-800 fill-[#666666] dark:fill-[rgb(181,181,181)]'/></Link>
+        <div className="flex h-12 items-center justify-between bg-surface-high px-5">
+          <UndoButton category={category} />
+          <button
+            type="button"
+            className="font-label text-xs uppercase tracking-[0.16em] text-primary"
+            onClick={() => scroll.scrollToTop()}
+          >
+            Top
+          </button>
+          <Link to="giscus" spy smooth duration={400} className="cursor-pointer font-label text-xs uppercase tracking-[0.16em] text-primary">
+            Comment
+          </Link>
         </div>
       </div>
-    </div>
+    </aside>
   );
 };
+
 export default TOC;

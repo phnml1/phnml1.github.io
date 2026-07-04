@@ -1,0 +1,310 @@
+---
+title: 'React Native 칸반보드 드래그 앤 드롭 성능 최적화 (1) - 문제 인식과 측정'
+date: 2026-02-22 22:00:00
+image: index.png
+project:
+  title: "Fly:On"
+  slug: "fly-on"
+summary: 칸반보드 드래그 앤 드롭에서 드래그 중에 불필요한 리렌더링 및 버벅임이 발생하는 문제를 수치로 측정하고 원인을 분석합니다.
+tags: ['react native', '드래그 앤 드롭', '성능 최적화', '리렌더링', '칸반보드', 'PanResponder', 'props drilling']
+---
+
+
+# React Native 칸반보드 드래그 앤 드롭 성능 최적화 (1) - 문제 인식과 측정
+
+> 이 시리즈는 React Native에서 직접 구현한 칸반보드 드래그 앤 드롭의 성능을 측정하고 개선하는 과정을 다룹니다.
+
+
+---
+
+## 배경
+
+여행 일정 플래닝 앱 **Fly:On**을 개발하면서, 사용자가 여행 일정을 Day별로 드래그해서 순서를 바꿀 수 있는 칸반보드를 구현했습니다.
+
+React Native에는 다중 리스트 간 드래그 앤 드롭을 지원하는 라이브러리가 없어서, **PanResponder를 사용해 직접 구현**했습니다.
+
+기능은 동작했지만, 성능에 관해 아직 부족한 이슈가 많았기에 이번부터는 이 기능의 성능을 개선하는 과정을 다루려고 합니다.
+
+
+---
+
+## 문제 인식: 코드 리뷰
+
+구현을 마치고 코드를 다시 살펴보니, 몇 가지 문제점이 보였습니다.
+
+### 1. Props Drilling이 4단계
+
+```
+TravelKanban
+    ↓ onDragStart, onDragMove, onDragEnd, draggingItem...
+DayColumn
+    ↓ onDragStart, onDragMove, onDragEnd, draggingItem...
+DayContent
+    ↓ onDragStart, onDragMove, onDragEnd, draggingItem...
+PlanList
+    ↓ onDragStart, onDragMove, onDragEnd...
+DraggablePlanCard
+```
+
+`draggingItem` 상태가 최상위에서 최하위까지 4단계를 거쳐 전달됩니다. 이 경우 상태가 바뀔 때마다 **중간의 모든 컴포넌트가 리렌더링**될 것입니다.
+
+### 2. useNativeDriver: false
+
+```tsx
+// useDragDrop.ts
+Animated.timing(floatingPortal.floatingOpacity, {
+  toValue: 0.9,
+  duration: 150,
+  useNativeDriver: false,  // 🔴 JS 스레드에서 애니메이션 실행
+}).start();
+```
+
+`useNativeDriver: false`는 애니메이션이 JS 스레드에서 실행된다는 의미입니다. 드래그 중에 다른 JS 작업이 있으면 **애니메이션이 버벅일 수 있습니다**.
+
+### 3. PanResponder가 매 렌더링마다 재생성
+
+```tsx
+// DraggablePlanCard.tsx
+const DraggablePlanCard = ({ ... }) => {
+  const panResponder = PanResponder.create({  // 🔴 useMemo 없음
+    onStartShouldSetPanResponder: () => isPanEnabled,
+    ...
+  });
+  ...
+}
+```
+
+`PanResponder.create()`가 컴포넌트 내부에서 호출되면, **렌더링될 때마다 새 객체가 생성**되는 문제가 발생합니다.
+
+---
+
+## 측정 방법: 렌더링 카운터
+
+문제가 있다고 "느낌"만으로 판단하면 안 됩니다. **수치로 측정**해야 합니다.
+
+각 컴포넌트에 렌더링 횟수를 출력하는 커스텀 훅을 추가했습니다.
+
+```tsx
+// 🔍 성능 측정용 커스텀 훅
+const useRenderCount = (componentName: string) => {
+  const renderCount = useRef(0);
+  renderCount.current += 1;
+  console.log(`🔄 [${componentName}] 렌더링 횟수: ${renderCount.current}`);
+};
+
+// 사용 예시
+const TravelPlanKanban = () => {
+  useRenderCount('TravelPlanKanban');
+  // ...
+}
+```
+
+측정 대상 컴포넌트:
+- `TravelPlanKanban` (최상위)
+- `DayColumn` (Day별 컬럼)
+- `DayContent` (컬럼 내용)
+- `PlanList` (카드 리스트)
+- `DraggablePlanCard` (개별 카드)
+
+---
+
+## 측정 결과: 개선 전
+
+### 테스트 환경
+- Day 컬럼: **4개** (Day1 ~ Day4)
+- 카드: **총 8개** (Day1에 3개, Day2에 2개, Day3에 1개, Day4에 1개, 이동 후 +1개)
+- 테스트: 카드 1개를 드래그 + 자동 스크롤 1회
+
+### 콘솔 로그 (실제 측정)
+
+```
+// ===== 초기 렌더링 =====
+🔄 [TravelPlanKanban] 렌더링 횟수: 1
+🔄 [TravelPlanKanban] 렌더링 횟수: 2
+🔄 [DayColumn-day1] 렌더링 횟수: 1
+🔄 [DayContent-day1] 렌더링 횟수: 1
+🔄 [PlanList-day1] 렌더링 횟수: 1
+🔄 [Card-day1-0] 렌더링 횟수: 1
+🔄 [Card-day1-1] 렌더링 횟수: 1
+🔄 [Card-day1-2] 렌더링 횟수: 1
+🔄 [DayColumn-day2] 렌더링 횟수: 1
+🔄 [DayContent-day2] 렌더링 횟수: 1
+🔄 [PlanList-day2] 렌더링 횟수: 1
+🔄 [Card-day2-0] 렌더링 횟수: 1
+🔄 [Card-day2-1] 렌더링 횟수: 1
+🔄 [DayColumn-day3] 렌더링 횟수: 1
+🔄 [DayContent-day3] 렌더링 횟수: 1
+🔄 [PlanList-day3] 렌더링 횟수: 1
+🔄 [Card-day3-0] 렌더링 횟수: 1
+🔄 [DayColumn-day4] 렌더링 횟수: 1
+🔄 [DayContent-day4] 렌더링 횟수: 1
+🔄 [PlanList-day4] 렌더링 횟수: 1
+🔄 [Card-day4-0] 렌더링 횟수: 1
+
+// ===== 드래그 시작 (1차 전체 리렌더링) =====
+🔄 [TravelPlanKanban] 렌더링 횟수: 3
+🔄 [DayColumn-day1] 렌더링 횟수: 2
+🔄 [DayContent-day1] 렌더링 횟수: 2
+🔄 [PlanList-day1] 렌더링 횟수: 2
+🔄 [Card-day1-0] 렌더링 횟수: 2
+🔄 [Card-day1-1] 렌더링 횟수: 2
+🔄 [Card-day1-2] 렌더링 횟수: 2
+🔄 [DayColumn-day2] 렌더링 횟수: 2
+... (모든 컴포넌트 리렌더링)
+
+// ===== 드래그 중 (2~6차 전체 리렌더링) =====
+... (계속 전체 트리 리렌더링 반복)
+
+// ===== 최종 상태 =====
+🔄 [TravelPlanKanban] 렌더링 횟수: 9
+🔄 [DayColumn-day1] 렌더링 횟수: 8
+🔄 [DayContent-day1] 렌더링 횟수: 8
+🔄 [PlanList-day1] 렌더링 횟수: 8
+🔄 [Card-day1-0] 렌더링 횟수: 8
+🔄 [Card-day1-1] 렌더링 횟수: 8
+🔄 [DayColumn-day2] 렌더링 횟수: 8
+🔄 [DayContent-day2] 렌더링 횟수: 8
+🔄 [PlanList-day2] 렌더링 횟수: 8
+🔄 [Card-day2-0] 렌더링 횟수: 8
+🔄 [Card-day2-1] 렌더링 횟수: 8
+🔄 [Card-day2-2] 렌더링 횟수: 3  // 새로 이동된 카드
+🔄 [DayColumn-day3] 렌더링 횟수: 8
+🔄 [DayContent-day3] 렌더링 횟수: 8
+🔄 [PlanList-day3] 렌더링 횟수: 8
+🔄 [Card-day3-0] 렌더링 횟수: 8
+🔄 [DayColumn-day4] 렌더링 횟수: 8
+🔄 [DayContent-day4] 렌더링 횟수: 8
+🔄 [PlanList-day4] 렌더링 횟수: 8
+🔄 [Card-day4-0] 렌더링 횟수: 8
+```
+
+### 분석 결과
+
+| 컴포넌트 유형 | 개수 | 렌더링 횟수 | 드래그로 인한 렌더링 |
+|-------------|------|------------|-------------------|
+| TravelPlanKanban | 1개 | 9회 | 7회 |
+| DayColumn | 4개 | 각 8회 | 각 7회 |
+| DayContent | 4개 | 각 8회 | 각 7회 |
+| PlanList | 4개 | 각 8회 | 각 7회 |
+| Card | 8개 | 대부분 8회 | 대부분 7회 |
+
+### 총 렌더링 횟수 계산
+
+```
+드래그 1회 (자동 스크롤 포함)에 발생한 리렌더링:
+
+TravelPlanKanban: 7회
+DayColumn: 4개 × 7회 = 28회
+DayContent: 4개 × 7회 = 28회
+PlanList: 4개 × 7회 = 28회
+Card: 8개 × 7회 = 56회
+────────────────────────────
+총 약 147회의 컴포넌트 렌더링!
+```
+
+**드래그 1회에 147번의 리렌더링이 발생했습니다.**
+
+실제로 필요한 리렌더링은:
+- 드래그 시작: 드래그 중인 카드 1개
+- 드래그 종료: 이동된 카드 + 영향받는 Day 2개
+
+즉, **약 5~10회면 충분**한데 **147회**가 발생하고 있습니다.
+
+---
+
+## 문제 시각화
+
+```
+드래그 시작
+    │
+    ▼
+setDraggingItem({ item, sourceDay, sourceIndex })
+    │
+    ▼
+TravelPlanKanban 리렌더링 (state 변경)
+    │
+    ├─▶ DayColumn-day1 리렌더링 (props 변경)
+    │       └─▶ DayContent-day1 리렌더링
+    │               └─▶ PlanList-day1 리렌더링
+    │                       ├─▶ Card-day1-0 리렌더링  ← 드래그 중인 카드
+    │                       ├─▶ Card-day1-1 리렌더링  ← 관련 없음!
+    │                       └─▶ Card-day1-2 리렌더링  ← 관련 없음!
+    │
+    ├─▶ DayColumn-day2 리렌더링  ← 관련 없음!
+    │       └─▶ ... (전체 하위 트리 리렌더링)
+    │
+    ├─▶ DayColumn-day3 리렌더링  ← 관련 없음!
+    │       └─▶ ...
+    │
+    └─▶ DayColumn-day4 리렌더링  ← 관련 없음!
+            └─▶ ...
+```
+
+**문제의 핵심:**
+1. `draggingItem` 상태가 최상위에서 관리됨
+2. 이 상태가 바뀌면 전체 트리가 리렌더링됨
+3. `React.memo`가 없어서 props가 같아도 리렌더링됨
+4. 이 과정이 드래그 중에 **7번** 반복됨
+
+---
+
+## React DevTools Profiler 결과
+
+React DevTools로 측정한 결과, 개별 커밋(렌더링)의 소요 시간:
+
+| 커밋 | Duration | 트리거 |
+|------|----------|--------|
+| 1차 | 1.36ms | Animated.View |
+| 2차 | 5.29ms | DraggablePlanCard |
+| 3차 | **40.90ms** | 전체 리렌더링 |
+| 4차~ | 8~40ms | 반복 리렌더링 |
+
+**40ms**는 60fps 기준 **2.5프레임**에 해당합니다. 드래그 중에 이런 렌더링이 반복되면 **버벅임이 발생**할 수 있습니다.
+
+---
+
+## 개선 목표
+
+| 항목 | 개선 전 | 목표 |
+|------|--------|------|
+| 드래그 1회 리렌더링 | **147회** | **10회 이하** |
+| 단일 커밋 Duration | **40ms** | **16ms 이하** (60fps) |
+| 애니메이션 | JS 스레드 | **Native 스레드** |
+| PanResponder 생성 | 매 렌더링 | **1회 (useMemo)** |
+
+---
+
+## 개선 계획
+
+### 1순위: 즉시 효과가 있는 것
+1. `useNativeDriver: true` 전환 - 애니메이션을 Native 스레드로
+2. `PanResponder` useMemo 적용 - 불필요한 객체 생성 방지
+3. `useEffect` 의존성 배열 수정 - 버그 수정
+
+### 2순위: 구조적 개선
+4. Context API로 props drilling 해결 - 중간 컴포넌트 리렌더링 방지
+5. `React.memo` 적용 - 불필요한 리렌더링 차단
+
+---
+
+## 배운 점
+
+1. **"동작한다" ≠ "잘 동작한다"**
+   - 기능이 동작하는 것과 성능이 좋은 것은 다릅니다.
+
+2. **측정 없이 최적화하지 말 것**
+   - "느낌"이 아닌 "수치"로 판단해야 합니다.
+   - 개선 전 수치가 있어야 개선 효과를 증명할 수 있습니다.
+
+3. **Props Drilling은 성능 문제를 일으킬 수 있다**
+   - 단순히 "코드가 지저분하다"가 아니라 실제 성능에 영향을 줍니다.
+
+---
+
+## 참고 자료
+
+- [React Native Performance Overview](https://reactnative.dev/docs/performance)
+- [Animated API - useNativeDriver](https://reactnative.dev/docs/animated#using-the-native-driver)
+- [React DevTools Profiler](https://react.dev/learn/react-developer-tools)
+
+---

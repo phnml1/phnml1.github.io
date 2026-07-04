@@ -23,7 +23,7 @@ const getFilePaths = (category:string) : string[] => {
 
 function convertFilePaths(filePath:string):string {
   const relativePath:string = path.relative('posts', filePath);
-  const urlPath:string = relativePath.replace(/\.md$/, '').replace(/\\/g, '/');
+  const urlPath:string = relativePath.replace(/\.mdx?$/, '').replace(/\\/g, '/');
   return urlPath;
 }
 
@@ -32,8 +32,10 @@ export function getPostData(filePath:string):Post {
   const fileContent:string = fs.readFileSync(filePath, 'utf-8');
   const {data,content} = matter(fileContent);
   const postData = {
-      slug: `${dir}/${postSlugs[0]}/${postSlugs[1].split('.')[0]}`,
+      slug: `${dir}/${postSlugs[0]}/${postSlugs[1]}`,
       ...data,
+      tags: Array.isArray(data.tags) ? data.tags : [],
+      isFeatured: data.isFeatured ?? false,
       content,
   };
   return postData;
@@ -98,7 +100,7 @@ export const getNextData = (filePath:string):PrevNextDataInfo => {
 
 export const allTags:string[] = Array.from(
   getAllPosts().reduce((ac, v) => {
-    v.tags.forEach((tag) => ac.add(tag));
+    (v.tags ?? []).forEach((tag) => ac.add(tag));
     return ac;
   }, new Set<string>([])),
 ).filter(Boolean);
@@ -108,7 +110,7 @@ export const getPostsByTags = (tag:string):Post[] => {
   if (tag === 'all') {
     return posts;
   } else {
-  return posts.filter(post => post.tags.includes(tag));
+  return posts.filter(post => (post.tags ?? []).includes(tag));
 }
 }
 

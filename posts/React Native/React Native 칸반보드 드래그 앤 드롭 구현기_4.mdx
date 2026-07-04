@@ -1,0 +1,479 @@
+---
+title: 'React Native 칸반보드 드래그 앤 드롭 구현기 (4)'
+date: 2026-02-08 22:00:00
+image: index.png
+project:
+  title: "Fly:On"
+  slug: "fly-on"
+summary: 드래그 중 화면 경계에서 자동으로 스크롤되는 기능을 requestAnimationFrame 기반으로 구현합니다.
+tags: ['react native', '드래그 앤 드롭', '자동 스크롤', 'requestAnimationFrame', '칸반보드']
+---
+
+# React Native 칸반보드 드래그 앤 드롭 구현기(4)
+
+## 서론
+
+3편에서는 Portal 패턴으로 Floating Card를 최상위에 렌더링하여 드래그 앤 드롭의 시각적 완성도를 높이는 방법을 다뤘다.
+
+이번 편에서는 드래그 앤 드롭의 **사용성**을 크게 좌우하는 기능을 다룬다:
+
+- **자동 스크롤** - 화면 경계에서 자동으로 스크롤되게 하기
+
+---
+
+## 왜 자동 스크롤이 필요한가?
+
+칸반보드에 Day가 많아지면 세로 스크롤이 생긴다. 이때 문제가 하나 생기는데:
+
+> 카드를 드래그해서 Day 3에서 Day 7로 옮기고 싶은데... 화면에 Day 7이 안 보인다?
+
+손가락을 떼면 드래그가 끝나버리니, 드래그를 유지하면서 스크롤할 방법이 없다.
+
+```
+┌──────────────────────────────┐
+│  Day 1                       │
+│  ┌──────┐                    │
+│  │Card A│ ← 이걸 드래그 중    │
+│  └──────┘                    │
+│  Day 2                       │
+│  ┌──────┐                    │
+│  │Card B│                    │
+│  └──────┘                    │
+│  Day 3                       │
+│  ┌──────┐                    │  ← 화면 하단 경계
+├──│Card C│────────────────────┤
+│  └──────┘                    │
+│  Day 4  (화면 밖)             │  ← 여기로 옮기고 싶은데
+│  Day 5  (화면 밖)             │    스크롤이 안 된다!
+│  ...                         │
+└──────────────────────────────┘
+```
+
+**해결책:** 드래그 중 손가락이 화면 경계 근처에 오면 자동으로 스크롤해주면 된다!
+
+---
+
+## 자동 스크롤의 핵심 개념: 스크롤 존
+
+화면의 위아래에 **스크롤 존(Scroll Zone)**이라는 가상의 영역을 만든다. 드래그 중 손가락이 이 영역에 들어오면 자동 스크롤을 시작하고, 벗어나면 멈춘다.
+
+```
+┌──────────────────────────────┐
+│ ▒▒▒▒▒▒ 상단 스크롤 존 ▒▒▒▒▒▒ │ ← threshold (40px)
+│  ↑ 여기로 오면 위로 스크롤    │
+├──────────────────────────────┤
+│                              │
+│                              │
+│     일반 영역                 │ ← 스크롤 안 함
+│     (드래그만 처리)            │
+│                              │
+│                              │
+├──────────────────────────────┤
+│  ↓ 여기로 오면 아래로 스크롤   │
+│ ▒▒▒▒▒▒ 하단 스크롤 존 ▒▒▒▒▒▒ │ ← threshold (40px)
+└──────────────────────────────┘
+```
+
+이 개념을 코드로 구현한 것이 `useAutoScroll` 훅이다.
+
+---
+
+## useAutoScroll 훅 구현
+
+### 설정값과 상태
+
+```tsx
+interface UseAutoScrollOptions {
+  scrollSpeed?: number;  // 한 프레임당 스크롤할 픽셀 수
+  threshold?: number;    // 스크롤 존의 크기 (px)
+}
+
+export const useAutoScroll = (options: UseAutoScrollOptions = {}) => {
+  const { scrollSpeed = 15, threshold = 40 } = options;
+
+  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollOffsetRef = useRef(0);              // 현재 스크롤 위치
+  const isAutoScrollingRef = useRef(false);        // 자동 스크롤 중인지
+  const autoScrollDirectionRef = useRef<'up' | 'down' | null>(null);
+  const autoScrollFrameId = useRef<number | null>(null);  // rAF ID (정리용)
+
+  // ...
+};
+```
+
+두 가지 설정값이 있다:
+- **scrollSpeed (기본값: 15)** - 프레임당 스크롤할 픽셀 수. 값이 클수록 빠르게 스크롤된다.
+- **threshold (기본값: 40)** - 스크롤 존의 크기(px). 화면 위/아래에서 이 범위 안에 손가락이 들어오면 스크롤이 시작된다.
+
+모든 상태를 `useRef`로 관리하는 이유가 있다. `useState`를 쓰면 매 프레임마다 리렌더링이 발생하는데, 자동 스크롤은 requestAnimationFrame으로 **매 프레임**(약 16ms 간격)마다 실행되기 때문에 리렌더링이 발생하면 성능이 급격히 떨어진다.
+
+### 스크롤 오프셋 추적
+
+자동 스크롤을 구현하려면 먼저 **현재 스크롤 위치**를 항상 알고 있어야 한다.
+
+```tsx
+const handleScroll = useCallback((event: ScrollEvent) => {
+  scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
+}, []);
+```
+
+ScrollView의 `onScroll` 이벤트에 연결해서, 스크롤이 발생할 때마다 현재 오프셋을 ref에 저장한다. 이 값은 자동 스크롤 시 "어디서부터 스크롤할지"의 기준점이 된다.
+
+```tsx
+// TravelKanban/index.tsx
+<ScrollView
+  ref={scrollViewRef}
+  onScroll={handleScroll}
+  scrollEventThrottle={16}  // 16ms 간격으로 이벤트 발생 (60fps)
+>
+```
+
+`scrollEventThrottle={16}`을 설정해야 스크롤 이벤트가 충분히 자주 발생한다. 이걸 빠뜨리면 스크롤 위치가 부정확해져서 자동 스크롤이 뚝뚝 끊기게 된다.
+
+---
+
+### 자동 스크롤 시작: requestAnimationFrame 루프
+
+자동 스크롤의 핵심은 **requestAnimationFrame(rAF) 루프**다.
+
+```tsx
+const startAutoScroll = useCallback((direction: 'up' | 'down') => {
+  // 이미 같은 방향으로 스크롤 중이면 무시
+  if (isAutoScrollingRef.current && autoScrollDirectionRef.current === direction) {
+    return;
+  }
+
+  // 기존 스크롤 중지 후 새로 시작
+  stopAutoScroll();
+  isAutoScrollingRef.current = true;
+  autoScrollDirectionRef.current = direction;
+
+  const scroll = () => {
+    // 스크롤이 중지되었으면 루프 탈출
+    if (!isAutoScrollingRef.current) return;
+
+    const currentOffset = scrollOffsetRef.current;
+    const newOffset = direction === 'up'
+      ? Math.max(0, currentOffset - scrollSpeed)   // 위로: 오프셋 감소
+      : currentOffset + scrollSpeed;                // 아래로: 오프셋 증가
+
+    // 맨 위에 도달하면 스크롤 중지
+    if (direction === 'up' && newOffset <= 0) {
+      stopAutoScroll();
+      return;
+    }
+
+    // 실제 스크롤 실행
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({
+        y: newOffset,
+        animated: false  // ⚠️ 중요: false여야 즉시 이동
+      });
+    }
+
+    // 다음 프레임에서 다시 실행
+    autoScrollFrameId.current = requestAnimationFrame(scroll);
+  };
+
+  // 루프 시작
+  autoScrollFrameId.current = requestAnimationFrame(scroll);
+}, [scrollSpeed, stopAutoScroll]);
+```
+
+#### 왜 requestAnimationFrame인가?
+
+자동 스크롤을 구현하는 방법은 여러 가지가 있다:
+
+| 방법 | 장점 | 단점 |
+|:------|:------|:------|
+| `setInterval` | 구현 간단 | 프레임과 무관하게 실행, 끊김 발생 |
+| `Animated.timing` | Native Driver 사용 가능 | 스크롤 위치를 직접 제어하기 어려움 |
+| `requestAnimationFrame` | 화면 주사율에 맞춰 실행, 부드러움 | 직접 루프를 관리해야 함 |
+
+**requestAnimationFrame(rAF)**은 브라우저/런타임이 다음 화면을 그리기 직전에 콜백을 실행한다. 즉, 화면 주사율(보통 60fps)에 정확히 맞춰서 스크롤이 실행되므로 가장 부드러운 결과를 얻을 수 있다.
+
+#### animated: false가 중요한 이유
+
+```tsx
+scrollViewRef.current.scrollTo({
+  y: newOffset,
+  animated: false  // 이거!
+});
+```
+
+`animated: true`로 하면 ScrollView가 자체적으로 스크롤 애니메이션을 실행하는데, 이게 rAF 루프와 겹치면 **서로 간섭**하면서 스크롤이 덜덜 떨리게 된다. `animated: false`로 즉시 이동시키고, rAF 루프가 부드러움을 담당하는 게 올바른 역할 분배다.
+
+#### 재귀적 rAF 루프 구조
+
+```
+Frame 1: scroll() 실행 → scrollTo() → rAF(scroll) 예약
+Frame 2: scroll() 실행 → scrollTo() → rAF(scroll) 예약
+Frame 3: scroll() 실행 → scrollTo() → rAF(scroll) 예약
+  ...
+Frame N: scroll() 실행 → isAutoScrolling이 false → 루프 종료
+```
+
+`scroll` 함수가 자기 자신을 다음 프레임에 예약하는 **재귀적 패턴**이다. 멈출 때는 `isAutoScrollingRef.current`를 `false`로 바꾸면 다음 프레임에서 자연스럽게 루프가 끊긴다.
+
+---
+
+### 자동 스크롤 중지
+
+```tsx
+const stopAutoScroll = useCallback(() => {
+  if (autoScrollFrameId.current) {
+    cancelAnimationFrame(autoScrollFrameId.current);
+    autoScrollFrameId.current = null;
+  }
+  isAutoScrollingRef.current = false;
+  autoScrollDirectionRef.current = null;
+}, []);
+```
+
+중지는 두 가지를 동시에 한다:
+1. **cancelAnimationFrame** - 다음 프레임에 예약된 콜백을 취소
+2. **ref 초기화** - 재귀 루프 내부에서도 체크하므로 확실하게 중지됨
+
+왜 두 가지를 모두 해야 할까? `cancelAnimationFrame`만 하면 이미 실행 중인 `scroll()` 함수가 끝나기 전에 새 rAF를 예약할 수 있다. ref도 함께 초기화해야 `scroll()` 내부의 `if (!isAutoScrollingRef.current) return;` 체크에서 확실히 멈춘다.
+
+---
+
+### 드래그 위치에 따른 스크롤 판단
+
+이제 핵심 로직이다. 드래그 중 손가락 위치를 받아서 **스크롤 존에 있는지 판단**하는 함수:
+
+```tsx
+const handleAutoScrollForDrag = useCallback((
+  cursorY: number,                   // 손가락의 화면 Y 좌표
+  scrollViewLayout: ScrollViewLayout  // ScrollView의 위치/크기
+) => {
+  const scrollViewTop = scrollViewLayout.y;
+  const scrollViewBottom = scrollViewLayout.y + scrollViewLayout.height;
+
+  // 상단 스크롤 존에 있는가?
+  const isInTopScrollZone = cursorY <= scrollViewTop + threshold;
+  // 하단 스크롤 존에 있는가?
+  const isInBottomScrollZone = cursorY >= scrollViewBottom - threshold;
+
+  if (isInTopScrollZone && scrollOffsetRef.current > 0) {
+    // 상단 스크롤 존 + 아직 위로 스크롤할 여유가 있으면
+    if (!isAutoScrollingRef.current || autoScrollDirectionRef.current !== 'up') {
+      startAutoScroll('up');
+    }
+  } else if (isInBottomScrollZone) {
+    // 하단 스크롤 존이면
+    if (!isAutoScrollingRef.current || autoScrollDirectionRef.current !== 'down') {
+      startAutoScroll('down');
+    }
+  } else {
+    // 스크롤 존 밖이면 → 중지
+    if (isAutoScrollingRef.current) {
+      stopAutoScroll();
+    }
+  }
+}, [threshold, startAutoScroll, stopAutoScroll]);
+```
+
+시각적으로 표현하면:
+
+```
+                  scrollViewTop (= scrollViewLayout.y)
+                        │
+┌───────────────────────▼───────────────────────────┐
+│ ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ │
+│ ▒  상단 스크롤 존 (scrollViewTop + threshold)   ▒ │
+│ ▒  cursorY ≤ 여기면 → startAutoScroll('up')     ▒ │
+│ ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ │
+│                                                   │
+│              일반 영역                             │
+│              → stopAutoScroll()                   │
+│                                                   │
+│ ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ │
+│ ▒  하단 스크롤 존 (scrollViewBottom - threshold) ▒ │
+│ ▒  cursorY ≥ 여기면 → startAutoScroll('down')   ▒ │
+│ ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ │
+└───────────────────────▲───────────────────────────┘
+                        │
+                  scrollViewBottom
+```
+
+#### 중복 실행 방지
+
+```tsx
+if (!isAutoScrollingRef.current || autoScrollDirectionRef.current !== 'up') {
+  startAutoScroll('up');
+}
+```
+
+이 조건이 없으면 `handleAutoScrollForDrag`가 호출될 때마다 (매 프레임마다!) `startAutoScroll`이 호출되어 rAF 루프가 무한히 생성된다. **이미 같은 방향으로 스크롤 중이면 무시**하는 것이 핵심이다.
+
+---
+
+## 드래그 시스템과의 통합
+
+`useAutoScroll` 훅은 단독으로 동작하지 않는다. `TravelKanban/index.tsx`에서 드래그 이벤트와 연결된다.
+
+```tsx
+// TravelKanban/index.tsx
+
+const handleEnhancedDragMove = useCallback((
+  x: number,
+  y: number,
+  gestureState: GestureState,
+  evt: GestureResponderEvent,
+  initialPosition: { x: number; y: number }
+) => {
+  // 1. 자동 스크롤 처리
+  if (scrollViewLayoutRef.current.height) {
+    handleAutoScrollForDrag(y, scrollViewLayoutRef.current);
+  }
+
+  // 2. 드래그 이동 처리 (Floating Card 위치 업데이트)
+  handleDragMove(x, y, gestureState, evt, initialPosition);
+}, [handleAutoScrollForDrag, handleDragMove]);
+```
+
+`handleEnhancedDragMove`가 **자동 스크롤**과 **Floating Card 이동**을 하나로 묶는 역할을 한다. `PanResponder`의 `onPanResponderMove`에서 매 프레임마다 호출되므로, 손가락이 움직일 때마다 스크롤 존 진입 여부를 자연스럽게 체크할 수 있다.
+
+### 전체 흐름
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│                    자동 스크롤 전체 흐름                              │
+├────────────────────────────────────────────────────────────────────┤
+│                                                                    │
+│   User: 카드를 드래그하면서 화면 하단으로 이동                        │
+│                                                                    │
+│   ① PanResponder.onMove                                           │
+│   │  └→ pageY = 750 (화면 하단 근처)                               │
+│   │                                                                │
+│   ② handleEnhancedDragMove(x, 750, ...)                           │
+│   │  ├→ handleAutoScrollForDrag(750, scrollViewLayout)             │
+│   │  │   └→ 750 >= scrollViewBottom - 40?                         │
+│   │  │       └→ YES → startAutoScroll('down')                     │
+│   │  │                                                            │
+│   │  └→ handleDragMove(x, 750, ...)                               │
+│   │      └→ floatingPan.setValue({ x: dx, y: dy })                │
+│   │                                                                │
+│   ③ rAF 루프 시작                                                  │
+│   │  Frame 1: scrollTo({ y: offset + 15 }) → rAF(scroll)         │
+│   │  Frame 2: scrollTo({ y: offset + 30 }) → rAF(scroll)         │
+│   │  Frame 3: scrollTo({ y: offset + 45 }) → rAF(scroll)         │
+│   │  ...                                                           │
+│   │                                                                │
+│   ④ User: 손가락을 다시 화면 중앙으로 이동                            │
+│   │  └→ handleAutoScrollForDrag(400, scrollViewLayout)             │
+│   │      └→ 스크롤 존 밖 → stopAutoScroll()                       │
+│   │                                                                │
+│   ⑤ rAF 루프 종료                                                  │
+│      └→ cancelAnimationFrame + ref 초기화                          │
+│                                                                    │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+### 드래그 종료 시 자동 스크롤 정리
+
+한 가지 더 중요한 포인트가 있다. 드래그가 끝나면 자동 스크롤도 반드시 중지해야 한다.
+
+```tsx
+// useDragDrop.ts - handleDragEnd 내부
+const handleDragEnd = useCallback((y, dayData, setDayData) => {
+  stopAutoScroll();  // ← 드래그 종료 시 가장 먼저!
+  // ... 드롭 처리 ...
+}, [/* deps */]);
+```
+
+이걸 빠뜨리면? 손가락을 떼도 스크롤이 계속 돌아간다...! rAF 루프는 PanResponder와 독립적으로 동작하기 때문에, 명시적으로 멈춰줘야 한다.
+
+---
+
+## 구현하면서 만났던 함정들
+
+### 1. scrollEventThrottle 누락
+
+```tsx
+// ❌ scrollEventThrottle 없이
+<ScrollView onScroll={handleScroll}>
+
+// ✅ scrollEventThrottle 설정
+<ScrollView onScroll={handleScroll} scrollEventThrottle={16}>
+```
+
+`scrollEventThrottle`을 설정하지 않으면 iOS에서 스크롤 이벤트가 매우 드물게 발생한다. 자동 스크롤로 `scrollTo`를 호출해도 `onScroll` 이벤트가 충분히 빠르게 오지 않아서 `scrollOffsetRef`가 업데이트되지 않고, 다음 스크롤 계산이 틀어진다.
+
+### 2. animated: true로 인한 떨림
+
+처음에는 자연스럽게 보이라고 `animated: true`로 했었다.
+
+```tsx
+// ❌ rAF 루프 안에서 animated: true
+scrollViewRef.current.scrollTo({ y: newOffset, animated: true });
+```
+
+하지만 ScrollView의 내장 애니메이션과 rAF 루프가 경쟁하면서 스크롤이 앞뒤로 왔다 갔다 하는 진동 현상이 발생했다. 각자의 역할을 명확히 분리해야 한다:
+- **rAF 루프** → 매 프레임 새 위치 계산
+- **scrollTo** → 계산된 위치로 즉시 이동 (animated: false)
+
+### 3. 상태 관리를 useState로 했다가 성능 문제
+
+처음에는 `isAutoScrolling`을 `useState`로 관리했다.
+
+```tsx
+// ❌ 매 프레임마다 리렌더링 발생
+const [isAutoScrolling, setIsAutoScrolling] = useState(false);
+```
+
+rAF 루프 안에서 state를 변경하면 매 프레임마다 리렌더링이 발생한다. 60fps에서 리렌더링이 겹치면 프레임 드롭이 발생하고, 드래그 중인 Floating Card의 움직임까지 버벅거리게 된다.
+
+```tsx
+// ✅ ref로 관리 → 리렌더링 없이 값만 업데이트
+const isAutoScrollingRef = useRef(false);
+```
+
+자동 스크롤의 상태는 **화면에 직접 표시되는 값이 아니다.** 그래서 `useRef`로 관리하는 것이 정답이다.
+
+### 4. 방향 전환 시 이전 루프가 남아있는 문제
+
+```tsx
+// ❌ 방향 전환 시 이전 루프를 정리하지 않으면
+startAutoScroll('down');
+// ... 손가락이 위로 이동 ...
+startAutoScroll('up');
+// → 두 개의 rAF 루프가 동시에 실행!
+// → 아래로 15px, 위로 15px → 제자리에서 떨림
+```
+
+`startAutoScroll` 시작 시 `stopAutoScroll()`을 먼저 호출하는 이유가 바로 이것이다.
+
+```tsx
+const startAutoScroll = useCallback((direction: 'up' | 'down') => {
+  // 이미 같은 방향이면 무시
+  if (isAutoScrollingRef.current && autoScrollDirectionRef.current === direction) {
+    return;
+  }
+
+  stopAutoScroll();  // ← 기존 루프 확실히 정리
+  // ... 새 루프 시작 ...
+}, [scrollSpeed, stopAutoScroll]);
+```
+
+## 마치며
+
+자동 스크롤은 구현 자체는 단순해 보이지만, 실제로 부드럽게 동작하게 만들려면 세심한 주의가 필요하다.
+
+핵심 포인트를 정리하면:
+
+- **스크롤 존**: 화면 경계에 가상의 영역을 만들어 스크롤 트리거로 사용
+- **requestAnimationFrame**: 화면 주사율에 맞춘 부드러운 스크롤 구현
+- **ref 기반 상태 관리**: 매 프레임 업데이트에도 리렌더링 없이 60fps 유지
+- **animated: false**: rAF 루프와 ScrollView 내장 애니메이션의 충돌 방지
+
+이번 편까지 해서 드래그 앤 드롭의 핵심 기능들을 모두 다뤘다:
+1. [1편] PanResponder와 절대 좌표 시스템
+2. [2편] 레이아웃 측정과 드롭 타겟 계산
+3. [3편] Portal 패턴의 Floating Card
+4. [4편] requestAnimationFrame 기반 자동 스크롤
+
+라이브러리 없이 직접 구현하면서 정말 많은 것을 배울 수 있었다. 특히 React Native에서 성능을 신경 쓰면서 인터랙션을 구현하는 방법에 대해 많이 깨달았던 것 같다.
+
+글을 읽어주셔서 감사합니다!

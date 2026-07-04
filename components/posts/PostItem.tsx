@@ -1,30 +1,46 @@
-import Link from "next/link";
-import Tag from "./Tag";
-import { format } from "date-fns";
-import { Post } from "@/types";
+import Link from 'next/link';
+import Image from 'next/image';
+import Tag from './Tag';
+import { format } from 'date-fns';
+import { Post } from '@/types';
+import { postHref } from '@/utils/Route-Util';
 
-interface PostsContentsProps {
-  content:Post
+interface PostItemProps {
+  content: Post;
+  offset?: boolean;
 }
-const PostItem: React.FC<PostsContentsProps> = (props) => {
-  const date = format(new Date(props.content.date),'yyyy년 MM월 dd일')
+
+const PostItem: React.FC<PostItemProps> = ({ content, offset = false }) => {
+  const date = format(new Date(content.date), 'yyyy.MM.dd');
+
   return (
-    <Link href={`/${props.content.slug}`} className="w-full h-auto cursor-pointer transition-all hover:drop-shadow-tag-hover">
-      <div className="w-full ml-2 transition-all hover:drop-shadow-tag-hover">
-        <div className="text-lg font-bold md:text-3xl">{props.content.title}</div>
-        <div className="mt-8 text-sm md:text-base">{props.content.summary}</div>
-        <div className="mt-8 flex justify-between flex-wrap gap-4 flex-col sm:flex-row">
-        <div className="flex gap-4 flex-wrap">
-        {props.content.tags.map ((a,i) => (
-          <Tag key = {i} name = {a}/>
-        ))}
+    <Link href={postHref(content.slug)} className={`group flex flex-col ${offset ? 'md:mt-24' : ''}`}>
+      <article className="h-full">
+        <div className="relative mb-8 aspect-[16/10] overflow-hidden rounded-xl bg-surface-container">
+          <Image
+            src={`/${content.slug}/${content.image}`}
+            alt={content.title}
+            fill
+            sizes="(min-width: 768px) 45vw, 90vw"
+            className="object-cover opacity-70 grayscale transition-all duration-700 group-hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0"
+          />
         </div>
-        <div className="pl-2 mr-12 text-sm sm:text-base">
-          {date}
+        <div className="mb-4 flex items-center gap-4 font-label text-[10px] uppercase tracking-[0.24em]">
+          <span className="text-primary">{content.tags?.[0] ?? 'Frontend'}</span>
+          <span className="text-text-secondary">{date}</span>
         </div>
+        <h3 className="text-3xl font-black leading-tight tracking-[-0.04em] transition-colors group-hover:text-primary">
+          {content.title}
+        </h3>
+        <p className="mt-5 line-clamp-3 text-sm leading-7 text-text-secondary">{content.summary}</p>
+        <div className="mt-7 flex flex-wrap gap-2">
+          {content.tags.map((tag) => (
+            <Tag key={tag} name={tag} />
+          ))}
         </div>
-      </div>
+      </article>
     </Link>
   );
 };
+
 export default PostItem;

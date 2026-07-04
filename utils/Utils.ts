@@ -12,12 +12,22 @@ export const transformCategory = (categorys: string[]) => {
 };
 
 export function searchPosts(posts: Post[], keyword: string) {
+  if (!keyword.trim()) {
+    return posts;
+  }
+
+  const normalizedKeyword = keyword.toLowerCase();
   const postbytitle = posts.filter((post) => {
     
-      return post.title.toLowerCase().includes(keyword.toLowerCase()) 
+      return post.title.toLowerCase().includes(normalizedKeyword) 
   });
   if (postbytitle.length == 0) {
-    return (posts.filter((post) => { return post.summary.toLowerCase().includes(keyword.toLowerCase()) }));
+    return (posts.filter((post) => {
+      return (
+        post.summary.toLowerCase().includes(normalizedKeyword) ||
+        post.tags.some((tag) => tag.toLowerCase().includes(normalizedKeyword))
+      );
+    }));
   }
   return postbytitle;
   

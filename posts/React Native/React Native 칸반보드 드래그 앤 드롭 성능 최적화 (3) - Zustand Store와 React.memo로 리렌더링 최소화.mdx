@@ -1,0 +1,442 @@
+---
+title: 'React Native 칸반보드 드래그 앤 드롭 성능 최적화 (3) - Zustand Store와 React.memo로 리렌더링 최소화'
+date: 2026-03-22 12:00:00
+image: index.png
+project:
+  title: "Fly:On"
+  slug: "fly-on"
+summary: 2편의 개선에도 불구하고 남아있는 30-46ms짜리 큰 리렌더링의 원인은 props drilling이었습니다. Zustand store로 draggingItem 상태를 분리하고, React.memo와 세밀한 selector로 전체 트리 리렌더링을 차단합니다.
+tags: ['react native', '드래그 앤 드롭', '성능 최적화', 'Zustand', 'React.memo', 'selector', '칸반보드', 'props drilling']
+---
+
+# React Native 칸반보드 드래그 앤 드롭 성능 최적화 (3) - Zustand Store와 React.memo로 리렌더링 최소화
+
+> 이 시리즈는 React Native에서 직접 구현한 칸반보드 드래그 앤 드롭의 성능을 측정하고 개선하는 과정을 다룹니다.
+>
+> [2편: PanResponder 안정화와 Native 애니메이션](/blog/react-native-kanban-drag-drop-performance-2)에서 커밋 수는 12회 → 8회로 줄었지만, **30-46ms짜리 큰 리렌더링은 여전히 남아** 있었습니다.
+
+---
+
+## 2편의 성과와 한계
+
+지난 글에서 적용한 개선들:
+1. `PanResponder`를 `useMemo`로 안정화
+2. `useNativeDriver: true`로 애니메이션을 Native 스레드로 전환
+
+결과:
+- 애니메이션 커밋 4개가 프로파일러에서 사라짐
+- 커밋 수: 12회 → 8회
+- **하지만 최대 duration과 리렌더 컴포넌트 수는 그대로** (30-46ms, 200개 이상)
+
+---
+
+## 큰 리렌더링의 원인: props drilling
+
+React DevTools Profiler를 다시 살펴보면, 큰 커밋들(30-46ms)의 **Updater**가 모두 다른 컴포넌트입니다.
+
+```
+커밋 3  | 46.10ms | Updater: DraggablePlanCard, TravelPlanKanban, FloatingPortalProvider
+커밋 6  | 45.06ms | Updater: TravelPlanKanban
+커밋 7  | 31.28ms | Updater: DraggablePlanCard × 4, TravelPlanKanban
+```
+
+문제를 추적하면:
+
+```tsx
+// TravelPlanKanban.tsx (최상위 상태 관리 컴포넌트)
+const [draggingItem, setDraggingItem] = useState(null);  // 🔴 여기서 관리
+const [dayData, setDayData] = useState(...);
+
+return (
+  <View>
+    {/* 상태가 바뀔 때마다 모든 자식이 리렌더링 */}
+    <DayColumn dayId="day1" draggingItem={draggingItem} ...props />
+    <DayColumn dayId="day2" draggingItem={draggingItem} ...props />
+    <DayColumn dayId="day3" draggingItem={draggingItem} ...props />
+    <DayColumn dayId="day4" draggingItem={draggingItem} ...props />
+  </View>
+);
+```
+
+드래그 중 `draggingItem`이 바뀔 때마다:
+1. `TravelPlanKanban`이 리렌더링
+2. 모든 `DayColumn`, `DraggablePlanCard` (자식 전체) 리렌더링
+3. 각 리렌더링마다 232개 컴포넌트가 다시 그려짐
+
+```
+draggingItem 변경 (드래그 이동 1회)
+    ↓
+TravelPlanKanban 상태 업데이트
+    ↓
+모든 자식 트리 리렌더링  ← 😱 DayColumn × 4, DraggablePlanCard × 8, 그 이하 모든 자식들
+    ↓
+46ms 커밋 기록
+    ↓
+다음 드래그 이동 이벤트
+```
+
+---
+
+## 해결책: Zustand store로 상태 분리
+
+핵심은 **상태가 필요한 컴포넌트만 구독하고, 나머지는 리렌더링하지 않는 것**입니다.
+
+### 1단계: Zustand store 설계
+
+```tsx
+// stores/useDragStore.ts
+import { create } from 'zustand';
+
+interface DragStore {
+  // 드래그 상태
+  draggingItem: ScheduleItem | null;
+  draggingSourceDay: string | null;
+
+  // 드래그 위치 추적 (빠르게 변하는 값)
+  dropTargetDay: string | null;
+  dropPosition: number | null;
+
+  // 액션
+  setDraggingItem: (item: ScheduleItem | null, sourceDay: string | null) => void;
+  setDropTarget: (dayId: string | null, position: number | null) => void;
+  resetDrag: () => void;
+}
+
+export const useDragStore = create<DragStore>((set) => ({
+  draggingItem: null,
+  draggingSourceDay: null,
+  dropTargetDay: null,
+  dropPosition: null,
+
+  setDraggingItem: (item, sourceDay) =>
+    set({ draggingItem: item, draggingSourceDay: sourceDay }),
+
+  setDropTarget: (dayId, position) =>
+    set({ dropTargetDay: dayId, dropPosition: position }),
+
+  resetDrag: () =>
+    set({
+      draggingItem: null,
+      draggingSourceDay: null,
+      dropTargetDay: null,
+      dropPosition: null,
+    }),
+}));
+```
+
+### 2단계: selector로 세밀한 구독
+
+각 컴포넌트가 **자신이 필요한 상태만** 구독하도록 합니다.
+
+```tsx
+// selectors
+const selectDraggingItem = (state: DragStore) => state.draggingItem;
+const selectDropTarget = (state: DragStore) => state.dropTargetDay;
+const selectIsDragging = (state: DragStore) => state.draggingItem !== null;
+const selectIsThisDayTarget = (dayId: string) => (state: DragStore) =>
+  state.dropTargetDay === dayId;
+```
+
+### 3단계: DayColumn에 React.memo 적용
+
+```tsx
+// DayColumn.tsx
+interface DayColumnProps {
+  dayId: string;
+  schedules: ScheduleItem[];
+}
+
+const DayColumn = memo(({ dayId, schedules }: DayColumnProps) => {
+  // ✅ store에서 필요한 것만 구독
+  const isThisDayTarget = useDragStore(
+    useCallback((state) => state.dropTargetDay === dayId, [dayId])
+  );
+
+  const backgroundColor = isThisDayTarget ? '#E3F2FD' : '#FFFFFF';
+
+  return (
+    <View style={[styles.dayColumn, { backgroundColor }]}>
+      {schedules.map((schedule, index) => (
+        <DraggablePlanCard
+          key={schedule.id}
+          item={schedule}
+          index={index}
+          dayId={dayId}
+        />
+      ))}
+    </View>
+  );
+});
+
+export default DayColumn;
+```
+
+**핵심:**
+- `TravelPlanKanban`에서 props로 `draggingItem`을 내려받지 않음
+- `DayColumn`이 직접 store를 구독 (필요한 것만!)
+- `draggingItem`이 바뀌어도 `DayColumn`의 props는 변하지 않음
+- `React.memo`가 리렌더링을 막을 수 있음
+
+### 4단계: DraggablePlanCard 개선
+
+```tsx
+// DraggablePlanCard.tsx
+interface DraggablePlanCardProps {
+  item: ScheduleItem;
+  index: number;
+  dayId: string;
+}
+
+const DraggablePlanCard = memo(({ item, index, dayId }: DraggablePlanCardProps) => {
+  // store에서 필요한 값 가져오기
+  const draggingItem = useDragStore((state) => state.draggingItem);
+  const draggingSourceDay = useDragStore((state) => state.draggingSourceDay);
+
+  // 자신이 드래깅 중인 아이템인지 판단
+  const isDragging = draggingItem?.id === item.id && draggingSourceDay === dayId;
+
+  // 상태 변경 (store 사용)
+  const onDragStart = useCallback(() => {
+    useDragStore.getState().setDraggingItem(item, dayId);
+  }, [item, dayId]);
+
+  const panResponder = useMemo(() =>
+    PanResponder.create({
+      onPanResponderGrant: onDragStart,
+      onPanResponderMove: (evt, { dy }) => {
+        // dropTargetDay 업데이트
+        const targetDay = calculateDropTargetDay(evt.nativeEvent.pageY);
+        useDragStore.getState().setDropTarget(targetDay, Math.floor(dy / CARD_HEIGHT));
+      },
+      onPanResponderRelease: () => {
+        useDragStore.getState().resetDrag();
+      },
+    }),
+    []
+  );
+
+  const cardOpacity = useSharedValue(isDragging ? 0.3 : 1);
+
+  return (
+    <Animated.View
+      style={{ opacity: cardOpacity }}
+      {...panResponder.panHandlers}
+    >
+      {/* 카드 내용 */}
+    </Animated.View>
+  );
+});
+
+export default DraggablePlanCard;
+```
+
+**변화:**
+- `onDragStart`, `onDragMove`, `onDragEnd` props 제거
+- store의 액션을 직접 호출 (props 없음!)
+- `draggingItem` props 제거, store에서 직접 구독
+- `React.memo`가 실제로 리렌더링을 방지
+
+---
+
+## props drilling의 악순환을 끊다
+
+개선 전:
+```
+draggingItem 변경
+  ↓
+TravelPlanKanban 상태 업데이트, 리렌더링
+  ↓
+모든 자식에게 props 전달 (props 참조 변경)
+  ↓
+DayColumn props 변경 → memo 무시하고 리렌더링
+  ↓
+DraggablePlanCard props 변경 → memo 무시하고 리렌더링  ← 위험
+  ↓
+232개 컴포넌트 리렌더링, 46ms 소요
+```
+
+개선 후:
+```
+draggingItem 변경 (store 업데이트)
+  ↓
+draggingItem을 구독하는 컴포넌트만 리렌더링
+  ↓
+DayColumn: isThisDayTarget 구독 → 자신의 상태 일부만 변경
+           DayColumn props는 변하지 않음 → 자식은 리렌더링 안 됨
+  ↓
+DraggablePlanCard: isDragging 구독 → 자신의 opacity만 변경
+                   props 변경 없음 → memo 효과
+  ↓
+5-10개 컴포넌트만 리렌더링, 3-5ms 소요  ✅
+```
+
+---
+
+## 실제 측정 결과
+
+### 테스트 환경 (1,2편과 동일)
+- Day 컬럼: **4개**
+- 카드: **총 8개**
+- 테스트: 카드 1개를 드래그 + 자동 스크롤 1회
+
+### React DevTools Profiler 결과
+
+**개선 전 (2편 결과)**
+
+| 커밋 | Duration | 리렌더 컴포넌트 수 |
+|------|----------|-----------------|
+| 1 | 1.61ms | 2 |
+| 2 | 5.42ms | 23 |
+| 3 | 46.10ms | 232 |
+| 4~5 | 0.65~1.24ms | 2~4 |
+| 6 | 45.06ms | 211 |
+| 7 | 31.28ms | 209 |
+| 8 | 36.74ms | 212 |
+| **합계** | **8 커밋** | **최대 232개** |
+
+**개선 후 (Zustand + React.memo)**
+
+| 커밋 | Duration | 리렌더 컴포넌트 수 | 변화 |
+|------|----------|-----------------|------|
+| 1 | 1.54ms | 2 | — |
+| 2 | 5.68ms | 23 | — |
+| 3 | 4.92ms | 5 | ✅ 232 → 5 |
+| 4 | 6.34ms | 2 | ✅ (드래그 이동) |
+| 5 | 5.18ms | 2 | ✅ |
+| 6 | 6.87ms | 4 | ✅ |
+| 7 | 3.52ms | 2 | ✅ |
+| 8 | 2.11ms | 1 | ✅ |
+| **합계** | **8 커밋** | **최대 5개** | |
+
+### 분석
+
+| 항목 | 개선 전 | 개선 후 | 개선율 |
+|------|--------|---------|--------|
+| 최대 리렌더 컴포넌트 수 | **232개** | **5개** | **97.8% 감소** ✅ |
+| 총 duration | ~176ms | ~36ms | **79.5% 감소** ✅ |
+| 평균 커밋 duration | 21.01ms | 4.52ms | **78.5% 감소** ✅ |
+| 최대 duration | 46.10ms | 6.87ms | **85% 감소** ✅ |
+
+---
+
+## 왜 이렇게 효과가 클까?
+
+### 리렌더링의 "폭발적 증가"를 멈춤
+
+```
+props drilling 문제:
+
+한 컴포넌트의 상태 변경
+  ↓
+부모가 리렌더링 (props 참조 변경)
+  ↓
+모든 자식이 리렌더링 (memo가 막지 못함)
+  ↓
+자식의 자식도 리렌더링 (트리 전체 확산)
+  ↓
+결과: 1번의 상태 변경 → 232개 컴포넌트 리렌더링
+
+Zustand + selector의 해결:
+
+한 컴포넌트가 store 구독
+  ↓
+필요한 값만 변경되면 그 컴포넌트만 리렌더링
+  ↓
+자식은 props가 변하지 않음 → 리렌더링 안 됨
+  ↓
+결과: 1번의 상태 변경 → 1-5개 컴포넌트만 리렌더링
+```
+
+### React.memo의 진정한 가치
+
+`React.memo`는 props가 변하지 않으면 리렌더링을 방지합니다. 하지만 **props가 계속 변하면 효과가 없습니다.**
+
+props drilling의 본질이 "부모가 리렌더링되면 자식의 props도 참조가 변한다"는 것이기 때문입니다.
+
+**Zustand로 props drilling을 해결해야** `React.memo`가 비로소 의미 있는 최적화가 됩니다.
+
+---
+
+## 성능 개선의 계층
+
+이제 3가지 개선을 모두 적용했습니다:
+
+| 우선순위 | 개선 | 효과 | 적용 시기 |
+|---------|------|------|----------|
+| 1순위 | `useNativeDriver: true` | 애니메이션 4개 커밋 제거 | 1~2개 props 수정 |
+| 2순위 | `useMemo` PanResponder | PanResponder 재생성 방지 | 클로저 패턴 학습 |
+| **3순위** | **Zustand + React.memo** | **232 → 5개 리렌더링** | **아키텍처 리팩토링** |
+
+**3순위의 효과가 가장 크지만, 비용도 가장 큽니다.**
+
+---
+
+## 패턴 정리: Zustand selector의 올바른 사용
+
+흔한 실수:
+
+```tsx
+// ❌ 잘못된 패턴: 전체 store를 구독 → 어떤 값이 바뀌든 리렌더링
+const dragState = useDragStore();
+const isDragging = dragState.draggingItem !== null;
+
+// ✅ 올바른 패턴: 필요한 값만 구독 → 그 값이 바뀔 때만 리렌더링
+const isDragging = useDragStore((state) => state.draggingItem !== null);
+```
+
+Zustand는 **선택적 구독(selective subscription)**을 지원합니다. selector 함수를 넘기면, **그 selector의 반환값이 변할 때만** 리렌더링을 트리거합니다.
+
+```tsx
+// 각 DayColumn이 "자신이 드롭 타겟인지"만 구독
+const DayColumn = memo(({ dayId }) => {
+  const isTarget = useDragStore((state) => state.dropTargetDay === dayId);
+
+  // isTarget이 바뀔 때만 리렌더링
+  // 다른 날의 dropTargetDay가 변해도 이 컴포넌트는 영향 없음
+  return <View style={{ backgroundColor: isTarget ? '#E3F2FD' : '#FFF' }} />;
+});
+```
+
+---
+
+## 배운 것
+
+### 1. 상태 관리의 "거리"가 중요하다
+
+상태를 관리하는 컴포넌트가 높을수록 (부모에 가까울수록), 그 상태가 바뀔 때 영향받는 자식의 수가 많아집니다.
+
+- `TravelPlanKanban`에서 관리 → 8개 컴포넌트 모두 props 받음 → 모두 리렌더링
+- 각 컴포넌트가 store에서 구독 → 자신의 상태만 업데이트 → 자식은 영향 없음
+
+**상태를 필요한 곳에 가깝게 배치할수록 영향 범위가 줄어듭니다.**
+
+### 2. props drilling은 단순한 "귀찮음"이 아니다
+
+props drilling이 불편하다고 생각했다면, 실제 문제는 **성능입니다.**
+
+- 불필요한 props 전달 → 컴포넌트 재사용성 감소
+- 부모 상태 변경 → 모든 자식 리렌더링 → 성능 악화
+- 디버깅 어려움 → props 체인을 따라가야 함
+
+Zustand, Context, Recoil 같은 도구는 "편의"를 넘어 **성능과 아키텍처를 해결**합니다.
+
+
+---
+
+## 남은 것
+
+이제 드래그 중 리렌더링은 3-5ms 수준으로 떨어졌습니다. 하지만 여전히 최초 로드와 스크롤 성능이 개선될 여지가 있습니다.
+
+다음 글(4편)에서는:
+- 스크롤 성능 측정 및 FlatList 최적화
+- 초기 렌더링 성능 (232개 카드를 한 번에 렌더링하는 비용)
+- 메모리 사용량 추적
+
+---
+
+## 참고 자료
+
+- [Zustand](https://github.com/pmndrs/zustand)
+- [Zustand shallow 유틸리티](https://docs.pmnd.rs/zustand/api/shallow)
+- [React.memo](https://react.dev/reference/react/memo)
+- [Props drilling 해결 패턴](https://stackoverflow.com/questions/15953473/what-is-the-root-cause-of-prop-drilling)

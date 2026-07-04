@@ -1,0 +1,413 @@
+---
+title: 'React Native 칸반보드 드래그 앤 드롭 구현기 (2)'
+date: 2026-01-11 21:50:00 
+image: index.png
+project:
+  title: "Fly:On"
+  slug: "fly-on"
+summary: 드래그 앤 드롭의 핵심 훅 구조와 절대 좌표 기반 레이아웃 측정, 드롭 타겟 계산 로직을 구현합니다.
+tags: ['react native', '드래그 앤 드롭', 'PanResponder', '칸반보드', 'hooks']
+---
+
+# React Native 칸반보드 드래그 앤 드롭 구현기(2)
+
+## 서론
+1편에서는 왜 라이브러리 없이 직접 구현하게 되었는지, 그리고 PanResponder를 "절대 좌표 전달 도구"로 사용하기로 한 이유를 설명했다.
+
+이번 편에서는 실제 구현 코드를 살펴보자. 핵심은 **3개의 커스텀 훅**으로 역할을 분리한 것이다.
+
+## 훅 구조 설계
+
+드래그 앤 드롭 로직을 하나의 거대한 컴포넌트에 넣으면 금방 스파게티 코드가 된다. 그래서 관심사별로 훅을 분리했다.
+
+```
+TravelPlanKanban
+├── useAutoScroll      → 자동 스크롤
+├── useLayoutMeasurement → 레이아웃 측정 & 드롭 타겟 계산
+└── useDragDrop        → 드래그 상태 관리 & 데이터 업데이트
+```
+
+각 훅은 독립적으로 테스트할 수 있고, 필요한 곳에서만 조합해서 사용한다.
+
+```tsx
+// TravelKanban/index.tsx
+export const TravelPlanKanban = () => {
+  // 1. 자동 스크롤
+  const {
+    scrollViewRef,
+    scrollOffsetRef,
+    handleScroll,
+    handleAutoScrollForDrag,
+    stopAutoScroll,
+  } = useAutoScroll({ scrollSpeed: 15, threshold: 40 });
+
+  // 2. 레이아웃 측정
+  const {
+    scrollViewLayout,
+    containerRef,
+    dayRefs,
+    measureScrollViewPosition,
+    measureDay,
+    measureCard,
+    remeasureDayLayouts,
+    getDropTarget,
+  } = useLayoutMeasurement(scrollOffsetRef);
+
+  // 3. 드래그 앤 드롭
+  const {
+    draggingItem,
+    handleDragStart,
+    handleDragMove,
+    handleDragEnd,
+  } = useDragDrop({
+    scrollOffsetRef,
+    measureScrollViewPosition,
+    remeasureDayLayouts,
+    getDropTarget,
+    stopAutoScroll,
+    FloatingPortalContext,
+  });
+
+  // ... 렌더링
+};
+```
+
+---
+
+## useLayoutMeasurement: 레이아웃 측정의 핵심
+
+1편에서 강조했듯이, 이 구현의 핵심은 **절대 좌표**다. 모든 요소의 위치를 화면 기준 절대 좌표로 측정해야 한다.
+
+### measureInWindow 사용하기
+
+React Native에서 절대 좌표를 얻으려면 `measureInWindow`를 사용한다.
+
+```tsx
+// 일반적인 onLayout은 부모 기준 상대 좌표
+<View onLayout={(e) => {
+  const { x, y } = e.nativeEvent.layout; // 부모 기준!
+}} />
+
+// measureInWindow는 화면 기준 절대 좌표
+viewRef.current.measureInWindow((x, y, width, height) => {
+  // x, y는 화면 좌상단 기준 절대 좌표
+});
+```
+
+### 측정해야 할 것들
+
+칸반보드에서는 3가지를 측정해야 한다:
+
+1. **ScrollView 영역** - 자동 스크롤 경계 판단용
+2. **각 Day 컬럼** - 어느 Day에 드롭할지 판단용
+3. **각 카드** - 몇 번째 위치에 드롭할지 판단용
+
+```tsx
+export const useLayoutMeasurement = (
+  scrollOffsetRef: MutableRefObject<number>
+) => {
+  const [dayLayouts, setDayLayouts] = useState<DayLayouts>({});
+  const [cardLayouts, setCardLayouts] = useState<CardLayouts>({});
+  const dayRefs = useRef<{ [key: string]: View }>({});
+
+  // Day 컬럼 레이아웃 측정
+  const measureDay = useCallback((dayId: string, event: any) => {
+    const { x, y, width, height } = event.nativeEvent.layout;
+    setDayLayouts(prev => ({
+      ...prev,
+      [dayId]: { x, y, width, height, originalY: y }
+    }));
+  }, []);
+
+  // 카드 레이아웃 측정
+  const measureCard = useCallback((dayId: string, index: number, event: any) => {
+    const { x, y, width, height } = event.nativeEvent.layout;
+    setCardLayouts(prev => {
+      const dayCards = [...(prev[dayId] || [])];
+      dayCards[index] = { x, y, width, height, index };
+      return { ...prev, [dayId]: dayCards };
+    });
+  }, []);
+
+  // ...
+};
+```
+
+### 드래그 시작 시 재측정이 필요한 이유
+
+여기서 중요한 포인트가 있다. **드래그를 시작할 때 모든 Day의 레이아웃을 다시 측정해야 한다.**
+
+왜냐하면:
+- 사용자가 스크롤을 했을 수 있음
+- `onLayout`으로 저장한 값은 **콘텐츠 기준 상대 좌표**
+- 드롭 타겟 계산에는 **현재 화면 기준 절대 좌표**가 필요
+
+```tsx
+const remeasureDayLayouts = useCallback(() => {
+  return new Promise<void>((resolve) => {
+    const dayIds = Object.keys(dayRefs.current);
+
+    // 빈 배열이면 바로 resolve (이거 빠뜨리면 Promise가 영원히 pending됨)
+    if (dayIds.length === 0) {
+      resolve();
+      return;
+    }
+
+    const currentScrollOffset = scrollOffsetRef.current;
+    let measured = 0;
+
+    dayIds.forEach((dayId) => {
+      const dayRef = dayRefs.current[dayId];
+      if (dayRef?.measureInWindow) {
+        dayRef.measureInWindow((x, y, width, height) => {
+          // 스크롤 오프셋을 더해서 콘텐츠 기준 좌표로 변환
+          const contentY = y + currentScrollOffset;
+          setDayLayouts(prev => ({
+            ...prev,
+            [dayId]: { x, y: contentY, width, height }
+          }));
+          measured++;
+          if (measured >= dayIds.length) resolve();
+        });
+      }
+    });
+  });
+}, [scrollOffsetRef]);
+```
+
+---
+
+## 드롭 타겟 계산: getDropTarget
+
+레이아웃을 측정했으니, 이제 "손가락이 어디에 있는지"를 바탕으로 "어디에 드롭해야 하는지"를 계산할 수 있다.
+
+### 로직 설명
+
+1. 현재 터치 Y 좌표 + 스크롤 오프셋 = 콘텐츠 기준 Y 좌표
+2. 각 Day 컬럼을 순회하며 해당 Y가 어느 Day 범위에 있는지 확인
+3. 해당 Day의 카드들을 순회하며 몇 번째 위치에 넣을지 계산
+
+```tsx
+const getDropTarget = useCallback((pageY: number): {
+  dayId: string;
+  insertIndex: number
+} | null => {
+  const currentScrollOffset = scrollOffsetRef.current;
+  const contentY = pageY + currentScrollOffset;
+
+  for (const dayId of Object.keys(dayLayouts)) {
+    const dayLayout = dayLayouts[dayId];
+    if (!dayLayout) continue;
+
+    const dayTop = dayLayout.y;
+    const dayBottom = dayLayout.y + dayLayout.height;
+
+    // 여유값 50px을 줘서 경계 근처에서도 인식되게
+    if (contentY >= dayTop - 50 && contentY <= dayBottom + 50) {
+      const cards = cardLayouts[dayId] || [];
+
+      // 빈 Day면 0번 인덱스
+      if (cards.length === 0) {
+        return { dayId, insertIndex: 0 };
+      }
+
+      // 각 카드의 중간점을 기준으로 삽입 위치 결정
+      for (let i = 0; i < cards.length; i++) {
+        const card = cards[i];
+        const cardCenterY = dayLayout.y + card.y + card.height / 2;
+
+        if (contentY < cardCenterY) {
+          return { dayId, insertIndex: i };
+        }
+      }
+
+      // 모든 카드보다 아래면 마지막에 삽입
+      return { dayId, insertIndex: cards.length };
+    }
+  }
+
+  return null;
+}, [dayLayouts, cardLayouts, scrollOffsetRef]);
+```
+
+### 왜 카드 중간점을 기준으로 할까?
+
+드래그 중인 카드가 다른 카드 위에 있을 때:
+- 중간점보다 **위**에 있으면 → 그 카드 **앞**에 삽입
+- 중간점보다 **아래**에 있으면 → 그 카드 **뒤**에 삽입
+
+이게 사용자 입장에서 가장 직관적이다.
+
+```
+┌─────────────┐
+│   Card 0    │  ← contentY가 여기면 insertIndex = 0
+├─────────────┤
+│   Card 1    │  ← contentY가 Card1 중간점 위면 insertIndex = 1
+│ ─ ─ 중간 ─ ─│
+│             │  ← contentY가 Card1 중간점 아래면 insertIndex = 2
+├─────────────┤
+│   Card 2    │
+└─────────────┘
+```
+
+---
+
+## useDragDrop: 드래그 상태 관리
+
+이제 실제 드래그 로직을 담당하는 훅을 살펴보자.
+
+### 드래그 시작
+
+```tsx
+const handleDragStart = useCallback(async (
+  item: Plan,
+  dayId: string,
+  index: number,
+  cardLayout: { x: number; y: number; width: number; height: number },
+  initialPosition: { x: number; y: number }
+) => {
+  // 1. 드래그 중인 아이템 정보 저장
+  setDraggingItem({ item, sourceDay: dayId, sourceIndex: index });
+
+  // 2. 레이아웃 재측정 (스크롤 위치 반영)
+  measureScrollViewPosition();
+  await remeasureDayLayouts();
+
+  // 3. Floating Card 생성
+  if (!cardLayout.width || !cardLayout.height || !floatingPortal) return;
+
+  floatingPortal.createFloatingCard(
+    item, dayId, index, cardLayout, initialPosition, { dx: 0, dy: 0 }
+  );
+
+  // 4. 페이드인 애니메이션
+  Animated.timing(floatingPortal.floatingOpacity, {
+    toValue: 0.9,
+    duration: 150,
+    useNativeDriver: false,
+  }).start();
+}, [/* deps */]);
+```
+
+### 드래그 종료 & 데이터 업데이트
+
+드롭 시 핵심 로직은 **같은 Day 내 이동**인지 **다른 Day로 이동**인지에 따라 다르다.
+
+```tsx
+const handleDragEnd = useCallback((
+  y: number,
+  dayData: any,
+  setDayData: (updater: (prev: any) => any) => void
+) => {
+  // 1. 드래그 종료 시 자동 스크롤 중지
+  stopAutoScroll();
+
+  // 드래그 중인 아이템이 없으면 early return
+  if (!draggingItem) return;
+
+  // 2. 현재 손가락 위치(y)를 기반으로 드롭할 위치 계산
+  const dropTarget = getDropTarget(y);
+
+  if (dropTarget) {
+    const { dayId: targetDay, insertIndex } = dropTarget;
+    const { item, sourceDay, sourceIndex } = draggingItem;
+
+    if (targetDay === sourceDay) {
+      // ============================================
+      // Case 1: 같은 Day 내에서 순서 변경
+      // ============================================
+
+      // 위치가 실제로 변경되는 경우에만 업데이트
+      // - insertIndex === sourceIndex: 제자리
+      // - insertIndex === sourceIndex + 1: 바로 아래칸 (실질적으로 제자리)
+      if (insertIndex !== sourceIndex && insertIndex !== sourceIndex + 1) {
+        setDayData((prevData) => {
+          const newDayData = { ...prevData };
+          const plans = [...newDayData[sourceDay].plans];
+
+          // 원본 위치에서 아이템 제거
+          const [movedItem] = plans.splice(sourceIndex, 1);
+
+          // ⚠️ 인덱스 보정 (중요!)
+          // 아이템을 제거하면 뒤쪽 인덱스가 모두 1씩 줄어듦
+          // 예: [A,B,C,D]에서 B(1)를 제거 → [A,C,D]
+          //     원래 D 뒤(insertIndex=4)에 넣으려면 → 실제로는 3에 삽입
+          const finalIndex = insertIndex > sourceIndex
+            ? insertIndex - 1
+            : insertIndex;
+
+          // 계산된 위치에 아이템 삽입
+          plans.splice(finalIndex, 0, movedItem);
+
+          newDayData[sourceDay].plans = plans;
+          return newDayData;
+        });
+      }
+    } else {
+      // ============================================
+      // Case 2: 다른 Day로 이동
+      // ============================================
+      setDayData((prevData) => {
+        const newDayData = { ...prevData };
+
+        // 원본 Day에서 아이템 제거
+        const [movedItem] = newDayData[sourceDay].plans.splice(sourceIndex, 1);
+
+        // 새 Day에 맞게 아이템 정보 업데이트
+        const newItem = {
+          ...movedItem,
+          day: targetDay,
+          // ⚠️ key 재생성 필수!
+          // React가 같은 key를 다른 리스트에서 발견하면
+          // 예기치 않은 렌더링 문제가 발생할 수 있음
+          key: `${targetDay}-${Date.now()}`
+        };
+
+        // 타겟 Day의 계산된 위치에 삽입
+        newDayData[targetDay].plans.splice(insertIndex, 0, newItem);
+
+        return newDayData;
+      });
+    }
+  }
+
+  // 3. Floating Card 정리 (페이드아웃 애니메이션 등)
+  // ...
+}, [/* deps */]);
+```
+
+### 인덱스 보정이 필요한 이유
+
+같은 Day 내에서 아이템을 이동할 때 주의할 점이 있다:
+
+```
+Before: [A, B, C, D]
+        0  1  2  3
+
+B를 D 뒤로 옮기고 싶다면?
+→ insertIndex = 4 (D 다음)
+
+하지만 B를 먼저 제거하면:
+[A, C, D]
+ 0  1  2
+
+이제 insertIndex = 4는 범위를 벗어난다!
+→ 실제로는 insertIndex - 1 = 3에 삽입해야 함
+```
+
+그래서 `insertIndex > sourceIndex`일 때는 1을 빼줘야 한다.
+
+---
+
+## 다음 편에서
+
+지금까지 레이아웃 측정과 드롭 타겟 계산, 기본적인 드래그 상태 관리를 구현했다.
+
+다음 편에서는:
+- **Floating Card**: Portal 패턴으로 드래그 중인 카드를 최상위에 렌더링하기
+- **자동 스크롤**: 화면 경계에서 자동으로 스크롤되게 하기
+- **트러블슈팅**: 구현하면서 만났던 함정들
+
+을 다룰 예정이다.
+
+기대부탁 만반잘부!

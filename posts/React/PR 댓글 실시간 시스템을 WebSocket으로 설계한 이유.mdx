@@ -1,0 +1,225 @@
+---
+title: 'PR 댓글 실시간 시스템을 WebSocket으로 설계한 이유'
+date: 2026-04-18 20:43:16
+image: index.png
+project:
+  title: "CodeMate"
+  slug: "codemate"
+summary: PR 댓글, reply, typing indicator, 알림을 실시간으로 반영하기 위해 WebSocket 기반으로 설계한 이유와 구조를 정리했습니다.
+tags: ['react','websocket','realtime','codemate','comments']
+---
+
+# PR 댓글 실시간 시스템을 WebSocket으로 설계한 이유
+
+CodeMate는 GitHub PR을 함께 검토하고 의견을 주고받는 협업 도구다.
+그중 PR 댓글 화면은 단순한 게시판이 아니라, 댓글 작성과 수정, 삭제, reply, typing indicator, 알림 반영까지 실시간으로 보여줘야 하는 핵심 영역이었다.
+
+처음에는 이 변화를 화면 상태만으로 처리하려고 했지만, 곧 한계가 보였다.
+사용자가 다른 PR로 이동할 때마다 이전 연결을 정리해야 했고, 댓글 이벤트도 현재 PR에 대해서만 정확히 받아야 했다.
+이 문제를 해결하기 위해 나는 실시간 댓글 시스템을 WebSocket 기반으로 설계했고, 연결 상태는 useSocket에, room join/leave는 useSocketRoom에 분리했다.
+
+핵심 목표는 하나였다.  
+컴포넌트가 socket 연결 자체를 직접 관리하지 않게 만드는 것.  
+실시간 기능은 “UI가 알아서 붙는 기능”이 아니라, 연결 수명주기와 구독 범위를 먼저 설계해야 안정적으로 돌아간다고 판단했다.
+
+![PR 댓글 입력과 반영 흐름](/projects/codemate/codemate-comment.gif)
+
+## 1. 문제 상황
+
+PR 상세 페이지에서는 댓글이 계속 변했다.  
+누군가 댓글을 쓰면 바로 보여야 했고, reply도 실시간으로 붙어야 했다.  
+typing 상태도 짧게 나타났다 사라져야 했다.
+
+문제는 이 모든 상태가 단순히 화면 상태로 끝나지 않는다는 점이었다.  
+댓글은 PR별로 구독 범위가 다르고, 사용자가 다른 PR로 이동하면 이전 room은 반드시 떠나야 했다.  
+즉, 실시간 댓글 기능은 렌더링 문제가 아니라 연결 관리 문제였다.
+
+실무 기준으로 보면 이런 기능은 두 가지를 동시에 만족해야 한다.
+
+- 사용자는 끊김 없이 현재 PR의 이벤트만 받아야 한다.
+- 구현자는 연결, 구독, 해제를 명확하게 관리해야 한다.
+
+이 요구사항을 컴포넌트 내부 상태로만 처리하면 금방 무너진다.  
+화면이 커질수록 socket 이벤트 핸들러, reconnect 상태, room 관리 로직이 분산되기 때문이다.
+
+## 2. 기존 구조의 한계
+
+처음부터 WebSocket을 쓴다고 끝나지 않았다.  
+문제는 “어디서 연결하고, 어디서 구독하고, 어디서 해제할 것인가”였다.
+
+컴포넌트가 직접 socket을 다루는 구조는 다음 문제가 있다.
+
+- 컴포넌트 리렌더링과 socket 생명주기가 얽힌다.
+- 화면이 바뀔 때 room leave 타이밍이 누락되기 쉽다.
+- 연결 상태를 여러 컴포넌트가 제각각 알고 있으면 UI가 불일치하기 쉽다.
+- typing, 댓글, 알림 이벤트가 늘수록 책임 경계가 흐려진다.
+
+특히 PR 상세 화면은 댓글만 있는 페이지가 아니다.  
+파일 diff, 알림, typing indicator, 연결 상태 배지까지 함께 움직인다.  
+이 구조에서 socket을 개별 컴포넌트가 직접 열고 닫게 두면, 유지보수 비용이 급격히 올라간다.
+
+그래서 나는 연결과 구독을 분리했다.  
+연결은 한 곳에서만 관리하고, 각 화면은 “필요한 room만 들어가고 나오는 역할”만 맡도록 설계했다.
+
+## 3. 설계
+
+설계의 중심은 세 레이어였다.
+
+1. `useSocket`
+   - socket 인스턴스 생성
+   - 연결 상태 관리
+   - reconnect / error 상태 노출
+
+2. `useSocketRoom`
+   - PR room join
+   - PR room leave
+   - 화면 생명주기에 맞춘 구독 제어
+
+3. 화면 컴포넌트
+   - 상태를 소비만 함
+   - 연결 로직을 직접 알 필요 없음
+
+이 분리가 중요한 이유는 명확하다.  
+실시간 기능에서 가장 자주 바뀌는 건 “무슨 이벤트를 받을지”가 아니라 “어떤 연결 상태에서 어떤 UX를 보여줄지”이기 때문이다.  
+그러면 연결 상태는 전역에 가깝게 두고, room 구독은 화면 단위로 얇게 가져가는 편이 맞다.
+
+### 전체 구조
+
+UI는 socket을 직접 다루지 않는다.  
+UI는 연결 상태를 읽고, room 구독만 요청한다.  
+실제 socket 연결과 room 분배는 hook과 서버 handler가 맡는다.  
+이렇게 해야 화면이 커져도 책임 경계가 무너지지 않는다.
+
+### `useSocket`
+
+`hooks/useSocket.ts`는 socket 인스턴스를 한 번 만들고, 상태를 외부 store처럼 관리한다.  
+여기서 핵심은 `useSyncExternalStore`다.  
+이 API는 React 바깥에 있는 상태를 안전하게 구독하기 위한 도구다.  
+즉, socket처럼 컴포넌트 렌더링과 무관하게 살아 있는 객체를 React state처럼 다루되, 재렌더링은 구독한 값이 바뀔 때만 일으키게 할 수 있다.
+
+```ts
+const currentSocket = useSyncExternalStore(
+  subscribe,
+  getSocketSnapshot,
+  getServerSocketSnapshot
+)
+```
+
+이 선택을 한 이유는 단순하다.
+
+- socket 객체는 React state처럼 자주 바뀌는 값이 아니다.
+- 연결 상태는 여러 컴포넌트가 동시에 읽어야 한다.
+- 렌더링과 연결 상태 구독을 분리해야 불필요한 재렌더링을 줄일 수 있다.
+- 서버 렌더링 시점에는 실제 socket이 없기 때문에, server snapshot을 별도로 제공해야 한다.
+
+즉, socket을 `useState`로 들고 있으면 “값 변경”보다 “연결 객체”가 더 중요한 특성을 잃는다.  
+`useSyncExternalStore`를 쓰면 React 바깥의 연결 상태를 안정적으로 구독할 수 있다.
+
+쉽게 말하면,  
+`useState`는 “컴포넌트 안의 로컬 값”에 가깝고,  
+`useSyncExternalStore`는 “앱 바깥에 있는 공유 상태를 읽는 창구”에 가깝다.  
+실시간 연결처럼 전역성과 생명주기가 긴 상태는 후자가 더 잘 맞는다.
+
+### `useSocketRoom`
+
+room 구독은 `hooks/useSocketRoom.ts`로 뺐다.
+
+```ts
+export function useSocketRoom(prId: string) {
+  const { socket } = useSocket()
+
+  useEffect(() => {
+    if (!socket || !prId) return
+
+    socket.emit("room:join", prId)
+
+    return () => {
+      socket.emit("room:leave", prId)
+    }
+  }, [socket, prId])
+
+  return socket
+}
+```
+
+이 구조의 장점은 room 책임이 아주 선명하다는 점이다.
+
+- PR 상세 화면에 들어오면 join
+- 화면을 떠나면 leave
+- PR이 바뀌면 이전 room 정리 후 새 room join
+
+이게 분리되어 있어야 댓글, typing, 알림 같은 이벤트가 “현재 보고 있는 PR”에만 정확히 붙는다.  
+실시간 기능에서 room 관리가 흔들리면, 잘못된 화면에 이벤트가 흘러 들어가는 순간 버그가 커진다.
+
+## 4. 구현 핵심 코드
+
+서버 쪽은 `lib/socket/handlers.ts`에서 room 이벤트를 받아 실제 room에 넣는 방식으로 처리한다.
+
+```ts
+function registerRoomHandlers(socket: TypedServerSocket) {
+  socket.on("room:join", (prId) => {
+    socket.join(`pr:${prId}`)
+  })
+
+  socket.on("room:leave", (prId) => {
+    socket.leave(`pr:${prId}`)
+  })
+}
+```
+
+이 설계가 좋은 이유는 프론트와 백엔드 책임이 딱 나뉜다는 점이다.
+
+- 프론트는 “어느 room에 들어갈지”만 결정한다.
+- 서버는 “그 room을 실제로 어떻게 관리할지”만 책임진다.
+
+또 typing 이벤트도 같은 방식으로 room 단위 브로드캐스트를 한다.  
+즉, 한 사용자의 typing은 같은 PR room 안의 다른 사용자에게만 보인다.  
+전역 이벤트가 아니라 room scoped event로 설계한 것이다.
+
+클라이언트에서는 `components/comment/CommentList.tsx`가 연결 상태를 읽고, 연결이 불안정할 때 사용자에게 상태를 보여준다.
+
+```tsx
+const { connectionStatus, connectionError } = useSocket()
+```
+
+이렇게 하면 댓글 화면은 socket의 내부 구현을 몰라도 된다.  
+화면은 연결 상태를 읽기만 하고, 실제 연결 수명주기는 hook이 책임진다.
+
+이 점이 중요했다.  
+실시간 기능은 UI 컴포넌트에 직접 socket 코드를 넣는 순간 유지보수성이 급격히 나빠진다.  
+나는 이 부분을 의도적으로 hook과 server handler로 밀어냈다.
+
+## 5. fallback 전략
+
+WebSocket만 믿는 구조는 운영에 약하다.  
+브라우저 환경, 네트워크 상태, 배포 설정에 따라 소켓 연결이 실패할 수 있기 때문이다.
+
+그래서 이 시스템은 socket이 불가능한 환경에서 polling fallback을 유지한다.  
+`hooks/useRealtimeComments.ts`에서는 socket 모드가 아니면 10초 단위로 다시 확인하도록 설계했다.
+
+이 선택의 포인트는 “소켓이 안 되면 기능을 꺼버리는 것”이 아니라 “실시간 경험을 가능한 수준으로 유지하는 것”이다.  
+완전한 실시간보다 중요한 건 사용자가 기능을 계속 쓸 수 있는가다.
+
+UI에서도 이 상태를 숨기지 않았다.  
+`CommentList`는 `connectionStatus`에 따라 다음 상태를 구분해서 보여준다.
+
+- connected
+- connecting
+- reconnecting
+- error
+- disconnected
+
+이렇게 해야 사용자는 왜 댓글이 늦게 보이는지 이해할 수 있다.  
+실시간 기능은 잘 동작할 때보다 실패했을 때의 설명력이 더 중요하다.
+
+## 6. 배운 점
+
+이 프로젝트에서 가장 크게 배운 건, 실시간 기능은 이벤트 전달보다 책임 분리가 먼저라는 점이다.
+
+- socket 연결은 컴포넌트에 두지 않는 편이 낫다.
+- room join/leave는 별도 hook으로 분리해야 한다.
+- 연결 상태는 여러 UI가 함께 읽을 수 있게 외부 store처럼 다루는 편이 안정적이다.
+- WebSocket은 기본값이 아니라, 실패를 대비한 fallback과 함께 설계해야 한다.
+
+결국 이 구조를 통해 나는 “댓글이 실시간으로 보인다” 수준이 아니라,  
+“왜 이 연결 방식이 맞는지”, “왜 room을 분리했는지”, “왜 연결 상태를 컴포넌트 밖으로 뺐는지”를 고민해보았다.
