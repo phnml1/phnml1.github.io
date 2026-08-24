@@ -1,0 +1,4 @@
+User-Agent: *
+Allow: /
+
+Sitemap: https://phnml1.github.io/sitemap.xml
