@@ -30,19 +30,13 @@ export default function Layout({ children }: React.PropsWithChildren) {
   const [sidebar, setSideBar] = useState(false);
 
   useEffect(() => {
-    document.body.style.overflow = sidebar ? 'hidden' : 'auto';
-  }, [sidebar]);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = sidebar ? 'hidden' : '';
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setSideBar(false);
-      }
+    return () => {
+      document.body.style.overflow = previousOverflow;
     };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [sidebar]);
 
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
@@ -54,10 +48,20 @@ export default function Layout({ children }: React.PropsWithChildren) {
           'min-h-screen w-full bg-surface text-white font-body antialiased',
         )}
       >
-        <Navbar setSideBar={setSideBar} />
-        <main className="w-full flex flex-col items-center">{children}</main>
+        <a
+          href="#main-content"
+          className="fixed left-4 top-3 z-[70] -translate-y-20 rounded-lg bg-primary px-4 py-3 font-label text-sm font-bold text-surface transition-transform focus:translate-y-0"
+        >
+          본문으로 건너뛰기
+        </a>
+        <div aria-hidden={sidebar || undefined} inert={sidebar ? true : undefined}>
+          <Navbar sidebarOpen={sidebar} setSideBar={setSideBar} />
+          <main id="main-content" tabIndex={-1} className="flex w-full flex-col items-center">
+            {children}
+          </main>
+          <Footer />
+        </div>
         {sidebar && <SideBar setSideBar={setSideBar} />}
-        <Footer />
       </div>
     </ThemeProvider>
   );

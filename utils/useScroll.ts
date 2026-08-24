@@ -19,7 +19,7 @@ const useScroll = (page) => {
       const percent = (ScrollTop / (ScrollHeight - element.clientHeight)) * 100;
       setWidth(percent);
     }
-  }, [position]);
+  }, [page, position]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);

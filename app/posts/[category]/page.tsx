@@ -15,6 +15,9 @@ export async function generateMetadata({ params }: { params: Promise<{ category:
   return {
     title: category === 'all' ? 'All Posts' : `${category} Posts`,
     description: `${category} articles from phnml1`,
+    alternates: {
+      canonical: `/posts/${encodeURIComponent(category)}`,
+    },
   };
 }
 

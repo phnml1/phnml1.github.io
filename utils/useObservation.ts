@@ -40,20 +40,20 @@ const useObservation = (setState: Dispatch<SetStateAction<string>>, headingEleme
       )
       setState(sortedVisibleHeadings[0].target.id)
     }
-  }, [headingElements])
+  }, [headingElements, setState])
 
   useEffect(() => {
     // IntersectionObserver에 위에서 만든 callback 함수인 handleIntersect 함수를 넘겨주어 새로운 인스턴스 생성.
     const observer = new IntersectionObserver(handleIntersect, defaultOption)
     // 헤더 태그 요소들을 observer로 관찰한다.
-    headingElements.map((header) => {
+    headingElements.forEach((header) => {
       observer.observe(header)
     })
     // 컴포넌드가 언마운트 되었을 경우 observe의 관찰을 멈춘다.
     return () => { 
       observer.disconnect()
     }
-  }, [headingElements])
+  }, [handleIntersect, headingElements])
 }
 
 export default useObservation

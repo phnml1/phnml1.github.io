@@ -14,6 +14,9 @@ export async function generateMetadata({ params }: { params: Promise<{ tag: stri
   return {
     title: tag === 'all' ? 'All Tags' : `#${tag}`,
     description: `${tag} tagged articles from phnml1`,
+    alternates: {
+      canonical: `/posts/tag/${encodeURIComponent(tag)}`,
+    },
   };
 }
 

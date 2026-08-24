@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import SearchButton from './components/SearchButton';
 import SideBarButton from './components/SideBarButton';
 
 interface NavBarProps {
+  sidebarOpen: boolean;
   setSideBar: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -15,15 +16,15 @@ const navItems = [
   { href: '/posts/search', label: 'Search' },
 ];
 
-const Navbar: React.FC<NavBarProps> = ({ setSideBar }) => {
+const Navbar: React.FC<NavBarProps> = ({ sidebarOpen, setSideBar }) => {
   const [hidden, setHidden] = useState(false);
-  const [position, setPosition] = useState(0);
+  const position = useRef(0);
 
   const handleScroll = useCallback(() => {
     const moving = window.scrollY;
-    setHidden(moving > 160 && moving > position);
-    setPosition(moving);
-  }, [position]);
+    setHidden(moving > 160 && moving > position.current);
+    position.current = moving;
+  }, []);
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -37,10 +38,10 @@ const Navbar: React.FC<NavBarProps> = ({ setSideBar }) => {
       }`}
     >
       <div className="mx-auto flex h-20 w-full max-w-[1440px] items-center justify-between px-5 md:px-12">
-        <Link href="/" className="font-headline text-2xl font-black tracking-[-0.04em] text-primary">
+        <Link href="/" aria-label="이주영 포트폴리오 홈" className="font-headline text-2xl font-black tracking-[-0.04em] text-primary">
           phnml1
         </Link>
-        <nav className="hidden items-center gap-10 md:flex">
+        <nav aria-label="주요 메뉴" className="hidden items-center gap-10 md:flex">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -59,7 +60,7 @@ const Navbar: React.FC<NavBarProps> = ({ setSideBar }) => {
           >
             Contact
           </Link>
-          <SideBarButton setSideBar={setSideBar} theme="dark" />
+          <SideBarButton open={sidebarOpen} setSideBar={setSideBar} theme="dark" />
         </div>
       </div>
     </header>

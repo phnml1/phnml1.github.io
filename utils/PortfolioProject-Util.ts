@@ -11,6 +11,12 @@ export interface PortfolioProjectFrontmatter {
   slug?: string;
   category?: string;
   github?: string;
+  demo?: string;
+  problem?: string;
+  contribution?: string;
+  implementation?: string;
+  decision?: string;
+  evidence?: string;
   description?: string;
   relatedPosts?: string[];
 }
@@ -125,6 +131,12 @@ function normalizeFrontmatter(data: Record<string, unknown>): PortfolioProjectFr
     slug: typeof data.slug === 'string' ? data.slug : undefined,
     category: typeof data.category === 'string' ? data.category : undefined,
     github: typeof data.github === 'string' ? data.github : undefined,
+    demo: typeof data.demo === 'string' ? data.demo : undefined,
+    problem: typeof data.problem === 'string' ? data.problem : undefined,
+    contribution: typeof data.contribution === 'string' ? data.contribution : undefined,
+    implementation: typeof data.implementation === 'string' ? data.implementation : undefined,
+    decision: typeof data.decision === 'string' ? data.decision : undefined,
+    evidence: typeof data.evidence === 'string' ? data.evidence : undefined,
     description: typeof data.description === 'string' ? data.description : undefined,
     relatedPosts: Array.isArray(data.relatedPosts)
       ? data.relatedPosts.filter((item): item is string => typeof item === 'string')

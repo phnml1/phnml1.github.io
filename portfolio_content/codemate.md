@@ -4,6 +4,12 @@ period: "2026.02 - 2026.04"
 team: "개인 프로젝트"
 role: "Frontend / Full-stack"
 github: "https://github.com/phnml1/CodeMate"
+demo: "https://code-mate-two.vercel.app"
+problem: "PR 댓글 이벤트마다 전체 데이터를 다시 조회하면 이벤트 수만큼 API 요청이 늘고, 실시간 연결과 room 구독 책임도 컴포넌트에 흩어졌습니다."
+contribution: "Socket.io 이벤트를 TanStack Query 캐시에 직접 반영하고, 연결·room 구독·비동기 AI 리뷰 상태를 각각 분리했습니다."
+implementation: "setQueryData로 댓글 변경분만 반영하고 useSyncExternalStore 기반 socket store, room hook, AI 리뷰 상태 머신을 구현했습니다."
+decision: "서버 상태의 기준은 TanStack Query 캐시로 유지하고 Socket.io는 변경 이벤트 전달에 집중시켰으며, Prisma와 PostgreSQL로 리뷰·댓글 관계를 관리했습니다."
+evidence: "댓글 이벤트 10건 기준 API 요청 10→0회, 총 처리 시간 21102→1235ms, 클라이언트 반영 latency 평균 3.57ms / p95 7.2ms를 측정했습니다."
 stack: ["TypeScript", "React", "Next.js App Router", "TanStack Query", "Socket.io", "Prisma", "PostgreSQL", "NextAuth", "Tailwind CSS", "Recharts", "Anthropic Claude API", "GitHub API"]
 relatedPosts:
   - "posts/React/Next.js 서버 컴포넌트에서 Promise.all()로 대시보드 응답 시간 2배 단축하기"
@@ -33,9 +39,9 @@ relatedPosts:
 - `/measurements/comments` 페이지에서 `invalidate/refetch`와 같은 조건으로 비교 측정도 함께 진행했다.
 - 댓글 이벤트 10회 기준 API 요청을 10회 -> 0회로 줄였고, 총 소요 시간을 21102ms -> 1235ms로 단축했다.
 - synthetic socket 이벤트 10회 기준 클라이언트 반영 latency 평균 3.57ms, p95 7.2ms를 확인했다.
-  ![댓글 캐시 동기화 측정 결과](/projects/codemate/comment-cache-sync-1.png)
-  ![댓글 캐시 동기화 측정 요약](/projects/codemate/comment-cache-sync-2.png)
-  ![댓글 이벤트 반영 latency 측정](/projects/codemate/comment-event-latency.png)
+  <img src="/projects/codemate/댓글캐시동기화(1).png" alt="댓글 캐시 동기화 측정 결과" />
+  <img src="/projects/codemate/댓글캐시동기화(2).png" alt="댓글 캐시 동기화 측정 요약" />
+  <img src="/projects/codemate/댓글이벤트 반영 latency.png" alt="댓글 이벤트 반영 latency 측정" />
 
 ### Problem 02 - AI 리뷰 비동기 상태 공백
 - AI 리뷰는 비동기 작업이라 요청 직후부터 완료 시점까지 상태가 비어 있었고, 중복 요청도 막기 어려웠다.

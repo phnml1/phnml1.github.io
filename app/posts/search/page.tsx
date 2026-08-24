@@ -4,6 +4,10 @@ import { getAllPosts } from '@/utils/Post-Util';
 export const metadata = {
   title: 'Search Posts',
   description: 'Search phnml1 tech journal posts',
+  robots: {
+    index: false,
+    follow: true,
+  },
 };
 
 export default function PostSearchPage() {
