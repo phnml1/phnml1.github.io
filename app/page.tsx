@@ -80,7 +80,7 @@ export default function HomePage() {
               <h2 className="font-headline text-5xl font-black tracking-[-0.05em] md:text-6xl">운영 흐름을 다룬 프로젝트.</h2>
             </div>
             <p className="max-w-md text-sm leading-7 text-text-secondary">
-              실시간 캐시, PDA 입력, 모바일 Drag & Drop처럼 프론트엔드 책임이 분명하고 검증 근거가 있는 사례를 먼저 배치했습니다.
+              댓글 동기화, PDA 피킹, 모바일 일정 편집 과정에서 상태 관리와 입력 처리, 렌더링 성능을 개선했습니다.
             </p>
           </div>
           <div className="grid gap-8 lg:grid-cols-2">

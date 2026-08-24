@@ -52,12 +52,12 @@ const PROJECT_SIGNALS: Record<string, { label: string; value: string; tone: stri
 const PROJECT_GROUPS = [
   {
     label: 'Frontend Evidence',
-    description: '실시간 캐시, PDA 입력, 모바일 제스처처럼 프론트엔드 책임과 측정 결과가 분명한 사례입니다.',
+    description: '댓글 동기화, PDA 스캔, 모바일 제스처에서 상태 관리와 입력 처리, 렌더링 성능을 개선했습니다.',
     slugs: PRIMARY_PROJECTS,
   },
   {
     label: 'Full-stack & More',
-    description: '주문 처리 웹 전환, 지원 상태 관리, 실시간 위치 동기화로 화면과 API를 연결한 범위를 보여줍니다.',
+    description: '주문 변환, 지원 단계 관리, 위치 동기화에 필요한 API와 데이터 흐름까지 연결했습니다.',
     slugs: ['np-ois', 'career-hub', 'runners-high'],
   },
 ];
@@ -80,7 +80,7 @@ export default function ProjectsPage() {
             </h1>
           </div>
           <p className="max-w-md text-base leading-8 text-text-secondary">
-            역할, 개인 기여, 검증 결과를 먼저 비교하고 카드를 선택하면 문제와 기술 판단의 근거를 확인할 수 있습니다.
+            각 프로젝트에서 맡은 역할과 개인 기여, 기술 선택의 근거, 확인 가능한 결과를 정리했습니다.
           </p>
         </header>
 

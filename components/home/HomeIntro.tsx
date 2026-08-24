@@ -9,7 +9,7 @@ const stack = [
   {
     category: 'State & Realtime',
     items: 'TanStack Query, Zustand, WebSocket',
-    note: '댓글 캐시 직접 갱신, 지원 단계 동기화, 실시간 위치 공유처럼 화면 상태와 서버 상태의 경계를 나눴습니다.',
+    note: '댓글, 지원 단계, 실시간 위치가 바뀔 때 필요한 화면만 갱신되도록 상태를 분리했습니다.',
   },
   {
     category: 'TypeScript & SQL',
@@ -19,7 +19,7 @@ const stack = [
   {
     category: 'Backend Support',
     items: 'Kotlin, Spring Boot, MySQL',
-    note: '물류 프로젝트에서 주문 변환, 피킹 상태 전이, Excel 산출물처럼 화면과 맞물린 서버 로직을 구현했습니다.',
+    note: '물류 프로젝트에서 주문 변환, 피킹 상태 변경, Excel 산출물 생성을 담당했습니다.',
   },
 ];
 
@@ -57,9 +57,9 @@ const HomeIntro: React.FC = () => {
               사용자 흐름을 구현하고, 성능을 근거로 개선합니다.
             </h1>
             <p className="mt-8 max-w-2xl text-lg leading-8 text-text-secondary md:text-xl">
-              React와 TypeScript를 중심으로 업무 화면, 서버 상태, 실시간 동기화를 구현했습니다. CodeMate에서는 댓글
-              이벤트 10건의 추가 조회를 10회에서 0회로 줄였고, Fly:On에서는 Drag & Drop 렌더링 시간을 React Profiler로
-              측정해 개선했습니다. 서버 로직은 Next.js와 SQL로 연결하고, 물류 프로젝트에서는 Kotlin/Spring까지 구현했습니다.
+              React와 TypeScript로 사용자가 작업을 이어갈 수 있는 화면 흐름을 만듭니다. CodeMate에서는 실시간 댓글을
+              캐시에 반영해 이벤트 10건당 추가 조회를 10회에서 0회로 줄였고, Fly:On에서는 Drag & Drop 렌더링 시간을
+              211.5ms에서 72.9ms로 줄였습니다. 필요한 API와 데이터 처리는 Next.js·SQL 또는 Kotlin·Spring으로 연결했습니다.
             </p>
             <div className="mt-10 flex flex-wrap gap-4">
               <Link
@@ -89,7 +89,7 @@ const HomeIntro: React.FC = () => {
               <div className="font-label text-xs font-bold uppercase tracking-[0.24em] text-primary">Frontend First</div>
               <h2 className="mt-5 text-4xl font-black tracking-[-0.05em] text-white">React + TypeScript</h2>
               <p className="mt-4 text-sm leading-7 text-text-secondary">
-                화면 상태와 서버 데이터의 경계를 나누고, 입력·동기화·실패 복구가 이어지는 흐름을 구현합니다.
+                입력 결과를 바로 확인하고, 연결이 끊긴 상황에서도 작업을 이어갈 수 있는 화면 흐름을 설계합니다.
               </p>
               <dl className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                 <div className="rounded-xl bg-surface-low p-4">
@@ -109,7 +109,7 @@ const HomeIntro: React.FC = () => {
                 <div className="font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">Supporting Full-stack</div>
                 <div className="mt-2 text-xl font-black tracking-[-0.03em] text-white">TypeScript + SQL</div>
                 <p className="mt-3 text-sm leading-7 text-text-secondary">
-                  Next.js Route Handler와 Prisma/PostgreSQL로 웹 기능을 연결했고, Kotlin/Spring 경험은 프로젝트별 담당 범위로 구분했습니다.
+                  Next.js Route Handler와 Prisma/PostgreSQL로 API와 데이터를 연결했고, 물류 프로젝트에서는 Kotlin/Spring으로 주문과 피킹 로직을 작성했습니다.
                 </p>
               </div>
             </div>
@@ -123,9 +123,9 @@ const HomeIntro: React.FC = () => {
             <span className="mb-4 block font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">
               Experience Snapshot
             </span>
-            <h2 className="font-headline text-4xl font-black tracking-[-0.05em] md:text-5xl">실무 문제를 화면과 상태로 정리합니다.</h2>
+            <h2 className="font-headline text-4xl font-black tracking-[-0.05em] md:text-5xl">현장 작업이 이어지도록 화면 흐름을 설계합니다.</h2>
             <p className="mt-6 max-w-md text-sm leading-7 text-text-secondary">
-              물류 운영에서 마주한 입력, 검수, 동기화 문제를 React와 TypeScript 기반 화면 흐름으로 풀어 왔습니다.
+              물류 현장의 입력·검수·동기화 과정을 웹 화면으로 옮기고, 사용자가 다음 작업을 판단할 수 있도록 상태와 피드백을 구성했습니다.
             </p>
           </div>
           <div className="grid gap-5 lg:col-span-8">
@@ -149,7 +149,7 @@ const HomeIntro: React.FC = () => {
           <div className="lg:col-span-3">
             <h2 className="font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">The Stack</h2>
             <p className="mt-4 max-w-xs text-sm leading-7 text-text-secondary">
-              React와 TypeScript를 중심으로 사용한 기술과 그 근거가 되는 프로젝트를 함께 표시합니다.
+              화면 구현과 상태 관리에 사용한 기술을 실제 적용 프로젝트와 함께 정리했습니다.
             </p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:col-span-9 lg:grid-cols-4">
