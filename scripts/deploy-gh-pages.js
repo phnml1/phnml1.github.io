@@ -54,6 +54,8 @@ function ensureClone(repoUrl) {
   if (!isGitRepo(cacheDir)) {
     fs.rmSync(cacheDir, { recursive: true, force: true });
     run('git', [
+      '-c',
+      'core.longpaths=true',
       'clone',
       repoUrl,
       cacheDir,
@@ -88,7 +90,11 @@ fs.closeSync(fs.openSync(path.join(outDir, '.nojekyll'), 'a'));
 const repoUrl = output('git', ['config', '--get', `remote.${remote}.url`]);
 ensureClone(repoUrl);
 
+// Next.js static export can create deeply nested route paths on Windows.
+run('git', ['config', 'core.longpaths', 'true'], { cwd: cacheDir });
+
 run('git', ['fetch', remote], { cwd: cacheDir });
+run('git', ['clean', '-fdx'], { cwd: cacheDir });
 run('git', ['checkout', branch], { cwd: cacheDir });
 run('git', ['reset', '--hard', `${remote}/${branch}`], { cwd: cacheDir });
 run('git', ['clean', '-fdx'], { cwd: cacheDir });
