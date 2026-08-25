@@ -1,18 +1,28 @@
 import Link from 'next/link';
 import { PortfolioProject, getPortfolioProjects } from '@/utils/PortfolioProject-Util';
+import ProjectArchive from '@/components/projects/ProjectArchive';
 
 export const metadata = {
   title: 'Projects',
-  description: '프로젝트 핵심 문제, 기술 판단, 검증 결과를 카드와 상세 페이지로 정리한 프로젝트 목록',
+  description:
+    '현재 프로젝트의 핵심 문제와 검증 결과, 직접 구축·운영하는 포트폴리오 플랫폼, 이전 프론트엔드 협업 경험을 구분해 정리한 프로젝트 목록',
   alternates: { canonical: '/projects' },
   openGraph: {
     title: 'Projects | 이주영',
-    description: '프론트엔드 프로젝트의 문제, 개인 기여, 기술 판단, 검증 결과를 정리한 목록',
+    description:
+      '프로젝트 Case Study와 포트폴리오 플랫폼, 이전 프론트엔드 협업 경험을 구분해 정리한 목록',
     url: '/projects',
   },
 };
 
-const PROJECT_ORDER = ['codemate', 'np-wms-picking', 'fly-on', 'np-ois', 'career-hub', 'runners-high'];
+const PROJECT_ORDER = [
+  'codemate',
+  'np-wms-picking',
+  'fly-on',
+  'np-ois',
+  'career-hub',
+  'runners-high',
+];
 
 const PRIMARY_PROJECTS = ['codemate', 'np-wms-picking', 'fly-on'];
 
@@ -52,12 +62,14 @@ const PROJECT_SIGNALS: Record<string, { label: string; value: string; tone: stri
 const PROJECT_GROUPS = [
   {
     label: 'Frontend Evidence',
-    description: '댓글 동기화, PDA 스캔, 모바일 제스처에서 상태 관리와 입력 처리, 렌더링 성능을 개선했습니다.',
+    description:
+      '댓글 동기화, PDA 스캔, 모바일 제스처에서 상태 관리와 입력 처리, 렌더링 성능을 개선했습니다.',
     slugs: PRIMARY_PROJECTS,
   },
   {
     label: 'Full-stack & More',
-    description: '주문 변환, 지원 단계 관리, 위치 동기화에 필요한 API와 데이터 흐름까지 연결했습니다.',
+    description:
+      '주문 변환, 지원 단계 관리, 위치 동기화에 필요한 API와 데이터 흐름까지 연결했습니다.',
     slugs: ['np-ois', 'career-hub', 'runners-high'],
   },
 ];
@@ -80,7 +92,8 @@ export default function ProjectsPage() {
             </h1>
           </div>
           <p className="max-w-md text-base leading-8 text-text-secondary">
-            각 프로젝트에서 맡은 역할과 개인 기여, 기술 선택의 근거, 확인 가능한 결과를 정리했습니다.
+            각 프로젝트에서 맡은 역할과 개인 기여, 기술 선택의 근거, 확인 가능한 결과를
+            정리했습니다.
           </p>
         </header>
 
@@ -97,8 +110,12 @@ export default function ProjectsPage() {
             return (
               <section key={group.label} className="grid gap-6">
                 <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)] md:items-end">
-                  <h2 className="font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">{group.label}</h2>
-                  <p className="max-w-2xl text-sm leading-7 text-text-secondary">{group.description}</p>
+                  <h2 className="font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">
+                    {group.label}
+                  </h2>
+                  <p className="max-w-2xl text-sm leading-7 text-text-secondary">
+                    {group.description}
+                  </p>
                 </div>
 
                 <div className="grid gap-5 lg:grid-cols-3">
@@ -110,6 +127,8 @@ export default function ProjectsPage() {
             );
           })}
         </div>
+
+        <ProjectArchive />
       </div>
     </section>
   );
@@ -140,7 +159,9 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
           <h2 className="mt-6 text-4xl font-black leading-tight tracking-[-0.045em] text-white transition-colors group-hover:text-primary">
             {frontmatter.title}
           </h2>
-          <p className="mt-5 line-clamp-4 text-sm leading-7 text-text-secondary">{project.summary}</p>
+          <p className="mt-5 line-clamp-4 text-sm leading-7 text-text-secondary">
+            {project.summary}
+          </p>
         </div>
 
         <div className="mt-8 grid content-start gap-3">
@@ -150,7 +171,9 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
 
           {signal ? (
             <div className="mt-2 rounded-xl border border-outline/60 bg-surface-low p-4">
-              <div className="text-gradient text-4xl font-black tracking-[-0.05em]">{signal.value}</div>
+              <div className="text-gradient text-4xl font-black tracking-[-0.05em]">
+                {signal.value}
+              </div>
               <div className="mt-2 font-label text-xs font-bold uppercase tracking-[0.16em] text-text-secondary">
                 {signal.label}
               </div>
@@ -162,7 +185,10 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
         <div className="mt-8">
           <div className="flex flex-wrap gap-2">
             {frontmatter.stack.slice(0, 5).map((tech) => (
-              <span key={tech} className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary">
+              <span
+                key={tech}
+                className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary"
+              >
                 {tech}
               </span>
             ))}
@@ -177,7 +203,10 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
             <span className="font-label text-xs font-bold uppercase tracking-[0.18em] text-primary opacity-80 group-hover:opacity-100">
               Open Case Study
             </span>
-            <span aria-hidden="true" className="flex h-10 w-10 items-center justify-center rounded-full border border-primary/50 text-xl text-primary transition duration-300 group-hover:translate-x-1 group-hover:bg-primary group-hover:text-surface">
+            <span
+              aria-hidden="true"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-primary/50 text-xl text-primary transition duration-300 group-hover:translate-x-1 group-hover:bg-primary group-hover:text-surface"
+            >
               →
             </span>
           </div>
@@ -192,7 +221,9 @@ function MetaRow({ label, value }: { label: string; value?: string }) {
 
   return (
     <div className="grid grid-cols-[76px_minmax(0,1fr)] gap-3 text-sm leading-6">
-      <span className="font-label text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary">{label}</span>
+      <span className="font-label text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+        {label}
+      </span>
       <span className="font-semibold text-white">{value}</span>
     </div>
   );
