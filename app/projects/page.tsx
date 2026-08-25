@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { PortfolioProject, getPortfolioProjects } from '@/utils/PortfolioProject-Util';
 import ProjectArchive from '@/components/projects/ProjectArchive';
+import Reveal from '@/components/motion/Reveal';
 
 export const metadata = {
   title: 'Projects',
@@ -82,20 +83,22 @@ export default function ProjectsPage() {
   return (
     <section className="w-full px-5 pb-24 pt-28 md:px-12 md:pt-36">
       <div className="mx-auto w-full max-w-[1440px]">
-        <header className="grid gap-10 border-b border-outline/70 pb-14 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
-          <div>
-            <span className="mb-5 block font-label text-sm font-bold uppercase tracking-[0.28em] text-primary">
-              Projects
-            </span>
-            <h1 className="font-headline text-[clamp(3.2rem,8vw,6.5rem)] font-black leading-[0.9] tracking-[-0.055em] text-white">
-              Projects with evidence.
-            </h1>
-          </div>
-          <p className="max-w-md text-base leading-8 text-text-secondary">
-            각 프로젝트에서 맡은 역할과 개인 기여, 기술 선택의 근거, 확인 가능한 결과를
-            정리했습니다.
-          </p>
-        </header>
+        <Reveal amount={0.05}>
+          <header className="grid gap-10 border-b border-outline/70 pb-14 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
+            <div>
+              <span className="mb-5 block font-label text-sm font-bold uppercase tracking-[0.28em] text-primary">
+                Projects
+              </span>
+              <h1 className="font-headline text-[clamp(3.2rem,8vw,6.5rem)] font-black leading-[0.9] tracking-[-0.055em] text-white">
+                Projects with evidence.
+              </h1>
+            </div>
+            <p className="max-w-md text-base leading-8 text-text-secondary">
+              각 프로젝트에서 맡은 역할과 개인 기여, 기술 선택의 근거, 확인 가능한 결과를
+              정리했습니다.
+            </p>
+          </header>
+        </Reveal>
 
         <div className="mt-12 grid gap-14">
           {PROJECT_GROUPS.map((group) => {
@@ -120,7 +123,9 @@ export default function ProjectsPage() {
 
                 <div className="grid gap-5 lg:grid-cols-3">
                   {groupProjects.map((project, index) => (
-                    <ProjectCard key={project.slug} project={project} index={index + 1} />
+                    <Reveal key={project.slug} delay={index * 0.06} className="h-full">
+                      <ProjectCard project={project} index={index + 1} />
+                    </Reveal>
                   ))}
                 </div>
               </section>
@@ -128,7 +133,9 @@ export default function ProjectsPage() {
           })}
         </div>
 
-        <ProjectArchive />
+        <Reveal>
+          <ProjectArchive />
+        </Reveal>
       </div>
     </section>
   );
@@ -143,7 +150,7 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
     <Link
       href={`/projects/${project.slug}`}
       aria-label={`${frontmatter.title} 프로젝트 상세 보기`}
-      className="group grid min-h-[420px] rounded-2xl border border-outline/70 bg-surface-container p-6 transition duration-300 hover:-translate-y-1 hover:border-primary/60 hover:bg-surface-high hover:shadow-[0_22px_60px_rgba(0,0,0,0.24)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+      className="group grid h-full min-h-[420px] rounded-2xl border border-outline/70 bg-surface-container p-6 transition duration-300 hover:-translate-y-1 hover:border-primary/60 hover:bg-surface-high hover:shadow-[0_22px_60px_rgba(0,0,0,0.24)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
     >
       <article className="grid h-full grid-rows-[auto_1fr_auto]">
         <div>

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { m } from 'motion/react';
 
 interface SidebarProps {
   setSideBar: React.Dispatch<React.SetStateAction<boolean>>;
@@ -20,7 +21,9 @@ const SideBar: React.FC<SidebarProps> = ({ setSideBar }) => {
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
-    const menuTrigger = document.querySelector<HTMLButtonElement>('[aria-controls="site-menu-dialog"]');
+    const menuTrigger = document.querySelector<HTMLButtonElement>(
+      '[aria-controls="site-menu-dialog"]',
+    );
     closeButtonRef.current?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -62,21 +65,34 @@ const SideBar: React.FC<SidebarProps> = ({ setSideBar }) => {
   };
 
   return (
-    <div
+    <m.div
       className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 py-20 backdrop-blur-sm"
       onClick={handleOutsideClick}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.18 }}
     >
-      <div
+      <m.div
         id="site-menu-dialog"
         ref={sideBarRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="site-menu-title"
         className="w-full max-w-xl rounded-xl bg-surface-container p-6 shadow-[0_20px_60px_rgba(173,198,255,0.08)]"
+        initial={{ opacity: 0, y: -16, scale: 0.985 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -10, scale: 0.99 }}
+        transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <div id="site-menu-title" className="font-headline text-2xl font-black tracking-[-0.04em] text-primary">메뉴</div>
+            <div
+              id="site-menu-title"
+              className="font-headline text-2xl font-black tracking-[-0.04em] text-primary"
+            >
+              메뉴
+            </div>
             <p className="mt-1 text-sm text-text-secondary">Portfolio and tech journal</p>
           </div>
           <button
@@ -103,16 +119,26 @@ const SideBar: React.FC<SidebarProps> = ({ setSideBar }) => {
         <div className="mt-10 rounded-lg bg-surface-low p-5">
           <div className="font-label text-xs uppercase tracking-[0.22em] text-primary">Contact</div>
           <div className="mt-4 flex flex-col gap-2 text-sm text-text-secondary">
-            <Link href="mailto:juyung0903@gmail.com" onClick={() => setSideBar(false)} className="hover:text-white">
+            <Link
+              href="mailto:juyung0903@gmail.com"
+              onClick={() => setSideBar(false)}
+              className="hover:text-white"
+            >
               juyung0903@gmail.com
             </Link>
-            <Link href="https://github.com/phnml1" target="_blank" rel="noopener noreferrer" onClick={() => setSideBar(false)} className="hover:text-white">
+            <Link
+              href="https://github.com/phnml1"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setSideBar(false)}
+              className="hover:text-white"
+            >
               github.com/phnml1
             </Link>
           </div>
         </div>
-      </div>
-    </div>
+      </m.div>
+    </m.div>
   );
 };
 

@@ -6,6 +6,7 @@ import { PluggableList } from 'unified';
 import raw from 'rehype-raw';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
+import Reveal from '@/components/motion/Reveal';
 
 export function generateStaticParams() {
   return getPortfolioProjectSlugs().map((slug) => ({ slug }));
@@ -51,88 +52,127 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           Back to Projects
         </Link>
 
-        <header className="grid gap-10 border-b border-outline/70 pb-14 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end">
-          <div>
-            <span className="mb-5 block font-label text-sm font-bold uppercase tracking-[0.28em] text-primary">
-              Project Detail
-            </span>
-            <h1 className="font-headline text-[clamp(3rem,8vw,6.5rem)] font-black leading-[0.9] tracking-[-0.055em] text-white">
-              {frontmatter.title}
-            </h1>
-            <p className="mt-8 max-w-3xl text-lg leading-8 text-text-secondary md:text-xl">{project.summary}</p>
-          </div>
-
-          <aside className="rounded-xl border border-outline/70 bg-surface-container p-5">
-            <ProjectMeta label="Period" value={frontmatter.period} />
-            <ProjectMeta label="Team" value={frontmatter.team} />
-            <ProjectMeta label="Role" value={frontmatter.role} />
-            <div className="mt-5 flex flex-wrap gap-2 border-t border-outline/70 pt-5">
-              {frontmatter.stack.slice(0, 8).map((tech) => (
-                <span key={tech} className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary">
-                  {tech}
-                </span>
-              ))}
+        <Reveal amount={0.05}>
+          <header className="grid gap-10 border-b border-outline/70 pb-14 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end">
+            <div>
+              <span className="mb-5 block font-label text-sm font-bold uppercase tracking-[0.28em] text-primary">
+                Project Detail
+              </span>
+              <h1 className="font-headline text-[clamp(3rem,8vw,6.5rem)] font-black leading-[0.9] tracking-[-0.055em] text-white">
+                {frontmatter.title}
+              </h1>
+              <p className="mt-8 max-w-3xl text-lg leading-8 text-text-secondary md:text-xl">
+                {project.summary}
+              </p>
             </div>
-            {frontmatter.github || frontmatter.demo ? (
-              <div className="mt-5 flex flex-wrap gap-2">
-                {frontmatter.github ? (
-                  <Link
-                    href={frontmatter.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex rounded-full border border-primary/50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary hover:text-surface"
-                  >
-                    GitHub
-                  </Link>
-                ) : null}
-                {frontmatter.demo ? (
-                  <Link
-                    href={frontmatter.demo}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex rounded-full bg-primary px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-surface transition-colors hover:bg-white"
-                  >
-                    Live Demo
-                  </Link>
-                ) : null}
-              </div>
-            ) : null}
-          </aside>
-        </header>
 
-        {frontmatter.problem || frontmatter.contribution || frontmatter.implementation || frontmatter.decision || frontmatter.evidence ? (
+            <aside className="rounded-xl border border-outline/70 bg-surface-container p-5">
+              <ProjectMeta label="Period" value={frontmatter.period} />
+              <ProjectMeta label="Team" value={frontmatter.team} />
+              <ProjectMeta label="Role" value={frontmatter.role} />
+              <div className="mt-5 flex flex-wrap gap-2 border-t border-outline/70 pt-5">
+                {frontmatter.stack.slice(0, 8).map((tech) => (
+                  <span
+                    key={tech}
+                    className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+              {frontmatter.github || frontmatter.demo ? (
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {frontmatter.github ? (
+                    <Link
+                      href={frontmatter.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex rounded-full border border-primary/50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary hover:text-surface"
+                    >
+                      GitHub
+                    </Link>
+                  ) : null}
+                  {frontmatter.demo ? (
+                    <Link
+                      href={frontmatter.demo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex rounded-full bg-primary px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-surface transition-colors hover:bg-white"
+                    >
+                      Live Demo
+                    </Link>
+                  ) : null}
+                </div>
+              ) : null}
+            </aside>
+          </header>
+        </Reveal>
+
+        {frontmatter.problem ||
+        frontmatter.contribution ||
+        frontmatter.implementation ||
+        frontmatter.decision ||
+        frontmatter.evidence ? (
           <section className="mt-10" aria-labelledby="project-summary">
-            <h2 id="project-summary" className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
+            <h2
+              id="project-summary"
+              className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary"
+            >
               Case Study Summary
             </h2>
             <div className="mt-4 grid gap-4 lg:grid-cols-6">
-              <ProjectStoryCard number="01" title="Problem" content={frontmatter.problem} className="lg:col-span-3" />
+              <ProjectStoryCard
+                number="01"
+                title="Problem"
+                content={frontmatter.problem}
+                className="lg:col-span-3"
+              />
               <ProjectStoryCard
                 number="02"
                 title="Role"
                 content={[frontmatter.role, frontmatter.contribution].filter(Boolean).join(' · ')}
                 className="lg:col-span-3"
               />
-              <ProjectStoryCard number="03" title="Implementation" content={frontmatter.implementation} className="lg:col-span-2" />
-              <ProjectStoryCard number="04" title="Technical Decision" content={frontmatter.decision} className="lg:col-span-2" />
-              <ProjectStoryCard number="05" title="Result" content={frontmatter.evidence} className="border-primary/35 bg-surface-low lg:col-span-2" />
+              <ProjectStoryCard
+                number="03"
+                title="Implementation"
+                content={frontmatter.implementation}
+                className="lg:col-span-2"
+              />
+              <ProjectStoryCard
+                number="04"
+                title="Technical Decision"
+                content={frontmatter.decision}
+                className="lg:col-span-2"
+              />
+              <ProjectStoryCard
+                number="05"
+                title="Result"
+                content={frontmatter.evidence}
+                className="lg:col-span-2"
+                cardClassName="border-primary/35 bg-surface-low"
+              />
             </div>
           </section>
         ) : null}
 
         <article className="mt-14 grid w-full gap-6">
-          {project.sections.map((section) => (
-            <section key={section.title} className="rounded-3xl border border-outline/70 bg-background/55 p-5 md:p-6">
-              <div className="mb-5 h-1 w-16 rounded-full bg-primary/80" />
-              <h2 className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">{section.displayTitle}</h2>
-              <div className="mt-5">
-                {section.kind === 'technical' ? (
-                  <TechnicalHighlights content={section.content} />
-                ) : (
-                  <MarkdownContent content={section.content} />
-                )}
-              </div>
-            </section>
+          {project.sections.map((section, index) => (
+            <Reveal key={section.title} delay={Math.min(index * 0.04, 0.12)}>
+              <section className="rounded-3xl border border-outline/70 bg-background/55 p-5 md:p-6">
+                <div className="mb-5 h-1 w-16 rounded-full bg-primary/80" />
+                <h2 className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
+                  {section.displayTitle}
+                </h2>
+                <div className="mt-5">
+                  {section.kind === 'technical' ? (
+                    <TechnicalHighlights content={section.content} />
+                  ) : (
+                    <MarkdownContent content={section.content} />
+                  )}
+                </div>
+              </section>
+            </Reveal>
           ))}
         </article>
       </div>
@@ -158,16 +198,22 @@ function TechnicalHighlights({ content }: { content: string }) {
             <span className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
               Problem {String(index + 1).padStart(2, '0')}
             </span>
-            <h3 className="mt-2 text-2xl font-black tracking-[-0.035em] text-white">{cleanProblemTitle(block.problemTitle)}</h3>
+            <h3 className="mt-2 text-2xl font-black tracking-[-0.035em] text-white">
+              {cleanProblemTitle(block.problemTitle)}
+            </h3>
           </div>
 
           <div className="grid gap-0 lg:grid-cols-2">
             <section className="border-b border-outline/70 px-5 py-5 lg:border-b-0 lg:border-r">
-              <span className="mb-3 block font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">Problem</span>
+              <span className="mb-3 block font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                Problem
+              </span>
               <MarkdownContent content={block.problemContent} compact />
             </section>
             <section className="px-5 py-5">
-              <span className="mb-3 block font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">Solution</span>
+              <span className="mb-3 block font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                Solution
+              </span>
               <MarkdownContent content={block.solutionContent} compact />
             </section>
           </div>
@@ -191,7 +237,13 @@ function MarkdownContent({ content, compact }: { content: string; compact?: bool
           img: ({ alt, src }) => (
             // Markdown assets have mixed intrinsic ratios, so the browser preserves their own dimensions.
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={src} alt={alt ?? ''} loading="lazy" decoding="async" className="h-auto w-full rounded-xl" />
+            <img
+              src={src}
+              alt={alt ?? ''}
+              loading="lazy"
+              decoding="async"
+              className="h-auto w-full rounded-xl"
+            />
           ),
         }}
       >
@@ -288,7 +340,9 @@ function ProjectMeta({ label, value }: { label: string; value?: string }) {
 
   return (
     <div className="mt-3 first:mt-0">
-      <div className="text-xs font-bold uppercase tracking-[0.18em] text-text-secondary">{label}</div>
+      <div className="text-xs font-bold uppercase tracking-[0.18em] text-text-secondary">
+        {label}
+      </div>
       <div className="mt-1 text-sm font-semibold leading-6 text-white">{value}</div>
     </div>
   );
@@ -299,20 +353,26 @@ function ProjectStoryCard({
   title,
   content,
   className = '',
+  cardClassName = '',
 }: {
   number: string;
   title: string;
   content?: string;
   className?: string;
+  cardClassName?: string;
 }) {
   if (!content) return null;
 
   return (
-    <article className={`rounded-2xl border border-outline/70 bg-surface-container p-6 ${className}`}>
-      <div className="font-label text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-        {number} · {title}
-      </div>
-      <p className="mt-4 text-sm leading-7 text-text-secondary">{content}</p>
-    </article>
+    <Reveal className={className} delay={(Number(number) - 1) * 0.04}>
+      <article
+        className={`h-full rounded-2xl border border-outline/70 bg-surface-container p-6 ${cardClassName}`}
+      >
+        <div className="font-label text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+          {number} · {title}
+        </div>
+        <p className="mt-4 text-sm leading-7 text-text-secondary">{content}</p>
+      </article>
+    </Reveal>
   );
 }

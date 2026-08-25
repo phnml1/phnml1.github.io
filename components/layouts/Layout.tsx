@@ -7,6 +7,7 @@ import Footer from '../Footer';
 import Navbar from '../navbar/Navbar';
 import SideBar from '../sidebar/SideBar';
 import { cls } from '@/utils/Utils';
+import { AnimatePresence, domAnimation, LazyMotion, MotionConfig } from 'motion/react';
 
 const notoSansKr = Noto_Sans_KR({
   subsets: ['latin'],
@@ -40,29 +41,35 @@ export default function Layout({ children }: React.PropsWithChildren) {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-      <div
-        className={cls(
-          notoSansKr.className,
-          inter.variable,
-          spaceGrotesk.variable,
-          'min-h-screen w-full bg-surface text-white font-body antialiased',
-        )}
-      >
-        <a
-          href="#main-content"
-          className="fixed left-4 top-3 z-[70] -translate-y-20 rounded-lg bg-primary px-4 py-3 font-label text-sm font-bold text-surface transition-transform focus:translate-y-0"
-        >
-          본문으로 건너뛰기
-        </a>
-        <div aria-hidden={sidebar || undefined} inert={sidebar ? true : undefined}>
-          <Navbar sidebarOpen={sidebar} setSideBar={setSideBar} />
-          <main id="main-content" tabIndex={-1} className="flex w-full flex-col items-center">
-            {children}
-          </main>
-          <Footer />
-        </div>
-        {sidebar && <SideBar setSideBar={setSideBar} />}
-      </div>
+      <MotionConfig reducedMotion="user">
+        <LazyMotion features={domAnimation} strict>
+          <div
+            className={cls(
+              notoSansKr.className,
+              inter.variable,
+              spaceGrotesk.variable,
+              'min-h-screen w-full bg-surface text-white font-body antialiased',
+            )}
+          >
+            <a
+              href="#main-content"
+              className="fixed left-4 top-3 z-[70] -translate-y-20 rounded-lg bg-primary px-4 py-3 font-label text-sm font-bold text-surface transition-transform focus:translate-y-0"
+            >
+              본문으로 건너뛰기
+            </a>
+            <div aria-hidden={sidebar || undefined} inert={sidebar ? true : undefined}>
+              <Navbar sidebarOpen={sidebar} setSideBar={setSideBar} />
+              <main id="main-content" tabIndex={-1} className="flex w-full flex-col items-center">
+                {children}
+              </main>
+              <Footer />
+            </div>
+            <AnimatePresence initial={false}>
+              {sidebar ? <SideBar setSideBar={setSideBar} /> : null}
+            </AnimatePresence>
+          </div>
+        </LazyMotion>
+      </MotionConfig>
     </ThemeProvider>
   );
 }
