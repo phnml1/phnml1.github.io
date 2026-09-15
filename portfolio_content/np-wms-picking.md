@@ -1,87 +1,128 @@
 ---
-title: "NP WMS Picking"
-slug: "np-wms-picking"
-period: "2026.06 - 2026.08"
-team: "팀 프로젝트 / 익명 물류 운영사"
-role: "Frontend / Full-stack"
-description: "PDA, Android WebView, WMS 계약을 연결한 현장 피킹 운영 시스템"
-problem: "작은 PDA 화면에서 물리 스캐너 입력, 오스캔, 부분 피킹, 네트워크 단절을 처리하면서 작업 단계와 서버 상태를 일치시켜야 했습니다."
-contribution: "Frontend에서는 스캐너 정규화, 단계별 가드, 오프라인 outbox, WMS 계약 매핑을 맡고 Backend의 부분 피킹·완료 흐름을 보강했습니다."
-implementation: "Android key event를 웹 CustomEvent로 전달하고, IndexedDB work package와 command outbox, 단계별 validation, WMS adapter를 구현했습니다."
-decision: "현장 입력은 WebView bridge에서 정규화하고 오프라인 명령은 IndexedDB에 순서대로 보존했으며, 부분 피킹은 Backend transaction 경계에서 분리했습니다."
-evidence: "Git author 기준 30/104 commits, Mobile FE 55 tests, Backend 224 tests와 두 프론트엔드 production build 통과를 확인했습니다."
-stack: ["React", "TypeScript", "Vite", "IndexedDB", "Android WebView", "Kotlin", "Spring Boot", "Spring JDBC", "MySQL", "Apache POI", "Vitest", "JUnit"]
+title: 'NP WMS Picking'
+slug: 'np-wms-picking'
+period: '2026.06 - 2026.08'
+team: '팀 프로젝트 / 익명 물류 운영사'
+role: 'Frontend 중심 / Full-stack 협업'
+description: 'PDA의 물리 스캔과 오프라인 작업을 서버·외부 WMS 상태에 연결한 현장 피킹 시스템'
+problem: '640×480급 PDA에서 물리 스캐너 입력, 부분 피킹과 네트워크 단절을 처리하면서 로컬 작업과 서버·외부 WMS 상태를 구분해야 했습니다.'
+contribution: '개인 기여는 Mobile FE의 단계 UI, scanner 정규화, offline outbox, WMS 상태 소비와 연결에 집중했고 Backend의 부분 피킹 흐름을 보강했습니다.'
+implementation: 'Android dispatchKeyEvent를 WebView CustomEvent로 전달하고 IndexedDB work package·journal·command outbox에 stable clientEventId와 expectedVersion을 보존했습니다.'
+decision: '로컬 저장과 서버 수락을 다른 상태로 표현하고 재연결 시 같은 명령을 순차 replay하며, version conflict는 자동 덮어쓰기 대신 차단했습니다.'
+evidence: '원자료에 기록된 Mobile FE 55 tests와 Backend 224 tests를 검증 근거로 사용하며 실제 처리량·시간 단축률·오스캔 감소율은 주장하지 않습니다.'
+stack:
+  [
+    'React',
+    'TypeScript',
+    'Vite',
+    'IndexedDB',
+    'Android WebView',
+    'Kotlin',
+    'Spring Boot',
+    'Spring JDBC',
+    'MySQL',
+    'Vitest',
+    'JUnit',
+  ]
 ---
 
-## Overview
-- 관리자가 PL을 등록, 배정, 관제하고 작업자는 PDA에서 로케이션 이동, 상품 확인, 수량 피킹, 분류/완료를 수행하는 WMS 연동 피킹 운영 시스템입니다.
-- 작은 PDA 화면, 물리 스캐너 입력, 오스캔, 부분 피킹, 네트워크 단절, 작업 단계 피드백 같은 현장 제약을 다뤘습니다.
-- 공개 위험이 있는 내부 주소, 인증값, 실제 운영 수치, 회사별 세부 프로세스 값은 제외했습니다.
+## 프로젝트 한 줄 설명
 
-## Key Features
-- **PDA 단계형 피킹 UI**: MOVE, ITEM, PICK, SORT, DONE 단계와 다음 행동을 640x480급 화면에 맞춰 정리했습니다.
-- **물리 스캐너 입력 처리**: Android WebView에서 키 이벤트를 모아 웹 CustomEvent로 전달하고, 웹에서 바코드 정규화와 단계별 검증을 적용했습니다.
-- **오프라인 outbox**: IndexedDB에 작업 패키지와 명령을 저장하고 재연결 시 순차 재전송하도록 구성했습니다.
-- **부분 피킹과 잔여 작업**: 완료분과 잔여 task, split event, 재고 변경 로그를 분리해 오완료 경로를 줄였습니다.
-- **외부 WMS 계약 매핑**: WMS의 claim, location, product, quantity, complete 응답을 기존 PDA 상태 흐름에 연결했습니다.
+창고 작업자가 작은 PDA와 물리 스캐너로 로케이션 → 상품 → 수량 → 분류 단계를 수행하고, 연결이 끊겨도 작업 사실과 재시도 순서를 보존하는 현장 실행 프론트엔드입니다.
 
-## Technical Highlights
+## 해결한 업무 문제
 
-### Problem 01 - 작은 PDA 화면과 스캐너 입력 제약
-- 데스크톱형 화면 밀도와 일반 input 중심 흐름은 640x480급 PDA에서 현재 단계, 목표 로케이션, 상품, 수량을 동시에 보기 어렵게 만들었습니다.
-- 물리 스캐너는 키보드처럼 입력되기 때문에 포커스, 소프트키보드, 입력기 상태에 따라 값이 흔들릴 수 있었습니다.
+- 데스크톱 전제의 화면은 640×480급 PDA에서 현재 단계와 다음 행동을 동시에 파악하기 어려웠습니다.
+- Android 물리 키, 키보드 wedge, paste, 한글 IME와 Enter/Tab suffix가 섞여 스캔 값이 중복되거나 유실될 수 있었습니다.
+- 네트워크 응답이 유실됐을 때 새 ID로 재전송하면 피킹 수량이 중복 반영될 수 있었습니다.
+- 부분 완료분과 남은 수량을 한 task에 덮어쓰면 residual 작업과 감사 이력이 사라질 수 있었습니다.
 
-### Solution 01 - PDA UI와 Android scanner bridge
-- 피킹 카드와 주요 액션을 단계 중심으로 재배치하고 Android fullscreen, visualViewport 높이 처리를 연결했습니다.
-- Android dispatchKeyEvent에서 스캐너 입력을 250ms 버퍼로 모아 Enter/Tab 시 `np-wms-scan` CustomEvent로 전달했습니다.
-- 웹에서는 ASCII 대문자화, 한글 입력기 QWERTY 복원, prefix/형식 검증, 불완전 스캔 경고를 적용했습니다.
+## 대상 사용자와 사용 흐름
 
-### Problem 02 - 오스캔과 부분 피킹의 상태 오염
-- 잘못된 바코드가 서버로 전달되거나 잔여 수량이 있는데 완료 처리되면 현장 작업 상태와 관리자 추적 데이터가 어긋날 수 있었습니다.
+창고 현장 작업자는 배정된 작업을 열고 로케이션 → 상품 → 수량 → 분류 순서로 스캔합니다. 연결이 끊기면 허용된 명령을 로컬에 저장하고, 재연결 시 순차 replay합니다. 부분 피킹은 완료분과 residual task로 나뉘며 외부 WMS의 최종 상태를 확인한 뒤 다음 단계로 이동합니다.
 
-### Solution 02 - 검증 가드와 부분 피킹 분기
-- prefix/형식 오류는 클라이언트에서 먼저 막고, 형식은 맞지만 대상이 다른 경우에는 서버 validation 응답으로 처리했습니다.
-- 잔여 수량 미만 입력 시 계속 작업과 부족 보고를 분리하고, 완료분과 residual task를 backend transaction 안에서 분리했습니다.
+## 나의 역할
 
-### Problem 03 - 네트워크 단절 후 작업 순서 복구
-- PDA 작업은 네트워크가 항상 안정적이라고 가정하기 어렵고, 재연결 후 명령 순서와 version 충돌을 보존해야 했습니다.
+Frontend를 중심으로 PDA 단계 UI, scanner 입력 정규화, focus·IME 복구, barcode validation, IndexedDB outbox와 WMS 응답 상태 연결을 담당했습니다. Kotlin/Spring 영역에서는 부분 피킹과 완료 routing을 보강해 프론트엔드가 소비하는 상태 의미를 맞췄습니다.
 
-### Solution 03 - IndexedDB work package와 command outbox
-- 네트워크 실패 시 deviceId, clientEventId, expectedVersion을 고정하고 작업 패키지와 outbox command를 같은 IndexedDB transaction으로 저장했습니다.
-- 재연결 시 PENDING command를 순차 재전송하고, 연결 실패는 backoff, version/idempotency conflict는 차단 상태로 멈추게 했습니다.
+## 팀 기여와 개인 기여의 경계
 
-### Problem 04 - 외부 WMS 계약과 기존 PDA 상태 흐름의 차이
-- 외부 WMS API는 stateVersion과 assignmentVersion을 함께 다루고, BLOCK/DEFERRED 같은 응답을 기존 화면 단계와 맞춰야 했습니다.
+- **개인 기여 중심**: Mobile FE, scanner 입력, 단계별 validation, offline outbox, WMS 상태 소비와 화면 연결.
+- **팀·기존 기반**: WMS backend import 멱등성, event outbox 전체, Android WebView shell의 초기 기반과 공동 파일.
+- **범위 구분**: 현행 mainline, Android bridge 이관이 남은 기능 브랜치, 더 엄격한 ownership·inbox/outbox를 실험한 local pilot을 하나의 운영 완료 기능으로 합치지 않습니다.
 
-### Solution 04 - WMS Mobile 계약 adapter
-- my-work/claim, location, product, quantity, complete, pallet-full 계약을 기존 PDA 상태기계에 매핑했습니다.
-- WMS backend의 import 멱등성, event outbox dispatcher는 팀 기여로 구분하고, 개인 기여는 Mobile FE 소비와 상태 연결 범위로 제한했습니다.
+## 시스템 또는 데이터 흐름
 
-## Tech Stack & Reason
-- **React + TypeScript**: PDA 단계 UI와 validation 상태를 명확하게 표현했습니다.
-- **IndexedDB + Service Worker**: 작업 패키지와 outbox를 브라우저에 저장하고 앱 셸 캐시를 구성했습니다.
-- **Android WebView + Kotlin**: 물리 스캐너, 소프트키보드 정책, native bridge가 필요한 현장 입력을 처리했습니다.
-- **Kotlin/Spring + JDBC/MySQL**: task 상태 전이, 부분 피킹, 재고 변경 로그, 관리자 API를 transaction 경계에서 처리했습니다.
-- **Vitest + JUnit**: offline store, WMS mapping, validation, MobileTaskService 회귀 시나리오를 검증했습니다.
+물리 Scanner → Android `dispatchKeyEvent` → WebView CustomEvent → React barcode normalization → IndexedDB work package/journal/outbox → Picking server → 외부 WMS 순서입니다. PDA의 로컬 사본은 미확정 상태이고, Picking server가 수락한 실행 사실과 외부 WMS의 최종 상태도 별도로 표시합니다.
 
-## Achievements
-- Git author 기준 `mj-juyeong` 30 / 전체 104 commits를 확인했습니다. 30개에는 merge commit 2개와 정리 commit 1개가 포함되어 기능 commit 수로 표현하지 않았습니다.
-- Backend `26 suites`, `224 tests` 통과를 확인했습니다.
-- Mobile FE `7 files`, `55 tests` 통과를 확인했습니다.
-- Mobile production build는 JS `292.39 kB`, gzip `91.56 kB`; Admin production build는 JS `393.62 kB`, gzip `106.43 kB`로 확인했습니다.
-- 실제 작업시간 단축률, 오류율 감소, 현장 처리량은 확인되지 않아 수치로 표현하지 않았습니다.
+## 핵심 상태 머신
 
-## What I Focused On
-- 현장 작업자가 다음 행동을 놓치지 않도록 PDA UI, 스캔 피드백, TTS 중복 억제, 상태 전이를 맞추는 데 집중했습니다.
-- Frontend에서는 스캐너 정규화, 단계별 가드, 오프라인 outbox, WMS 계약 매핑을 주도했습니다.
-- Backend에서는 전체 피킹 집계, 재고 변경 XLSX export, MobileTaskService의 부분 피킹과 완료 라우팅을 구현 또는 보강했습니다.
+- 화면 단계: `LOCATION → ITEM → QUANTITY → SORT → DONE`
+- 오프라인 명령: `LOCAL_PENDING → REPLAYING → SERVER_ACCEPTED → LOCAL_ACKED`
+- 충돌: `expectedVersion` 또는 idempotency conflict가 발생하면 자동 덮어쓰지 않고 차단 상태로 이동합니다.
+- 부분 피킹: source 완료 + residual `ACTIVE`, 부족 residual은 관리자 판단이 필요한 상태로 분리합니다.
 
-## Trade-offs / Limitations
-- Mobile UI와 API는 공동 파일이 많아 단독 구현으로 표현하지 않았고, Git blame과 commit 기준으로 개인 범위를 제한했습니다.
-- Android WebView 셸과 native TTS 원형은 팀 기여이며, 개인 Android 기여는 scanner key capture, keyboard policy, 후반 라벨 인쇄 bridge 범위로 구분했습니다.
-- 실제 PDA 모델, 제조사 스캐너 suffix, 장시간 오프라인, Bluetooth 프린터, 외부 WMS 장애 상황은 코드 테스트만으로 대체할 수 없습니다.
+## Technical Highlights · 대표 기술 문제
 
-## Portfolio Summary
-- NP WMS Picking은 PDA, WMS, Android WebView, Spring backend를 연결한 실무형 물류 피킹 운영 시스템입니다.
-- CRUD 화면보다 스캐너 입력, 오프라인 복구, 부분 피킹, WMS version 충돌 같은 현장 문제를 중심으로 정리했습니다.
-- 개인 기여와 팀 기여를 Git author 기준으로 구분했고, 공개 위험이 있는 정보와 확인되지 않은 운영 성과 수치는 제외했습니다.
+### Problem 01 - 물리 스캐너와 한글 IME가 같은 input을 흔드는 문제
+
+일반 `onChange`만 사용하면 keyCode 229, `beforeinput`, paste와 suffix 입력이 중복되고 focus가 다른 control로 이동했을 때 scan을 놓칠 수 있었습니다.
+
+### Solution 01 - Native bridge와 Web 입력 정규화
+
+Android `dispatchKeyEvent`에서 완성된 scan을 WebView CustomEvent로 전달하고, Web에서는 keydown·beforeinput·paste를 하나의 stream으로 정규화했습니다. 한글 IME/QWERTY 복원, prefix·형식 검증, 불완전 입력 경고와 focus 재무장을 단계별로 적용했습니다.
+
+### Problem 02 - 응답 유실 뒤 재전송의 중복 반영
+
+서버가 업무 효과를 적용한 뒤 응답만 사라지면 사용자는 실패로 보고 다시 시도하지만 새 request는 같은 수량을 두 번 반영할 수 있습니다.
+
+### Solution 02 - Stable ID와 ordered outbox
+
+첫 요청 전 `deviceId`, `clientEventId`, `expectedVersion`과 payload를 IndexedDB에 저장하고 같은 ID로 순차 replay했습니다. ACK 전 outbox를 지우지 않고 연결 실패에는 backoff를 적용했으며 version conflict는 quarantine했습니다.
+
+### Problem 03 - 부분 피킹에서 남은 수량의 출처 유실
+
+기존 task의 remaining 수량만 0으로 만들면 실제 완료분과 미처리분, allocation 귀속을 추적하기 어렵습니다.
+
+### Solution 03 - 완료분과 residual task 분리
+
+source task에는 완료 수량을 확정하고 residual task와 allocation split을 같은 transaction에서 생성했습니다. 일반 partial과 shortage를 다른 후속 상태로 두어 부족 수량이 정상 완료로 사라지지 않게 했습니다.
+
+### Problem 04 - 외부 WMS 상태와 PDA 단계의 의미 차이
+
+외부 WMS의 claim·location·product·quantity·complete 응답과 version이 기존 PDA 화면 단계와 일대일로 맞지 않았습니다.
+
+### Solution 04 - 소비 경계의 상태 mapping
+
+WMS 응답을 PDA state machine에 mapping하고 BLOCKED·DEFERRED·conflict를 별도 UI 상태로 노출했습니다. WMS의 계획·마스터·최종 상태는 권위 값으로 두고 PDA는 실행 명령과 로컬 projection만 소유하게 했습니다.
+
+## 선택한 해결 방법
+
+- 한 화면에 모든 정보를 넣기보다 단계마다 목표 값과 다음 행동을 고정했습니다.
+- native는 물리 입력을 안정된 event 계약으로 바꾸고, 업무 validation과 상태 전이는 React·server에 남겼습니다.
+- IndexedDB transaction에 명령과 화면 projection을 함께 저장해 앱 재시작 때 torn state를 줄였습니다.
+- 네트워크 전달은 at-least-once로 보고 같은 event ID를 재사용해 업무 효과를 멱등 처리하도록 설계했습니다.
+
+## 고려한 대안과 Trade-offs
+
+- online-only는 단순하지만 현장 네트워크 단절 동안 작업을 멈춰야 합니다. local-first outbox는 복구가 가능하지만 상태와 충돌 UX가 복잡해집니다.
+- 모든 스캐너를 keyboard wedge 설정에 맞출 수 있지만 장비·IME 차이를 UI가 떠안습니다. native bridge는 안정적이지만 Android 런타임 의존성이 생깁니다.
+- conflict를 항상 자동 rebase하면 작업은 빨리 이어지지만 수량과 소유권이 왜곡될 수 있어, 권위가 불명확한 경우는 차단을 선택했습니다.
+
+## 검증 방법과 결과
+
+- 원자료에 기록된 Mobile FE `55 tests`와 Backend `224 tests`를 이 Case Study의 검증 근거로 사용합니다.
+- scanner·offline·부분 피킹·상태 mapping은 unit/contract 시나리오로 확인했습니다.
+- commit 수는 개인 기여 범위를 추적하는 보조 근거일 뿐 사용자 성과나 코드 기여율로 노출하지 않습니다.
+- 실제 처리량, 작업 시간 단축률, 오스캔 감소율은 확인되지 않아 작성하지 않았습니다.
+
+## 현재 한계와 다음 개선
+
+- 실물 PDA의 장시간 사용, 실제 scanner suffix·한글 키보드 조합, 장시간 오프라인 replay를 추가 검증해야 합니다.
+- Bluetooth printer와 외부 WMS 장애를 포함한 end-to-end smoke가 필요합니다.
+- 현행 구현과 feature branch·local pilot의 상태 머신이 완전히 같지 않아 공개 화면에는 범위 badge가 필요합니다.
+- offline conflict와 수동 대사 시간을 관측할 수 있는 event ledger를 다음 측정 기준으로 삼아야 합니다.
+
+## 회고
+
+현장 프론트엔드의 성공은 버튼 클릭이 아니라 물리 입력, 로컬 영속, 서버 수락, 외부 시스템 반영이 서로 어긋나지 않는 데 있습니다. 모든 단계를 하나의 `success`로 뭉개지 않고, 사용자가 다음 행동을 판단할 수 있도록 실패 의미를 UI와 계약에 함께 담는 것이 핵심이었습니다.

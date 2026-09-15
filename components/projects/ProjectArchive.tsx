@@ -93,7 +93,7 @@ export default function ProjectArchive() {
         <header className="grid gap-6 md:grid-cols-[minmax(0,1fr)_420px] md:items-end">
           <div>
             <span className="mb-4 block font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">
-              Past Projects / Archive
+              More Projects / Archive
             </span>
             <h2
               id="project-archive-title"
@@ -103,8 +103,8 @@ export default function ProjectArchive() {
             </h2>
           </div>
           <p className="max-w-md text-sm leading-7 text-text-secondary">
-            현재의 Case Study와 구분해, 이전에 경험한 프론트엔드 학습과 협업의 흐름을 간결하게
-            정리했습니다.
+            Career Hub와 기존 프로젝트를 대표 Case Study와 구분해 보존했습니다. 각 상세 라우트와
+            이전 협업 경험은 그대로 확인할 수 있습니다.
           </p>
         </header>
 

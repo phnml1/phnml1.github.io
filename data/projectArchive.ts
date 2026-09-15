@@ -44,6 +44,22 @@ export const currentPortfolioProject: CurrentPortfolioProject = {
 
 export const projectArchive: readonly ProjectArchiveGroup[] = [
   {
+    year: '2026',
+    context: 'More Projects · PWA · Workflow',
+    projects: [
+      {
+        title: 'Career Hub',
+        period: '2025.11 - 2026.02',
+        role: '팀 프로젝트 · Frontend (FE 2 / BE 2)',
+        summary:
+          '채용 공고, 지원 단계, 일정과 알림을 하나의 PWA 흐름으로 묶고 서버 상태 캐시와 화면 상태의 갱신 규칙을 설계한 프로젝트입니다.',
+        stack: ['Next.js App Router', 'TypeScript', 'TanStack Query', 'Zustand', 'PWA / FCM'],
+        href: '/projects/career-hub',
+        linkLabel: 'Case Detail',
+      },
+    ],
+  },
+  {
     year: '2024',
     context: 'Next.js · Authentication · Location',
     projects: [

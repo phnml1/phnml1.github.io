@@ -7,6 +7,7 @@ import raw from 'rehype-raw';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
 import Reveal from '@/components/motion/Reveal';
+import CaseStudyVisuals from '@/components/projects/CaseStudyVisuals';
 
 export function generateStaticParams() {
   return getPortfolioProjectSlugs().map((slug) => ({ slug }));
@@ -155,6 +156,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             </div>
           </section>
         ) : null}
+
+        <CaseStudyVisuals slug={project.slug} />
 
         <article className="mt-14 grid w-full gap-6">
           {project.sections.map((section, index) => (

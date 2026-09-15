@@ -1,47 +1,18 @@
 import Link from 'next/link';
 import Reveal from '@/components/motion/Reveal';
 
-const stack = [
-  {
-    category: 'Frontend Core',
-    items: 'React, TypeScript, Next.js',
-    note: 'CodeMate의 PR 협업 화면, Career Hub의 지원 상태 UI, 물류 운영 화면을 React와 TypeScript로 구현했습니다.',
-  },
-  {
-    category: 'State & Realtime',
-    items: 'TanStack Query, Zustand, WebSocket',
-    note: '댓글, 지원 단계, 실시간 위치가 바뀔 때 필요한 화면만 갱신되도록 상태를 분리했습니다.',
-  },
-  {
-    category: 'TypeScript & SQL',
-    items: 'Next.js, Prisma, PostgreSQL',
-    note: 'CodeMate에서 TypeScript 기반 Route Handler와 관계형 데이터 모델로 리뷰·댓글·알림 흐름을 연결했습니다.',
-  },
-  {
-    category: 'Backend Support',
-    items: 'Kotlin, Spring Boot, MySQL',
-    note: '물류 프로젝트에서 주문 변환, 피킹 상태 변경, Excel 산출물 생성을 담당했습니다.',
-  },
-];
-
-const outcomes = [
-  { value: '10→0', label: 'CodeMate 댓글 이벤트 10건 기준 추가 API 요청' },
-  { value: '211.5→72.9ms', label: 'Fly:On 동일 Drag & Drop 시나리오의 total commit duration' },
-  { value: '55 / 224', label: 'NP WMS Picking에서 통과한 Mobile FE / Backend 테스트' },
-];
-
 const experienceSnapshots = [
   {
-    title: '물류 운영 웹 전환',
-    body: 'Excel VBA 주문 처리 업무를 업로드, 변환 큐, 검수, 산출물 보관이 가능한 웹 워크플로로 전환했습니다.',
+    title: '실무형 운영 프론트엔드',
+    body: '같은 물류 운영 환경에서 NP-OIS의 장기 변환·검수 흐름과 NP WMS Picking의 스캐너·오프라인 작업 흐름을 연결했습니다.',
   },
   {
-    title: '현장 PDA 피킹 UX',
-    body: '작은 화면, 물리 스캐너, 네트워크 단절, 부분 피킹 같은 현장 제약을 상태 흐름과 입력 검증으로 다뤘습니다.',
+    title: '제품형 모바일·실시간 경험',
+    body: '실시간 댓글과 위치 이벤트, 모바일 Drag & Drop처럼 빠르게 바뀌는 상태를 서버 캐시·편집 상태와 분리했습니다.',
   },
   {
-    title: '테스트와 빌드 기반 검증',
-    body: '운영 효과를 임의 수치로 설명하지 않고, 통과한 테스트와 빌드 결과를 기준으로 구현 범위를 확인했습니다.',
+    title: '측정과 실패 경계',
+    body: '성능은 같은 시나리오에서 측정하고, 로컬 저장·서버 수락·외부 시스템 반영처럼 서로 다른 성공 상태를 구분합니다.',
   },
 ];
 
@@ -53,18 +24,17 @@ const HomeIntro: React.FC = () => {
           <div className="lg:col-span-8">
             <Reveal amount={0.05}>
               <span className="mb-6 block font-label text-sm font-bold uppercase tracking-[0.3em] text-primary">
-                이주영 · 신입 프론트엔드 개발자
+                이주영 · Frontend Engineer
               </span>
               <h1 className="font-headline text-[clamp(3rem,8vw,6.5rem)] font-black leading-[0.9] tracking-[-0.055em] text-white">
-                사용자 흐름을 구현하고, 성능을 근거로 개선합니다.
+                복잡한 상태를 설계하고, 실패 이후의 흐름을 복구합니다.
               </h1>
             </Reveal>
             <Reveal delay={0.08} amount={0.05}>
               <p className="mt-8 max-w-2xl text-lg leading-8 text-text-secondary md:text-xl">
-                React와 TypeScript로 사용자가 작업을 이어갈 수 있는 화면 흐름을 만듭니다.
-                CodeMate에서는 실시간 댓글을 캐시에 반영해 이벤트 10건당 추가 조회를 10회에서 0회로
-                줄였고, Fly:On에서는 Drag & Drop 렌더링 시간을 211.5ms에서 72.9ms로 줄였습니다.
-                필요한 API와 데이터 처리는 Next.js·SQL 또는 Kotlin·Spring으로 연결했습니다.
+                React와 TypeScript를 중심으로 현장 입력, 실시간 이벤트, 장기 실행 작업의 실패 상태를
+                화면과 데이터 흐름으로 연결합니다. 렌더링 병목은 측정으로 확인하고, Kotlin/Spring
+                경험은 프론트엔드가 의존하는 API·트랜잭션·데이터 경계를 이해하는 데 활용합니다.
               </p>
             </Reveal>
             <Reveal delay={0.16} amount={0.05}>
@@ -102,8 +72,8 @@ const HomeIntro: React.FC = () => {
                   React + TypeScript
                 </h2>
                 <p className="mt-4 text-sm leading-7 text-text-secondary">
-                  입력 결과를 바로 확인하고, 연결이 끊긴 상황에서도 작업을 이어갈 수 있는 화면
-                  흐름을 설계합니다.
+                  서버 상태와 편집 상태를 분리하고, 연결 실패와 재처리까지 사용자가 이해할 수 있는
+                  흐름으로 설계합니다.
                 </p>
                 <dl className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                   <div className="rounded-xl bg-surface-low p-4">
@@ -131,8 +101,8 @@ const HomeIntro: React.FC = () => {
                     TypeScript + SQL
                   </div>
                   <p className="mt-3 text-sm leading-7 text-text-secondary">
-                    Next.js Route Handler와 Prisma/PostgreSQL로 API와 데이터를 연결했고, 물류
-                    프로젝트에서는 Kotlin/Spring으로 주문과 피킹 로직을 작성했습니다.
+                    Next.js·Prisma와 Kotlin/Spring 경험을 바탕으로 API 계약, 데이터 소유권, 트랜잭션
+                    경계를 프론트엔드 의사결정에 반영합니다.
                   </p>
                 </div>
               </div>
@@ -148,11 +118,11 @@ const HomeIntro: React.FC = () => {
               Experience Snapshot
             </span>
             <h2 className="font-headline text-4xl font-black tracking-[-0.05em] md:text-5xl">
-              현장 작업이 이어지도록 화면 흐름을 설계합니다.
+              화면 밖의 실패까지 상태로 다룹니다.
             </h2>
             <p className="mt-6 max-w-md text-sm leading-7 text-text-secondary">
-              물류 현장의 입력·검수·동기화 과정을 웹 화면으로 옮기고, 사용자가 다음 작업을 판단할 수
-              있도록 상태와 피드백을 구성했습니다.
+              기능 수보다 상태 전이, 책임 경계, 검증 방법을 먼저 설명합니다. 사용자가 다음 행동을
+              판단할 수 있어야 구현이 끝났다고 봅니다.
             </p>
           </Reveal>
           <div className="grid gap-5 lg:col-span-8">
@@ -172,52 +142,6 @@ const HomeIntro: React.FC = () => {
               </Reveal>
             ))}
           </div>
-        </div>
-      </section>
-
-      <section className="w-full bg-surface-low px-5 py-24 md:px-12">
-        <div className="mx-auto grid w-full max-w-[1440px] gap-10 lg:grid-cols-12">
-          <Reveal className="lg:col-span-3">
-            <h2 className="font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">
-              The Stack
-            </h2>
-            <p className="mt-4 max-w-xs text-sm leading-7 text-text-secondary">
-              화면 구현과 상태 관리에 사용한 기술을 실제 적용 프로젝트와 함께 정리했습니다.
-            </p>
-          </Reveal>
-          <div className="grid gap-6 sm:grid-cols-2 lg:col-span-9 lg:grid-cols-4">
-            {stack.map((item, index) => (
-              <Reveal key={item.category} delay={index * 0.05} className="h-full">
-                <div className="group h-full rounded-xl bg-surface-container p-6 transition-colors hover:bg-surface-high">
-                  <div className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
-                    {item.category}
-                  </div>
-                  <div className="mt-3 text-2xl font-black tracking-[-0.04em] text-white transition-colors group-hover:text-primary">
-                    {item.items}
-                  </div>
-                  <div className="my-5 h-px bg-outline/60" />
-                  <p className="text-sm leading-6 text-text-secondary">{item.note}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="w-full px-5 py-24 md:px-12">
-        <div className="mx-auto grid w-full max-w-[1440px] gap-6 md:grid-cols-3">
-          {outcomes.map((item, index) => (
-            <Reveal key={item.value} delay={index * 0.06} className="h-full">
-              <div className="h-full rounded-xl bg-surface-container p-8">
-                <div className="text-gradient break-words text-[clamp(2rem,10vw,3.75rem)] font-black tracking-[-0.06em]">
-                  {item.value}
-                </div>
-                <p className="mt-5 font-label text-xs uppercase leading-6 tracking-[0.18em] text-text-secondary">
-                  {item.label}
-                </p>
-              </div>
-            </Reveal>
-          ))}
         </div>
       </section>
     </>

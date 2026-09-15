@@ -19,13 +19,14 @@ export const metadata = {
 const PROJECT_ORDER = [
   'codemate',
   'np-wms-picking',
-  'fly-on',
   'np-ois',
-  'career-hub',
+  'fly-on',
   'runners-high',
+  'career-hub',
 ];
 
-const PRIMARY_PROJECTS = ['codemate', 'np-wms-picking', 'fly-on'];
+const PRIMARY_PROJECTS = ['codemate', 'np-wms-picking', 'np-ois'];
+const MOBILE_PROJECTS = ['fly-on', 'runners-high'];
 
 const PROJECT_SIGNALS: Record<string, { label: string; value: string; tone: string }> = {
   'np-wms-picking': {
@@ -34,24 +35,24 @@ const PROJECT_SIGNALS: Record<string, { label: string; value: string; tone: stri
     tone: 'Scanner input and offline outbox',
   },
   'np-ois': {
-    label: 'Backend tests',
-    value: '59',
-    tone: 'Excel VBA to web workflow',
+    label: 'Workflow stages',
+    value: '8',
+    tone: 'Upload → snapshot lock → archive',
   },
   codemate: {
     label: 'Comment API requests',
-    value: '10->0',
-    tone: 'Realtime cache update',
+    value: '10→0',
+    tone: 'Synthetic cache measurement',
   },
   'career-hub': {
     label: 'Detail refetch',
-    value: '1->0',
+    value: '1→0',
     tone: 'Application status sync',
   },
   'fly-on': {
     label: 'Drag duration',
-    value: '211.5->72.9ms',
-    tone: 'React Native profiling',
+    value: '211.5→72.9ms',
+    tone: 'Same React Profiler scenario',
   },
   'runners-high': {
     label: 'Pace window',
@@ -62,16 +63,16 @@ const PROJECT_SIGNALS: Record<string, { label: string; value: string; tone: stri
 
 const PROJECT_GROUPS = [
   {
-    label: 'Frontend Evidence',
+    label: 'Selected Case Studies',
     description:
-      '댓글 동기화, PDA 스캔, 모바일 제스처에서 상태 관리와 입력 처리, 렌더링 성능을 개선했습니다.',
+      '실시간 협업, 현장 피킹, 장기 변환 작업의 상태·책임 경계를 설명합니다. NP WMS Picking과 NP-OIS는 같은 익명 물류 운영사 경험입니다.',
     slugs: PRIMARY_PROJECTS,
   },
   {
-    label: 'Full-stack & More',
+    label: 'Mobile & Realtime Experience',
     description:
-      '주문 변환, 지원 단계 관리, 위치 동기화에 필요한 API와 데이터 흐름까지 연결했습니다.',
-    slugs: ['np-ois', 'career-hub', 'runners-high'],
+      '모바일 Drag & Drop의 렌더링 비용과 위치 스트림의 재연결·복구를 제품 경험으로 구현했습니다.',
+    slugs: MOBILE_PROJECTS,
   },
 ];
 
@@ -94,8 +95,8 @@ export default function ProjectsPage() {
               </h1>
             </div>
             <p className="max-w-md text-base leading-8 text-text-secondary">
-              각 프로젝트에서 맡은 역할과 개인 기여, 기술 선택의 근거, 확인 가능한 결과를
-              정리했습니다.
+              React와 TypeScript로 복잡한 업무 상태, 실시간 이벤트, 오프라인 복구와 물리 입력을 다룬
+              과정과 검증 범위를 정리했습니다.
             </p>
           </header>
         </Reveal>
@@ -144,7 +145,7 @@ export default function ProjectsPage() {
 function ProjectCard({ project, index }: { project: PortfolioProject; index: number }) {
   const { frontmatter } = project;
   const signal = PROJECT_SIGNALS[project.slug];
-  const groupLabel = PRIMARY_PROJECTS.includes(project.slug) ? 'Frontend' : 'More';
+  const groupLabel = PRIMARY_PROJECTS.includes(project.slug) ? 'Case' : 'Mobile';
 
   return (
     <Link

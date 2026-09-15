@@ -1,74 +1,78 @@
 import FeaturedPosts from '@/components/home/FeaturedPost';
+import HomeCapabilities from '@/components/home/HomeCapabilities';
+import HomeIntro from '@/components/home/HomeIntro';
+import Reveal from '@/components/motion/Reveal';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { recentPosts } from '@/utils/Post-Util';
-import HomeIntro from '@/components/home/HomeIntro';
-import Reveal from '@/components/motion/Reveal';
 
 export const metadata: Metadata = {
-  title: '이주영 | 신입 프론트엔드 개발자',
+  title: '이주영 | Frontend Engineer',
   description:
-    'React와 TypeScript로 업무 화면과 서버 상태를 구현하고, TypeScript·SQL 기반 서버 구현 경험을 함께 정리한 이주영의 프론트엔드 포트폴리오',
+    'React와 TypeScript로 복잡한 업무 상태, 실시간 이벤트, 오프라인 복구, 물리 입력과 렌더링 성능을 설계하고 검증하는 이주영의 프론트엔드 포트폴리오',
   alternates: { canonical: '/' },
   openGraph: {
-    title: '이주영 | 신입 프론트엔드 개발자',
-    description: '프로젝트의 문제, 기여 범위, 기술 판단, 검증 결과를 정리한 프론트엔드 포트폴리오',
+    title: '이주영 | Frontend Engineer',
+    description: '상태와 실패 경계를 설계하고 측정으로 검증한 프론트엔드 Case Study',
     url: '/',
     type: 'website',
   },
 };
 
-const featuredProjects = [
+type HomeProject = {
+  title: string;
+  href: string;
+  metric: string;
+  label: string;
+  summary: string;
+  context?: string;
+};
+
+const selectedProjects: HomeProject[] = [
   {
     title: 'CodeMate',
     href: '/projects/codemate',
     metric: '10→0',
-    label: 'comment API requests',
+    label: 'synthetic 댓글 이벤트 10건의 추가 API 요청',
     summary:
-      'GitHub PR 댓글 이벤트를 TanStack Query 캐시에 직접 반영해 실시간 협업 흐름과 API 요청 비용을 개선한 개인 프로젝트입니다.',
+      'Socket.io 연결과 PR room 수명주기를 분리하고, 댓글 이벤트를 TanStack Query 캐시에 직접 반영한 실시간 협업 제품입니다.',
   },
   {
     title: 'NP WMS Picking',
     href: '/projects/np-wms-picking',
     metric: '55 / 224',
-    label: 'mobile FE / backend tests',
+    label: 'Mobile FE / Backend tests',
     summary:
-      'PDA, Android WebView, WMS 계약을 연결해 스캐너 입력, 오프라인 복구, 부분 피킹 흐름을 다룬 실무 프로젝트입니다.',
-  },
-  {
-    title: 'Fly:On',
-    href: '/projects/fly-on',
-    metric: '211.5→72.9ms',
-    label: 'drag total commit duration',
-    summary:
-      'React Native 일정 Drag & Drop을 직접 구현하고 React Profiler 측정으로 렌더링 병목을 줄인 팀 프로젝트입니다.',
-  },
-];
-
-const additionalProjects = [
-  {
-    title: 'Career Hub',
-    href: '/projects/career-hub',
-    metric: '1→0',
-    label: 'detail refetch',
-    summary:
-      '지원 단계, 일정, 알림을 하나의 PWA 흐름으로 묶고 상태 동기화 규칙과 캐시 갱신 경로를 분리한 프로젝트입니다.',
+      '640×480급 PDA, 물리 스캐너, IndexedDB outbox와 부분 피킹 상태를 연결한 현장 실행 프론트엔드입니다.',
+    context: 'Same company · Warehouse operations',
   },
   {
     title: 'NP-OIS',
     href: '/projects/np-ois',
-    metric: '59',
-    label: 'backend tests',
+    metric: '8 stages',
+    label: 'upload → archive workflow',
     summary:
-      'Excel VBA 주문 처리 업무를 업로드, 변환 큐, 검수, 산출물 보관이 가능한 웹 워크플로로 전환한 실무 프로젝트입니다.',
+      '기존 MVP를 확장해 업로드부터 snapshot 고정, 검수, 산출물 보관까지 장기 실행 업무 흐름을 연결했습니다.',
+    context: 'Same company · Order operations',
+  },
+];
+
+const mobileProjects: HomeProject[] = [
+  {
+    title: 'Fly:On',
+    href: '/projects/fly-on',
+    metric: '211.5→72.9ms',
+    label: '동일 Drag & Drop 시나리오 · total commit duration',
+    summary:
+      'PanResponder와 floating layer로 일정 편집을 구현하고, React Profiler 측정 뒤 memoization과 컴포넌트 분리로 렌더 범위를 줄였습니다.',
   },
   {
     title: "Runner's High",
     href: '/projects/runners-high',
     metric: '10s',
-    label: 'pace window',
+    label: '이동 거리 기반 pace window',
     summary:
-      '실시간 위치 공유, 러닝 상태 분리, GPS pace 보정, 인증 복구 흐름을 다룬 위치 기반 모바일 프로젝트입니다.',
+      'STOMP 재연결·재구독, 미전송 위치 frame queue와 인증 refresh queue로 위치 기반 모바일 흐름의 복구 경로를 설계했습니다.',
   },
 ];
 
@@ -78,129 +82,26 @@ export default function HomePage() {
   return (
     <>
       <HomeIntro />
-      <section className="w-full bg-surface-low px-5 py-28 md:px-12">
-        <div className="mx-auto w-full max-w-[1440px]">
-          <Reveal>
-            <div className="mb-16 flex flex-col justify-between gap-8 md:flex-row md:items-end">
-              <div>
-                <span className="mb-4 block font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">
-                  Representative Work
-                </span>
-                <h2 className="font-headline text-5xl font-black tracking-[-0.05em] md:text-6xl">
-                  운영 흐름을 다룬 프로젝트.
-                </h2>
-              </div>
-              <p className="max-w-md text-sm leading-7 text-text-secondary">
-                댓글 동기화, PDA 피킹, 모바일 일정 편집 과정에서 상태 관리와 입력 처리, 렌더링
-                성능을 개선했습니다.
-              </p>
-            </div>
-          </Reveal>
-          <div className="grid gap-8 lg:grid-cols-2">
-            {featuredProjects.map((project, index) => (
-              <Reveal
-                key={project.href}
-                delay={index * 0.07}
-                className={index === 1 ? 'lg:mt-24' : ''}
-              >
-                <Link
-                  href={project.href}
-                  className="group block h-full min-w-0 rounded-xl border border-transparent bg-surface-container p-8 transition-colors duration-200 hover:border-primary/40 hover:bg-surface-high"
-                >
-                  <article className="grid min-h-[360px] min-w-0 grid-rows-[1fr_auto]">
-                    <div>
-                      <div className="mb-8 font-label text-xs uppercase tracking-[0.24em] text-primary">
-                        Project 0{index + 1}
-                      </div>
-                      <h3 className="max-w-xl text-4xl font-black leading-tight tracking-[-0.045em] text-white">
-                        {project.title}
-                      </h3>
-                      <p className="mt-6 max-w-xl text-base leading-8 text-text-secondary">
-                        {project.summary}
-                      </p>
-                    </div>
-                    <div className="mt-12 flex items-end justify-between gap-6">
-                      <div>
-                        <div className="text-gradient break-all text-[clamp(2.25rem,11vw,3.75rem)] font-black tracking-[-0.06em]">
-                          {project.metric}
-                        </div>
-                        <div className="font-label text-xs uppercase tracking-[0.2em] text-text-secondary">
-                          {project.label}
-                        </div>
-                      </div>
-                      <span
-                        aria-hidden="true"
-                        className="text-3xl text-primary transition-transform group-hover:translate-x-2"
-                      >
-                        →
-                      </span>
-                    </div>
-                  </article>
-                </Link>
-              </Reveal>
-            ))}
-          </div>
 
-          <Reveal>
-            <details className="group mt-10 rounded-2xl border border-outline/70 bg-surface-container p-5">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
-                <div>
-                  <span className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
-                    More Projects
-                  </span>
-                  <p className="mt-2 text-sm leading-7 text-text-secondary">
-                    주문 처리 웹 전환, PWA, 위치 기반 프로젝트는 펼쳐서 확인할 수 있습니다.
-                  </p>
-                </div>
-                <span
-                  aria-hidden="true"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/50 text-lg text-primary transition-transform group-open:rotate-180"
-                >
-                  ▾
-                </span>
-              </summary>
+      <ProjectSection
+        eyebrow="Selected Case Studies"
+        title="운영 실패를 상태로 바꾼 세 가지 사례."
+        description="기능 목록보다 문제가 생긴 이유, 상태와 책임 경계, 검증 방법의 순서로 설명합니다."
+        projects={selectedProjects}
+      />
 
-              <div className="mt-6 grid gap-5 border-t border-outline/70 pt-6 lg:grid-cols-3">
-                {additionalProjects.map((project) => (
-                  <Link
-                    key={project.href}
-                    href={project.href}
-                    className="group/card rounded-xl border border-outline/60 bg-surface-low p-5 transition duration-300 hover:-translate-y-1 hover:border-primary/60 hover:bg-surface-high"
-                  >
-                    <article className="grid min-h-[250px] grid-rows-[1fr_auto]">
-                      <div>
-                        <h3 className="text-2xl font-black tracking-[-0.035em] text-white transition-colors group-hover/card:text-primary">
-                          {project.title}
-                        </h3>
-                        <p className="mt-4 text-sm leading-7 text-text-secondary">
-                          {project.summary}
-                        </p>
-                      </div>
-                      <div className="mt-8 flex items-end justify-between gap-4 border-t border-outline/70 pt-5">
-                        <div>
-                          <div className="text-gradient text-3xl font-black tracking-[-0.04em]">
-                            {project.metric}
-                          </div>
-                          <div className="mt-1 font-label text-[10px] uppercase tracking-[0.18em] text-text-secondary">
-                            {project.label}
-                          </div>
-                        </div>
-                        <span
-                          aria-hidden="true"
-                          className="text-2xl text-primary transition-transform group-hover/card:translate-x-1"
-                        >
-                          →
-                        </span>
-                      </div>
-                    </article>
-                  </Link>
-                ))}
-              </div>
-            </details>
-          </Reveal>
-        </div>
-      </section>
-      <section className="w-full px-5 py-28 md:px-12">
+      <ProjectSection
+        eyebrow="Mobile & Realtime Experience"
+        title="손끝의 인터랙션과 연결 복구."
+        description="모바일 제스처와 위치 이벤트처럼 빠르게 변하는 상태를 측정하고, 연결이 흔들린 뒤의 복구까지 구현했습니다."
+        projects={mobileProjects}
+        compact
+        surface="default"
+      />
+
+      <HomeCapabilities />
+
+      <section className="w-full px-5 py-28 md:px-12" aria-labelledby="journal-title">
         <div className="mx-auto w-full max-w-[1440px]">
           <Reveal>
             <div className="mb-16 flex flex-col justify-between gap-8 md:flex-row md:items-end">
@@ -208,8 +109,11 @@ export default function HomePage() {
                 <span className="mb-4 block font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">
                   Tech Journal
                 </span>
-                <h2 className="font-headline text-5xl font-black tracking-[-0.05em] md:text-6xl">
-                  Recent posts.
+                <h2
+                  id="journal-title"
+                  className="font-headline text-5xl font-black tracking-[-0.05em] md:text-6xl"
+                >
+                  Decisions, documented.
                 </h2>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -237,6 +141,153 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <section
+        className="w-full bg-surface-low px-5 py-24 md:px-12"
+        aria-labelledby="home-cta-title"
+      >
+        <Reveal className="mx-auto w-full max-w-[1440px]">
+          <div className="grid gap-8 rounded-2xl border border-outline/70 bg-surface-container p-7 md:p-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <div>
+              <span className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
+                Next Step
+              </span>
+              <h2
+                id="home-cta-title"
+                className="mt-4 max-w-3xl text-3xl font-black tracking-[-0.04em] text-white md:text-5xl"
+              >
+                구현 범위와 한계까지 포함한 Case Study를 확인해 보세요.
+              </h2>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/projects"
+                className="rounded-lg bg-primary px-6 py-3 font-label text-xs font-bold uppercase tracking-[0.18em] text-surface transition-colors hover:bg-white"
+              >
+                All Projects
+              </Link>
+              <Link
+                href="https://github.com/phnml1"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg border border-primary/50 px-6 py-3 font-label text-xs font-bold uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary hover:text-surface"
+              >
+                GitHub
+              </Link>
+            </div>
+          </div>
+        </Reveal>
+      </section>
     </>
+  );
+}
+
+function ProjectSection({
+  eyebrow,
+  title,
+  description,
+  projects,
+  compact = false,
+  surface = 'low',
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  projects: HomeProject[];
+  compact?: boolean;
+  surface?: 'low' | 'default';
+}) {
+  return (
+    <section
+      className={`w-full px-5 py-28 md:px-12 ${surface === 'low' ? 'bg-surface-low' : ''}`}
+      aria-label={eyebrow}
+    >
+      <div className="mx-auto w-full max-w-[1440px]">
+        <Reveal>
+          <header className="mb-14 flex flex-col justify-between gap-8 md:flex-row md:items-end">
+            <div>
+              <span className="mb-4 block font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">
+                {eyebrow}
+              </span>
+              <h2 className="max-w-4xl font-headline text-4xl font-black tracking-[-0.05em] md:text-6xl">
+                {title}
+              </h2>
+            </div>
+            <p className="max-w-md text-sm leading-7 text-text-secondary">{description}</p>
+          </header>
+        </Reveal>
+
+        <div className={`grid gap-6 ${compact ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
+          {projects.map((project, index) => (
+            <Reveal key={project.href} delay={index * 0.07} className="h-full">
+              <HomeProjectCard project={project} index={index + 1} compact={compact} />
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HomeProjectCard({
+  project,
+  index,
+  compact,
+}: {
+  project: HomeProject;
+  index: number;
+  compact: boolean;
+}) {
+  return (
+    <Link
+      href={project.href}
+      aria-label={`${project.title} Case Study 보기`}
+      className="group block h-full min-w-0 rounded-2xl border border-outline/70 bg-surface-container p-6 transition duration-300 hover:-translate-y-1 hover:border-primary/60 hover:bg-surface-high focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary md:p-8"
+    >
+      <article
+        className={`grid h-full min-w-0 grid-rows-[1fr_auto] ${
+          compact ? 'min-h-[320px]' : 'min-h-[410px]'
+        }`}
+      >
+        <div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
+              Case {String(index).padStart(2, '0')}
+            </span>
+            {project.context ? (
+              <span className="rounded-full border border-outline/70 px-3 py-1 text-[10px] leading-5 text-text-secondary">
+                {project.context}
+              </span>
+            ) : null}
+          </div>
+          <h3 className="mt-7 break-words text-3xl font-black leading-tight tracking-[-0.045em] text-white transition-colors group-hover:text-primary md:text-4xl">
+            {project.title}
+          </h3>
+          <p className="mt-5 text-sm leading-7 text-text-secondary md:text-base">
+            {project.summary}
+          </p>
+        </div>
+        <div className="mt-10 flex min-w-0 items-end justify-between gap-5 border-t border-outline/70 pt-6">
+          <div className="min-w-0">
+            <div
+              className={`text-gradient break-words font-black tracking-[-0.055em] ${
+                compact ? 'text-[clamp(2rem,7vw,3.25rem)]' : 'text-[clamp(2rem,8vw,3.5rem)]'
+              }`}
+            >
+              {project.metric}
+            </div>
+            <div className="mt-2 max-w-xs font-label text-[10px] font-bold uppercase leading-5 tracking-[0.16em] text-text-secondary">
+              {project.label}
+            </div>
+          </div>
+          <span
+            aria-hidden="true"
+            className="shrink-0 text-3xl text-primary transition-transform group-hover:translate-x-1"
+          >
+            →
+          </span>
+        </div>
+      </article>
+    </Link>
   );
 }

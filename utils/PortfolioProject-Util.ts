@@ -41,6 +41,10 @@ export type PortfolioSectionKind =
   | 'achievements'
   | 'focus'
   | 'tradeoffs'
+  | 'workflow'
+  | 'contribution'
+  | 'evidence'
+  | 'reflection'
   | 'summary'
   | 'highlights'
   | 'default';
@@ -91,7 +95,9 @@ export function getPortfolioProjects() {
 
   return files
     .map((file) => parsePortfolioProject(path.join(contentDir, file)))
-    .sort((a, b) => getPeriodSortValue(b.frontmatter.period) - getPeriodSortValue(a.frontmatter.period));
+    .sort(
+      (a, b) => getPeriodSortValue(b.frontmatter.period) - getPeriodSortValue(a.frontmatter.period),
+    );
 }
 
 export function getPortfolioProject(slug: string) {
@@ -120,7 +126,9 @@ function parsePortfolioProject(filePath: string): PortfolioProject {
 
 function normalizeFrontmatter(data: Record<string, unknown>): PortfolioProjectFrontmatter {
   const title = typeof data.title === 'string' ? data.title : 'Untitled Project';
-  const stack = Array.isArray(data.stack) ? data.stack.filter((item): item is string => typeof item === 'string') : [];
+  const stack = Array.isArray(data.stack)
+    ? data.stack.filter((item): item is string => typeof item === 'string')
+    : [];
 
   return {
     title,
@@ -193,21 +201,45 @@ function getSectionKind(title: string): PortfolioSectionKind {
 
   if (normalized.includes('overview')) return 'overview';
   if (normalized.includes('key features')) return 'features';
-  if (normalized.includes('technical highlights')) return 'technical';
-  if (normalized === 'screens' || normalized.includes('screen flow') || normalized.includes('screen gallery')) return 'screens';
+  if (normalized.includes('technical highlights') || normalized.includes('대표 기술 문제')) {
+    return 'technical';
+  }
+  if (
+    normalized === 'screens' ||
+    normalized.includes('screen flow') ||
+    normalized.includes('screen gallery')
+  )
+    return 'screens';
   if (normalized.includes('tech stack')) return 'stack';
   if (normalized.includes('achievements')) return 'achievements';
   if (normalized.includes('what i focused on')) return 'focus';
-  if (normalized.includes('trade-offs') || normalized.includes('tradeoffs') || normalized.includes('limitations')) {
+  if (
+    normalized.includes('trade-offs') ||
+    normalized.includes('tradeoffs') ||
+    normalized.includes('limitations')
+  ) {
     return 'tradeoffs';
   }
+  if (
+    normalized.includes('사용 흐름') ||
+    normalized.includes('데이터 흐름') ||
+    normalized.includes('상태 머신')
+  ) {
+    return 'workflow';
+  }
+  if (normalized.includes('나의 역할') || normalized.includes('기여의 경계')) return 'contribution';
+  if (normalized.includes('검증 방법') || normalized.includes('검증 결과')) return 'evidence';
+  if (normalized.includes('회고')) return 'reflection';
   if (normalized.includes('portfolio summary') || normalized === 'summary') return 'summary';
   if (normalized.includes('highlight points')) return 'highlights';
 
   return 'default';
 }
 
-function createSummary(frontmatter: PortfolioProjectFrontmatter, overview: PortfolioMarkdownSection | null) {
+function createSummary(
+  frontmatter: PortfolioProjectFrontmatter,
+  overview: PortfolioMarkdownSection | null,
+) {
   if (frontmatter.description) {
     return frontmatter.description;
   }
@@ -335,10 +367,13 @@ function extractMarkdownImages(content: string) {
     });
   };
 
-  normalized.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (_, alt: string, src: string) => {
-    pushImage(src, alt);
-    return '';
-  });
+  normalized.replace(
+    /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g,
+    (_, alt: string, src: string) => {
+      pushImage(src, alt);
+      return '';
+    },
+  );
 
   const imgTags = normalized.match(/<img\b[^>]*>/g) ?? [];
 
@@ -358,7 +393,9 @@ function dedupeScreenGroups(groups: PortfolioScreenGroup[]) {
   const seen = new Set<string>();
 
   return groups.filter((group) => {
-    const key = `${group.category ?? ''}:${group.title}:${group.images.map((image) => image.src).join('|')}`;
+    const key = `${group.category ?? ''}:${group.title}:${group.images
+      .map((image) => image.src)
+      .join('|')}`;
 
     if (seen.has(key)) {
       return false;
@@ -370,7 +407,11 @@ function dedupeScreenGroups(groups: PortfolioScreenGroup[]) {
 }
 
 function cleanMarkdownLabel(value: string) {
-  return value.replace(/\*\*/g, '').replace(/`/g, '').replace(/<br\s*\/?>/gi, ' ').trim();
+  return value
+    .replace(/\*\*/g, '')
+    .replace(/`/g, '')
+    .replace(/<br\s*\/?>/gi, ' ')
+    .trim();
 }
 
 function splitByH3(content: string) {
