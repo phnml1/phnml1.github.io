@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
             이주영 · Frontend Developer
           </div>
           <p className="max-w-md text-sm leading-7 text-text-secondary">
-            성능 병목을 측정하고, 복잡한 상태 흐름을 정리하며, 오래 유지되는 프론트엔드 구조를 기록합니다.
+            Next.js·React·TypeScript 기반 웹 애플리케이션과 모바일 프로젝트 경험을 정리한 포트폴리오입니다.
           </p>
           <p className="mt-8 font-label text-xs uppercase tracking-[0.22em] text-text-secondary">
             © {year} Jooyoung. Built with Next.js.
@@ -29,7 +29,7 @@ const Footer: React.FC = () => {
           <h4 className="mb-5 font-label text-xs uppercase tracking-[0.24em] text-primary">Connect</h4>
           <div className="flex flex-col gap-3 text-sm text-text-secondary">
             <Link className="hover:text-white" href="https://github.com/phnml1" target="_blank" rel="noopener noreferrer">GitHub</Link>
-            <Link className="hover:text-white" href="mailto:juyung0903@gmail.com">Email</Link>
+            <Link className="hover:text-white" href="mailto:juyung0903@naver.com">Email</Link>
           </div>
         </div>
       </div>

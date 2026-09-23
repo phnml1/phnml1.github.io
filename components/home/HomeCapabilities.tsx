@@ -2,24 +2,24 @@ import Reveal from '@/components/motion/Reveal';
 
 const capabilities = [
   {
-    category: 'State Architecture',
+    category: 'Frontend',
     items: 'TanStack Query · Zustand',
-    note: '서버 상태, 편집 상태, 연결 상태의 수명과 책임을 분리하고 이벤트 이후의 동기화 규칙을 설계합니다.',
+    note: 'React·Next.js·React Native 화면에서 서버 데이터 조회, 편집 상태, 모바일 UI 흐름을 구현했습니다.',
   },
   {
-    category: 'Realtime & Recovery',
+    category: 'Realtime & Integration',
     items: 'Socket.io · STOMP · Outbox',
-    note: '재연결, polling fallback, 순차 replay와 conflict처럼 정상 경로 밖의 상태를 UI에 드러냅니다.',
+    note: 'PR 댓글·알림, 위치 공유, 장기 작업 polling처럼 이벤트 기반 화면 갱신과 API 연동을 다뤘습니다.',
   },
   {
-    category: 'Physical Input',
+    category: 'Device & Local Data',
     items: 'WebView · Scanner · IME',
-    note: '물리 키, 한글 입력기, 포커스, CustomEvent를 하나의 검증 가능한 입력 흐름으로 정규화합니다.',
+    note: 'Android WebView, 물리 스캐너 입력, IndexedDB 로컬 저장소를 PDA 작업 화면과 연결했습니다.',
   },
   {
-    category: 'Measured Performance',
+    category: 'Quality & Performance',
     items: 'React Profiler · Lighthouse',
-    note: '렌더링과 초기 로딩 병목을 같은 시나리오에서 계측하고, 측정 조건과 인과의 한계를 함께 기록합니다.',
+    note: 'Jest·Playwright·GitHub Actions와 성능 측정 도구로 주요 기능과 렌더링 병목을 확인했습니다.',
   },
 ];
 
@@ -38,11 +38,11 @@ export default function HomeCapabilities() {
             id="capabilities-title"
             className="font-headline text-4xl font-black tracking-[-0.05em] md:text-5xl"
           >
-            경계를 이해하는 프론트엔드.
+            기술 스택
           </h2>
           <p className="mt-5 max-w-sm text-sm leading-7 text-text-secondary">
-            React와 TypeScript를 중심에 두고, 필요한 만큼 API·DB·native 경계까지 내려가 문제를
-            확인합니다.
+            이력서의 Skills 항목에 맞춰 프론트엔드, 상태·데이터, 실시간 연동, 품질 검증 경험을
+            정리했습니다.
           </p>
         </Reveal>
 

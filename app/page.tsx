@@ -9,11 +9,11 @@ import { recentPosts } from '@/utils/Post-Util';
 export const metadata: Metadata = {
   title: '이주영 | Frontend Engineer',
   description:
-    'React와 TypeScript로 복잡한 업무 상태, 실시간 이벤트, 오프라인 복구, 물리 입력과 렌더링 성능을 설계하고 검증하는 이주영의 프론트엔드 포트폴리오',
+    'Next.js, React, TypeScript로 업무 화면, API 연동, 실시간 이벤트, 모바일 인터랙션을 구현해 온 이주영의 프론트엔드 포트폴리오',
   alternates: { canonical: '/' },
   openGraph: {
     title: '이주영 | Frontend Engineer',
-    description: '상태와 실패 경계를 설계하고 측정으로 검증한 프론트엔드 Case Study',
+    description: 'React와 TypeScript 기반 업무 화면, 데이터 흐름, 모바일 프로젝트 경험을 정리한 포트폴리오',
     url: '/',
     type: 'website',
   },
@@ -85,15 +85,15 @@ export default function HomePage() {
 
       <ProjectSection
         eyebrow="Selected Case Studies"
-        title="운영 실패를 상태로 바꾼 세 가지 사례."
-        description="기능 목록보다 문제가 생긴 이유, 상태와 책임 경계, 검증 방법의 순서로 설명합니다."
+        title="대표 프로젝트"
+        description="이력서에 정리한 회사 프로젝트와 개인 프로젝트를 구현 범위, 사용 기술, 검증 근거 중심으로 정리했습니다."
         projects={selectedProjects}
       />
 
       <ProjectSection
         eyebrow="Mobile & Realtime Experience"
-        title="손끝의 인터랙션과 연결 복구."
-        description="모바일 제스처와 위치 이벤트처럼 빠르게 변하는 상태를 측정하고, 연결이 흔들린 뒤의 복구까지 구현했습니다."
+        title="모바일·실시간 프로젝트"
+        description="React Native 일정 화면, 위치 공유, 댓글 동기화처럼 모바일과 실시간 이벤트가 포함된 프로젝트 경험입니다."
         projects={mobileProjects}
         compact
         surface="default"
@@ -113,7 +113,7 @@ export default function HomePage() {
                   id="journal-title"
                   className="font-headline text-5xl font-black tracking-[-0.05em] md:text-6xl"
                 >
-                  Decisions, documented.
+                  기술 기록
                 </h2>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -156,7 +156,7 @@ export default function HomePage() {
                 id="home-cta-title"
                 className="mt-4 max-w-3xl text-3xl font-black tracking-[-0.04em] text-white md:text-5xl"
               >
-                구현 범위와 한계까지 포함한 Case Study를 확인해 보세요.
+                프로젝트 상세 내용을 확인해 보세요.
               </h2>
             </div>
             <div className="flex flex-wrap gap-3">

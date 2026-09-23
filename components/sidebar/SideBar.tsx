@@ -120,11 +120,11 @@ const SideBar: React.FC<SidebarProps> = ({ setSideBar }) => {
           <div className="font-label text-xs uppercase tracking-[0.22em] text-primary">Contact</div>
           <div className="mt-4 flex flex-col gap-2 text-sm text-text-secondary">
             <Link
-              href="mailto:juyung0903@gmail.com"
+              href="mailto:juyung0903@naver.com"
               onClick={() => setSideBar(false)}
               className="hover:text-white"
             >
-              juyung0903@gmail.com
+              juyung0903@naver.com
             </Link>
             <Link
               href="https://github.com/phnml1"

@@ -55,7 +55,7 @@ const Navbar: React.FC<NavBarProps> = ({ sidebarOpen, setSideBar }) => {
         <div className="flex items-center gap-2">
           <SearchButton setSideBar={setSideBar} theme="dark" />
           <Link
-            href="mailto:juyung0903@gmail.com"
+            href="mailto:juyung0903@naver.com"
             className="hidden rounded-lg bg-gradient-to-br from-primary to-accent-strong px-5 py-2.5 font-label text-xs font-bold uppercase tracking-[0.18em] text-[#001a42] transition-transform hover:scale-[1.02] md:inline-flex"
           >
             Contact
