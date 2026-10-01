@@ -9,6 +9,16 @@ import remarkGfm from 'remark-gfm';
 import Reveal from '@/components/motion/Reveal';
 import CaseStudyVisuals from '@/components/projects/CaseStudyVisuals';
 
+const projectMedia: Record<string, { src: string; alt: string; caption: string }[]> = {
+  codemate: [
+    { src: '/projects/codemate/codemate-comment.gif', alt: 'CodeMate PR 댓글 화면에서 댓글을 작성하는 과정', caption: 'PR 댓글 흐름' },
+    { src: '/projects/codemate/codemate-ai-review.gif', alt: 'CodeMate AI 리뷰 요청과 결과 화면', caption: 'AI 리뷰 흐름' },
+  ],
+  'fly-on': [
+    { src: '/projects/fly-on/dragdrop.gif', alt: 'Fly:On 모바일 일정 카드 Drag & Drop 편집 화면', caption: '모바일 일정 편집' },
+  ],
+};
+
 export function generateStaticParams() {
   return getPortfolioProjectSlugs().map((slug) => ({ slug }));
 }
@@ -24,6 +34,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: project.frontmatter.title,
     description: project.summary,
+    robots: project.frontmatter.category === 'archive' ? { index: false, follow: true } : undefined,
     alternates: { canonical: `/projects/${project.slug}` },
     openGraph: {
       title: `${project.frontmatter.title} | 이주영`,
@@ -59,7 +70,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <span className="mb-5 block font-label text-sm font-bold uppercase tracking-[0.28em] text-primary">
                 Project Detail
               </span>
-              <h1 className="font-headline text-[clamp(3rem,8vw,6.5rem)] font-black leading-[0.9] tracking-[-0.055em] text-white">
+              <h1 className="break-words font-headline text-4xl font-black leading-tight text-white sm:text-5xl lg:text-6xl">
                 {frontmatter.title}
               </h1>
               <p className="mt-8 max-w-3xl text-lg leading-8 text-text-secondary md:text-xl">
@@ -81,7 +92,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                   </span>
                 ))}
               </div>
-              {frontmatter.github || frontmatter.demo ? (
+              {frontmatter.github || frontmatter.demo || frontmatter.store ? (
                 <div className="mt-5 flex flex-wrap gap-2">
                   {frontmatter.github ? (
                     <Link
@@ -102,6 +113,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                     >
                       Live Demo
                     </Link>
+                  ) : null}
+                  {frontmatter.store ? (
+                    <Link href={frontmatter.store} target="_blank" rel="noopener noreferrer" className="inline-flex rounded-lg border border-primary/50 px-4 py-2 text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-surface">원스토어 앱</Link>
                   ) : null}
                 </div>
               ) : null}
@@ -136,23 +150,27 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               />
               <ProjectStoryCard
                 number="03"
-                title="Implementation"
-                content={frontmatter.implementation}
-                className="lg:col-span-2"
-              />
-              <ProjectStoryCard
-                number="04"
-                title="Technical Decision"
-                content={frontmatter.decision}
-                className="lg:col-span-2"
-              />
-              <ProjectStoryCard
-                number="05"
-                title="Result"
+                title="Verification"
                 content={frontmatter.evidence}
-                className="lg:col-span-2"
+                className="lg:col-span-6"
                 cardClassName="border-primary/35 bg-surface-low"
               />
+            </div>
+          </section>
+        ) : null}
+
+        {projectMedia[project.slug] ? (
+          <section className="mt-14" aria-label="프로젝트 실제 화면">
+            <h2 className="mb-5 text-2xl font-bold text-white">제품 화면</h2>
+            <div className="grid gap-6 lg:grid-cols-2">
+              {projectMedia[project.slug].map((media) => (
+                <figure key={media.src} className="min-w-0">
+                  {/* Existing project GIFs preserve the original interaction and aspect ratio. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={media.src} alt={media.alt} loading="lazy" className="h-auto w-full rounded-lg border border-outline/70" />
+                  <figcaption className="mt-2 text-sm text-text-secondary">{media.caption}</figcaption>
+                </figure>
+              ))}
             </div>
           </section>
         ) : null}
@@ -162,8 +180,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         <article className="mt-14 grid w-full gap-6">
           {project.sections.map((section, index) => (
             <Reveal key={section.title} delay={Math.min(index * 0.04, 0.12)}>
-              <section className="rounded-3xl border border-outline/70 bg-background/55 p-5 md:p-6">
-                <div className="mb-5 h-1 w-16 rounded-full bg-primary/80" />
+              <section className="border-t border-outline/70 py-6">
                 <h2 className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
                   {section.displayTitle}
                 </h2>

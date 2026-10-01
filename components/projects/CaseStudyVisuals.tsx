@@ -27,14 +27,14 @@ type VisualConfig = {
 const visualConfigs: Record<string, VisualConfig> = {
   codemate: {
     eyebrow: 'Realtime Data Flow',
-    flowTitle: '이벤트를 다시 조회하지 않고 UI까지 전달하는 경로',
+    flowTitle: 'Socket 이벤트를 댓글 캐시에 반영하는 경로',
     flowDescription:
       'PostgreSQL이 영속 상태의 원본이고 Socket.io는 변경 이벤트만 전달합니다. 연결이 실패하면 같은 Query가 polling으로 DB 상태를 다시 읽습니다.',
     steps: [
       { label: 'DB write', detail: '댓글 변경을 먼저 영속화', owner: 'personal' },
       { label: 'Socket event', detail: 'PR room으로 payload 전달', owner: 'personal' },
       { label: 'Query cache', detail: '재귀·불변 patch와 ID 중복 방지', owner: 'personal' },
-      { label: 'React UI', detail: '추가 refetch 없이 화면 반영', owner: 'personal' },
+      { label: 'React UI', detail: '이벤트 반영 후 화면 갱신', owner: 'personal' },
     ],
     timelineTitle: 'AI review 상태 머신',
     timeline: [
@@ -47,7 +47,7 @@ const visualConfigs: Record<string, VisualConfig> = {
       {
         label: 'Before',
         title: '이벤트마다 전체 refetch',
-        body: '댓글 10건이면 같은 Query의 추가 요청도 10회 발생했습니다.',
+        body: 'Socket 이벤트마다 전체 목록을 다시 읽으면 불필요한 요청과 fetching 상태가 반복됩니다.',
       },
       {
         label: 'Decision',
@@ -56,8 +56,8 @@ const visualConfigs: Record<string, VisualConfig> = {
       },
       {
         label: 'After',
-        title: '추가 요청 10→0',
-        body: '측정 페이지의 synthetic 댓글 이벤트 10건 조건에서 확인했습니다.',
+        title: '이벤트는 cache patch',
+        body: '댓글 작성·수정·삭제 mutation 뒤에는 관련 Query를 재조회해 DB 상태와 맞춥니다.',
       },
     ],
     evidence: [
@@ -66,14 +66,14 @@ const visualConfigs: Record<string, VisualConfig> = {
         body: '23 suites / 133 Jest tests, Playwright 3 flows, ESLint와 production build를 2026-09-07에 확인했습니다.',
       },
       {
-        title: 'Synthetic measurement',
-        body: '댓글 이벤트 10건에서 요청 10→0, 총 21102→1235ms, cache 반영 평균 3.57ms·p95 7.2ms를 측정했습니다.',
+        title: 'Local measurements',
+        body: '서버 내부 /api/repositories 호출 17건→0건(워밍업 포함 17회), 대시보드 LCP p75 4,948→4,236ms(동일 조건 전후 각 15회)를 확인했습니다.',
       },
     ],
     limitations: [
       {
         title: '측정 범위',
-        body: 'cache 측정은 실제 Socket.io network·DB 왕복 latency가 아닌 같은 브라우저의 synthetic event 조건입니다.',
+        body: '측정값은 명시한 로컬 조건의 결과이며 실제 서비스 사용자 성능을 대표하지 않습니다.',
       },
       {
         title: '남은 경계',
@@ -124,8 +124,8 @@ const visualConfigs: Record<string, VisualConfig> = {
     ],
     evidence: [
       {
-        title: 'Automated verification',
-        body: '원자료에 기록된 Mobile FE 55 tests와 Backend 224 tests를 프로젝트 검증 근거로 사용했습니다.',
+        title: 'Implementation evidence',
+        body: 'PDA UI·스캐너 입력·IndexedDB outbox·상태 버전 경계를 프로젝트 코드와 작업 기록에서 확인했습니다.',
       },
       {
         title: 'Contribution boundary',

@@ -31,9 +31,7 @@ export default function ProjectArchive() {
             <div className="inline-flex rounded-full border border-primary/50 px-3 py-1 font-label text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
               Built &amp; Maintained
             </div>
-            <p className="mt-5 font-label text-xs font-bold uppercase tracking-[0.14em] text-primary">
-              {currentPortfolioProject.period}
-            </p>
+            {currentPortfolioProject.period ? <p className="mt-5 font-label text-xs font-bold uppercase tracking-[0.14em] text-primary">{currentPortfolioProject.period}</p> : null}
             <p className="mt-3 text-sm leading-7 text-text-secondary">
               {currentPortfolioProject.role}
             </p>

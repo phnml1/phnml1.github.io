@@ -6,6 +6,7 @@ interface SearchInputProps {
 const SearchInput: React.FC<SearchInputProps> = ({ keyword, setKeyword }) => {
   return (
     <input
+      aria-label="기술 글 검색"
       type="text"
       value={keyword}
       onChange={(event) => setKeyword(event.target.value)}

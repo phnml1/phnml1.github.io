@@ -1,16 +1,15 @@
 ---
 title: 'CodeMate'
-period: '2026.02 - 2026.04'
+period: '2026.02 - 현재'
 team: '개인 프로젝트'
 role: 'Frontend / Full-stack'
 github: 'https://github.com/phnml1/CodeMate'
-demo: 'https://code-mate-two.vercel.app'
 description: 'GitHub PR의 AI 리뷰와 실시간 댓글 상태를 하나의 데이터 흐름으로 연결한 협업 제품'
 problem: '댓글 이벤트마다 전체 Query를 다시 조회하면 이벤트 수만큼 요청이 늘고, Socket.io 연결과 PR room 구독 책임도 컴포넌트에 흩어졌습니다.'
 contribution: '실시간 연결 store, room lifecycle, 댓글 cache patch, polling fallback과 AI review 상태 머신을 설계·구현했습니다.'
 implementation: 'useSyncExternalStore 기반 socket store와 room hook을 분리하고 create/update/delete/reaction payload를 TanStack Query cache에 immutable하게 반영했습니다.'
 decision: 'PostgreSQL을 영속 상태의 원본으로 두고 Socket.io는 변경 이벤트 전송에 집중시켰으며, 연결 실패 때 같은 Query가 polling으로 최종 상태를 회복하게 했습니다.'
-evidence: '2026-09-07 현재 23 suites / 133 tests, Playwright 3 flows, ESLint와 production build를 확인했습니다. 10→0 요청 수치는 synthetic 측정 조건입니다.'
+evidence: '2026-09-07 기준 Jest 23 suites / 133 tests와 Playwright 3 flows를 확인했습니다. 서버 내부 API 호출 제거와 LCP 개선은 각각 명시된 로컬 측정 조건에서 확인했습니다.'
 stack:
   [
     'TypeScript',
@@ -116,8 +115,9 @@ metadata와 files/diff의 loading gate를 분리하고 syntax highlighter, diff 
 ## 검증 방법과 결과
 
 - 2026-09-07 current HEAD에서 Jest `23 suites / 133 tests`, Playwright `3 flows`, ESLint, production build를 확인했습니다.
-- 측정 페이지의 synthetic 댓글 이벤트 10건 조건에서 추가 API 요청 `10→0`, 총 처리 시간 `21102→1235ms`를 기록했습니다.
-- 평균 `3.57ms`, p95 `7.2ms`는 실제 network latency가 아니라 synthetic socket payload를 같은 브라우저 Query cache에 반영한 시간입니다.
+- Server Component의 자기 API 호출을 DAL 직접 조회로 교체했습니다. 워밍업 포함 17회 로컬 측정에서 서버 내부 `/api/repositories` 호출은 `17건 → 0건`이었습니다.
+- 통계 카드·차트·최근 PR을 각각 Suspense 경계로 분리했습니다. 동일한 로컬 조건에서 개선 전후 15회씩 비교한 대시보드 LCP p75는 `4,948ms → 4,236ms`였습니다.
+- 댓글 작성·수정·삭제 뒤에는 관련 Query를 재조회합니다. Socket 이벤트의 cache patch를 모든 데이터 갱신에서 재조회가 없다는 주장으로 확장하지 않습니다.
 - historical Lighthouse는 2026-05-09 localhost Emulated Desktop, before/after 각 3회 평균에서 Performance `54.7→81.7`, LCP `2.27→1.03s`, TBT `1060→423ms`였습니다. loading gate, memoization, highlighter, notification, socket 변경이 묶인 과거 측정입니다.
 
 ## 현재 한계와 다음 개선

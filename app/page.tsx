@@ -22,57 +22,44 @@ export const metadata: Metadata = {
 type HomeProject = {
   title: string;
   href: string;
-  metric: string;
-  label: string;
+  type: string;
+  period: string;
   summary: string;
-  context?: string;
+  contribution: string;
 };
 
 const selectedProjects: HomeProject[] = [
   {
-    title: 'CodeMate',
-    href: '/projects/codemate',
-    metric: '10→0',
-    label: 'synthetic 댓글 이벤트 10건의 추가 API 요청',
-    summary:
-      'Socket.io 연결과 PR room 수명주기를 분리하고, 댓글 이벤트를 TanStack Query 캐시에 직접 반영한 실시간 협업 제품입니다.',
-  },
-  {
     title: 'NP WMS Picking',
     href: '/projects/np-wms-picking',
-    metric: '55 / 224',
-    label: 'Mobile FE / Backend tests',
-    summary:
-      '640×480급 PDA, 물리 스캐너, IndexedDB outbox와 부분 피킹 상태를 연결한 현장 실행 프론트엔드입니다.',
-    context: 'Same company · Warehouse operations',
+    type: '회사 프로젝트 · MJ Corporation',
+    period: '2026.07 - 2026.08',
+    summary: 'PDA 작업자의 스캔·피킹 순서를 작은 화면에 맞추고, 연결이 끊겨도 작업 명령을 보존했습니다.',
+    contribution: 'PDA UI · 스캐너 입력 통합 · IndexedDB outbox',
   },
   {
     title: 'NP-OIS',
     href: '/projects/np-ois',
-    metric: '8 stages',
-    label: 'upload → archive workflow',
-    summary:
-      '기존 MVP를 확장해 업로드부터 snapshot 고정, 검수, 산출물 보관까지 장기 실행 업무 흐름을 연결했습니다.',
-    context: 'Same company · Order operations',
+    type: '회사 프로젝트 · MJ Corporation',
+    period: '2026.05 - 2026.07',
+    summary: 'Excel/VBA 주문 가공 업무를 업로드·변환·검수·산출물 생성 화면으로 연결했습니다.',
+    contribution: 'React 업무 화면 · 조건부 polling · 검수 API 연동',
   },
-];
-
-const mobileProjects: HomeProject[] = [
+  {
+    title: 'CodeMate',
+    href: '/projects/codemate',
+    type: '개인 프로젝트',
+    period: '2026.02 - 현재',
+    summary: 'GitHub PR 리뷰와 실시간 댓글·알림을 다루는 코드 리뷰 협업 플랫폼입니다.',
+    contribution: 'TanStack Query 댓글 캐시 · Socket.io · AI 리뷰 상태',
+  },
   {
     title: 'Fly:On',
     href: '/projects/fly-on',
-    metric: '211.5→72.9ms',
-    label: '동일 Drag & Drop 시나리오 · total commit duration',
-    summary:
-      'PanResponder와 floating layer로 일정 편집을 구현하고, React Profiler 측정 뒤 memoization과 컴포넌트 분리로 렌더 범위를 줄였습니다.',
-  },
-  {
-    title: "Runner's High",
-    href: '/projects/runners-high',
-    metric: '10s',
-    label: '이동 거리 기반 pace window',
-    summary:
-      'STOMP 재연결·재구독, 미전송 위치 frame queue와 인증 refresh queue로 위치 기반 모바일 흐름의 복구 경로를 설계했습니다.',
+    type: '팀 프로젝트 · 모바일',
+    period: '2025.06 - 2025.11',
+    summary: '패러글라이딩 비행·관광 일정을 편집하는 React Native 앱입니다.',
+    contribution: 'Drag & Drop · 렌더링 성능 개선 · 인증 상태 복원',
   },
 ];
 
@@ -86,17 +73,8 @@ export default function HomePage() {
       <ProjectSection
         eyebrow="Selected Case Studies"
         title="대표 프로젝트"
-        description="이력서에 정리한 회사 프로젝트와 개인 프로젝트를 구현 범위, 사용 기술, 검증 근거 중심으로 정리했습니다."
+        description="회사에서 맡은 업무와 개인·팀 프로젝트의 구현 범위를 구분해 정리했습니다."
         projects={selectedProjects}
-      />
-
-      <ProjectSection
-        eyebrow="Mobile & Realtime Experience"
-        title="모바일·실시간 프로젝트"
-        description="React Native 일정 화면, 위치 공유, 댓글 동기화처럼 모바일과 실시간 이벤트가 포함된 프로젝트 경험입니다."
-        projects={mobileProjects}
-        compact
-        surface="default"
       />
 
       <HomeCapabilities />
@@ -142,42 +120,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section
-        className="w-full bg-surface-low px-5 py-24 md:px-12"
-        aria-labelledby="home-cta-title"
-      >
-        <Reveal className="mx-auto w-full max-w-[1440px]">
-          <div className="grid gap-8 rounded-2xl border border-outline/70 bg-surface-container p-7 md:p-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <div>
-              <span className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
-                Next Step
-              </span>
-              <h2
-                id="home-cta-title"
-                className="mt-4 max-w-3xl text-3xl font-black tracking-[-0.04em] text-white md:text-5xl"
-              >
-                프로젝트 상세 내용을 확인해 보세요.
-              </h2>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/projects"
-                className="rounded-lg bg-primary px-6 py-3 font-label text-xs font-bold uppercase tracking-[0.18em] text-surface transition-colors hover:bg-white"
-              >
-                All Projects
-              </Link>
-              <Link
-                href="https://github.com/phnml1"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-lg border border-primary/50 px-6 py-3 font-label text-xs font-bold uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary hover:text-surface"
-              >
-                GitHub
-              </Link>
-            </div>
-          </div>
-        </Reveal>
-      </section>
     </>
   );
 }
@@ -187,19 +129,17 @@ function ProjectSection({
   title,
   description,
   projects,
-  compact = false,
   surface = 'low',
 }: {
   eyebrow: string;
   title: string;
   description: string;
   projects: HomeProject[];
-  compact?: boolean;
   surface?: 'low' | 'default';
 }) {
   return (
     <section
-      className={`w-full px-5 py-28 md:px-12 ${surface === 'low' ? 'bg-surface-low' : ''}`}
+      className={`w-full px-5 py-20 md:px-12 ${surface === 'low' ? 'bg-surface-low' : ''}`}
       aria-label={eyebrow}
     >
       <div className="mx-auto w-full max-w-[1440px]">
@@ -217,10 +157,10 @@ function ProjectSection({
           </header>
         </Reveal>
 
-        <div className={`grid gap-6 ${compact ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
+        <div className="grid gap-5 md:grid-cols-2">
           {projects.map((project, index) => (
             <Reveal key={project.href} delay={index * 0.07} className="h-full">
-              <HomeProjectCard project={project} index={index + 1} compact={compact} />
+              <HomeProjectCard project={project} />
             </Reveal>
           ))}
         </div>
@@ -231,55 +171,32 @@ function ProjectSection({
 
 function HomeProjectCard({
   project,
-  index,
-  compact,
 }: {
   project: HomeProject;
-  index: number;
-  compact: boolean;
 }) {
   return (
     <Link
       href={project.href}
       aria-label={`${project.title} Case Study 보기`}
-      className="group block h-full min-w-0 rounded-2xl border border-outline/70 bg-surface-container p-6 transition duration-300 hover:-translate-y-1 hover:border-primary/60 hover:bg-surface-high focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary md:p-8"
+      className="group block h-full min-w-0 rounded-lg border border-outline/70 bg-surface-container p-6 transition duration-300 hover:border-primary/60 hover:bg-surface-high focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary md:p-8"
     >
-      <article
-        className={`grid h-full min-w-0 grid-rows-[1fr_auto] ${
-          compact ? 'min-h-[320px]' : 'min-h-[410px]'
-        }`}
-      >
+      <article className="flex h-full min-h-[250px] min-w-0 flex-col">
         <div>
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <span className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
-              Case {String(index).padStart(2, '0')}
+              {project.type}
             </span>
-            {project.context ? (
-              <span className="rounded-full border border-outline/70 px-3 py-1 text-[10px] leading-5 text-text-secondary">
-                {project.context}
-              </span>
-            ) : null}
+            <span className="text-xs text-text-secondary">{project.period}</span>
           </div>
-          <h3 className="mt-7 break-words text-3xl font-black leading-tight tracking-[-0.045em] text-white transition-colors group-hover:text-primary md:text-4xl">
+          <h3 className="mt-5 break-words text-2xl font-black leading-tight text-white transition-colors group-hover:text-primary md:text-3xl">
             {project.title}
           </h3>
-          <p className="mt-5 text-sm leading-7 text-text-secondary md:text-base">
+          <p className="mt-3 text-sm leading-7 text-text-secondary">
             {project.summary}
           </p>
         </div>
-        <div className="mt-10 flex min-w-0 items-end justify-between gap-5 border-t border-outline/70 pt-6">
-          <div className="min-w-0">
-            <div
-              className={`text-gradient break-words font-black tracking-[-0.055em] ${
-                compact ? 'text-[clamp(2rem,7vw,3.25rem)]' : 'text-[clamp(2rem,8vw,3.5rem)]'
-              }`}
-            >
-              {project.metric}
-            </div>
-            <div className="mt-2 max-w-xs font-label text-[10px] font-bold uppercase leading-5 tracking-[0.16em] text-text-secondary">
-              {project.label}
-            </div>
-          </div>
+        <div className="mt-auto flex min-w-0 items-end justify-between gap-5 border-t border-outline/70 pt-5">
+          <p className="min-w-0 text-sm font-medium leading-6 text-primary">{project.contribution}</p>
           <span
             aria-hidden="true"
             className="shrink-0 text-3xl text-primary transition-transform group-hover:translate-x-1"

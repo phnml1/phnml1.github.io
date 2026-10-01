@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { allTags, getAllPosts, getCategorys } from '@/utils/Post-Util';
-import { getPortfolioProjectSlugs } from '@/utils/PortfolioProject-Util';
+import { getPortfolioProjects } from '@/utils/PortfolioProject-Util';
 
 export const dynamic = 'force-static';
 
@@ -12,7 +12,9 @@ function toUrl(path: string) {
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = ['/', '/projects', '/posts/all', '/posts/tag/all'];
-  const projectRoutes = getPortfolioProjectSlugs().map((slug) => `/projects/${slug}`);
+  const projectRoutes = getPortfolioProjects()
+    .filter((project) => project.frontmatter.category !== 'archive')
+    .map((project) => `/projects/${project.slug}`);
   const categoryRoutes = getCategorys().map((category) => `/posts/${category}`);
   const tagRoutes = allTags.map((tag) => `/posts/tag/${tag}`);
   const postRoutes = getAllPosts().map((post) => `/${post.slug}`);

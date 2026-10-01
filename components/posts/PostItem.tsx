@@ -14,8 +14,8 @@ const PostItem: React.FC<PostItemProps> = ({ content, offset = false }) => {
   const date = format(new Date(content.date), 'yyyy.MM.dd');
 
   return (
-    <Link href={postHref(content.slug)} className={`group flex flex-col ${offset ? 'md:mt-24' : ''}`}>
-      <article className="h-full">
+    <article className={`flex h-full flex-col ${offset ? 'md:mt-24' : ''}`}>
+      <Link href={postHref(content.slug)} className="group block flex-1">
         <div className="relative mb-8 aspect-[16/10] overflow-hidden rounded-xl bg-surface-container">
           <Image
             src={`/${content.slug}/${content.image}`}
@@ -33,13 +33,13 @@ const PostItem: React.FC<PostItemProps> = ({ content, offset = false }) => {
           {content.title}
         </h3>
         <p className="mt-5 line-clamp-3 text-sm leading-7 text-text-secondary">{content.summary}</p>
-        <div className="mt-7 flex flex-wrap gap-2">
-          {content.tags.map((tag) => (
-            <Tag key={tag} name={tag} />
-          ))}
-        </div>
-      </article>
-    </Link>
+      </Link>
+      <div className="mt-7 flex flex-wrap gap-2">
+        {content.tags.map((tag) => (
+          <Tag key={tag} name={tag} />
+        ))}
+      </div>
+    </article>
   );
 };
 

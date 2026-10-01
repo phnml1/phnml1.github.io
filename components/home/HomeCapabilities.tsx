@@ -1,25 +1,34 @@
 import Reveal from '@/components/motion/Reveal';
+import Link from 'next/link';
 
 const capabilities = [
   {
-    category: 'Frontend',
-    items: 'TanStack Query · Zustand',
-    note: 'React·Next.js·React Native 화면에서 서버 데이터 조회, 편집 상태, 모바일 UI 흐름을 구현했습니다.',
+    category: '업무 화면',
+    items: '주문 변환과 검수',
+    note: 'NP-OIS에서 변환이 진행되는 동안만 상태를 조회하고, 완료 뒤 검수 화면이 새 결과를 읽도록 연결했습니다.',
+    href: '/projects/np-ois',
+    project: 'NP-OIS',
   },
   {
-    category: 'Realtime & Integration',
-    items: 'Socket.io · STOMP · Outbox',
-    note: 'PR 댓글·알림, 위치 공유, 장기 작업 polling처럼 이벤트 기반 화면 갱신과 API 연동을 다뤘습니다.',
+    category: '실시간 상태',
+    items: '댓글 이벤트와 Query 캐시',
+    note: 'CodeMate에서 Socket payload는 캐시에 반영하고 댓글 변경 mutation 뒤에는 관련 Query를 다시 조회합니다.',
+    href: '/projects/codemate',
+    project: 'CodeMate',
   },
   {
-    category: 'Device & Local Data',
-    items: 'WebView · Scanner · IME',
-    note: 'Android WebView, 물리 스캐너 입력, IndexedDB 로컬 저장소를 PDA 작업 화면과 연결했습니다.',
+    category: '현장 장비',
+    items: '스캐너 입력과 오프라인 명령',
+    note: 'NP WMS Picking에서 물리 키·IME·paste 입력을 한 흐름으로 처리하고, 미전송 작업은 IndexedDB에 보존했습니다.',
+    href: '/projects/np-wms-picking',
+    project: 'NP WMS Picking',
   },
   {
-    category: 'Quality & Performance',
-    items: 'React Profiler · Lighthouse',
-    note: 'Jest·Playwright·GitHub Actions와 성능 측정 도구로 주요 기능과 렌더링 병목을 확인했습니다.',
+    category: '측정과 검증',
+    items: '일정 편집 렌더링',
+    note: 'Fly:On의 같은 Drag & Drop 시나리오에서 React Profiler로 commit duration을 비교하고 렌더 범위를 조정했습니다.',
+    href: '/projects/fly-on',
+    project: 'Fly:On',
   },
 ];
 
@@ -38,11 +47,10 @@ export default function HomeCapabilities() {
             id="capabilities-title"
             className="font-headline text-4xl font-black tracking-[-0.05em] md:text-5xl"
           >
-            기술 스택
+            기술이 쓰인 자리
           </h2>
           <p className="mt-5 max-w-sm text-sm leading-7 text-text-secondary">
-            이력서의 Skills 항목에 맞춰 프론트엔드, 상태·데이터, 실시간 연동, 품질 검증 경험을
-            정리했습니다.
+            어떤 기술을 썼는지보다 어느 화면에서 왜 필요했는지에 맞춰 정리했습니다.
           </p>
         </Reveal>
 
@@ -58,6 +66,9 @@ export default function HomeCapabilities() {
                 </h3>
                 <div className="my-5 h-px bg-outline/60" />
                 <p className="text-sm leading-7 text-text-secondary">{item.note}</p>
+                <Link href={item.href} className="mt-5 inline-flex text-sm font-semibold text-primary hover:underline">
+                  {item.project} 상세 보기 <span aria-hidden="true" className="ml-1">↗</span>
+                </Link>
               </article>
             </Reveal>
           ))}

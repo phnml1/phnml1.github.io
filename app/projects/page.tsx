@@ -17,47 +17,27 @@ export const metadata = {
 };
 
 const PROJECT_ORDER = [
-  'codemate',
   'np-wms-picking',
   'np-ois',
+  'codemate',
   'fly-on',
   'runners-high',
   'career-hub',
 ];
 
-const PRIMARY_PROJECTS = ['codemate', 'np-wms-picking', 'np-ois'];
+const PRIMARY_PROJECTS = ['np-wms-picking', 'np-ois', 'codemate'];
 const MOBILE_PROJECTS = ['fly-on', 'runners-high'];
 
 const PROJECT_SIGNALS: Record<string, { label: string; value: string; tone: string }> = {
-  'np-wms-picking': {
-    label: 'Mobile FE / Backend tests',
-    value: '55 / 224',
-    tone: 'Scanner input and offline outbox',
-  },
   'np-ois': {
     label: 'Workflow stages',
     value: '8',
     tone: 'Upload → snapshot lock → archive',
   },
-  codemate: {
-    label: 'Comment API requests',
-    value: '10→0',
-    tone: 'Synthetic cache measurement',
-  },
-  'career-hub': {
-    label: 'Detail refetch',
-    value: '1→0',
-    tone: 'Application status sync',
-  },
   'fly-on': {
     label: 'Drag duration',
     value: '211.5→72.9ms',
     tone: 'Same React Profiler scenario',
-  },
-  'runners-high': {
-    label: 'Pace window',
-    value: '10s',
-    tone: 'GPS and realtime recovery',
   },
 };
 
@@ -65,7 +45,7 @@ const PROJECT_GROUPS = [
   {
     label: 'Selected Case Studies',
     description:
-      '실시간 협업, 현장 피킹, 장기 변환 작업의 상태·책임 경계를 설명합니다. NP WMS Picking과 NP-OIS는 같은 익명 물류 운영사 경험입니다.',
+      'MJ Corporation 계약직에서 맡은 현장 피킹·주문 운영 화면과 개인 프로젝트 CodeMate를 구분해 설명합니다.',
     slugs: PRIMARY_PROJECTS,
   },
   {
@@ -151,7 +131,7 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
     <Link
       href={`/projects/${project.slug}`}
       aria-label={`${frontmatter.title} 프로젝트 상세 보기`}
-      className="group grid h-full min-h-[420px] rounded-2xl border border-outline/70 bg-surface-container p-6 transition duration-300 hover:-translate-y-1 hover:border-primary/60 hover:bg-surface-high hover:shadow-[0_22px_60px_rgba(0,0,0,0.24)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+      className="group grid h-full min-h-[350px] rounded-lg border border-outline/70 bg-surface-container p-6 transition duration-300 hover:border-primary/60 hover:bg-surface-high focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
     >
       <article className="grid h-full grid-rows-[auto_1fr_auto]">
         <div>
@@ -164,22 +144,22 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
             </span>
           </div>
 
-          <h2 className="mt-6 text-4xl font-black leading-tight tracking-[-0.045em] text-white transition-colors group-hover:text-primary">
+          <h2 className="mt-5 text-3xl font-black leading-tight text-white transition-colors group-hover:text-primary">
             {frontmatter.title}
           </h2>
-          <p className="mt-5 line-clamp-4 text-sm leading-7 text-text-secondary">
+          <p className="mt-3 line-clamp-3 text-sm leading-7 text-text-secondary">
             {project.summary}
           </p>
         </div>
 
-        <div className="mt-8 grid content-start gap-3">
+        <div className="mt-6 grid content-start gap-2">
           <MetaRow label="Period" value={frontmatter.period} />
           <MetaRow label="Role" value={frontmatter.role} />
           <MetaRow label="Team" value={frontmatter.team} />
 
           {signal ? (
-            <div className="mt-2 rounded-xl border border-outline/60 bg-surface-low p-4">
-              <div className="text-gradient text-4xl font-black tracking-[-0.05em]">
+            <div className="mt-2 border-t border-outline/60 pt-3">
+              <div className="text-gradient text-2xl font-black">
                 {signal.value}
               </div>
               <div className="mt-2 font-label text-xs font-bold uppercase tracking-[0.16em] text-text-secondary">
@@ -190,7 +170,7 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
           ) : null}
         </div>
 
-        <div className="mt-8">
+        <div className="mt-6">
           <div className="flex flex-wrap gap-2">
             {frontmatter.stack.slice(0, 5).map((tech) => (
               <span
@@ -207,7 +187,7 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
               {frontmatter.demo ? <span>· Live demo</span> : null}
             </div>
           ) : null}
-          <div className="mt-8 flex items-center justify-between border-t border-outline/70 pt-5">
+          <div className="mt-5 flex items-center justify-between border-t border-outline/70 pt-4">
             <span className="font-label text-xs font-bold uppercase tracking-[0.18em] text-primary opacity-80 group-hover:opacity-100">
               Open Case Study
             </span>

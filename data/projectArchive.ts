@@ -10,7 +10,7 @@ export interface ArchivedProject {
 
 export interface CurrentPortfolioProject {
   title: string;
-  period: string;
+  period?: string;
   role: string;
   summary: string;
   stack: readonly string[];
@@ -27,7 +27,6 @@ export interface ProjectArchiveGroup {
 
 export const currentPortfolioProject: CurrentPortfolioProject = {
   title: 'phnml1 Portfolio & Tech Blog',
-  period: '2023.12 - 현재',
   role: '개인 프로젝트 · 설계, 개발, 콘텐츠 운영 및 배포',
   summary:
     'Next.js App Router 기반으로 프로젝트 Case Study와 MDX 기술 글을 한 곳에서 관리하고, 정적 export로 GitHub Pages에 배포하는 개인 포트폴리오·기술 블로그입니다.',

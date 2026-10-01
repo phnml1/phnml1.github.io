@@ -1,7 +1,7 @@
 ---
 title: 'NP WMS Picking'
 slug: 'np-wms-picking'
-period: '2026.06 - 2026.08'
+period: '2026.07 - 2026.08'
 team: '팀 프로젝트 / 익명 물류 운영사'
 role: 'Frontend 중심 / Full-stack 협업'
 description: 'PDA의 물리 스캔과 오프라인 작업을 서버·외부 WMS 상태에 연결한 현장 피킹 시스템'
@@ -9,7 +9,7 @@ problem: '640×480급 PDA에서 물리 스캐너 입력, 부분 피킹과 네트
 contribution: '개인 기여는 Mobile FE의 단계 UI, scanner 정규화, offline outbox, WMS 상태 소비와 연결에 집중했고 Backend의 부분 피킹 흐름을 보강했습니다.'
 implementation: 'Android dispatchKeyEvent를 WebView CustomEvent로 전달하고 IndexedDB work package·journal·command outbox에 stable clientEventId와 expectedVersion을 보존했습니다.'
 decision: '로컬 저장과 서버 수락을 다른 상태로 표현하고 재연결 시 같은 명령을 순차 replay하며, version conflict는 자동 덮어쓰기 대신 차단했습니다.'
-evidence: '원자료에 기록된 Mobile FE 55 tests와 Backend 224 tests를 검증 근거로 사용하며 실제 처리량·시간 단축률·오스캔 감소율은 주장하지 않습니다.'
+evidence: 'PDA 스캐너 입력, 오프라인 명령 보존, 부분 피킹과 상태 버전 경계를 구현했습니다. 실제 처리량·시간 단축률·오스캔 감소율은 확인되지 않았습니다.'
 stack:
   [
     'React',
@@ -111,8 +111,7 @@ WMS 응답을 PDA state machine에 mapping하고 BLOCKED·DEFERRED·conflict를 
 
 ## 검증 방법과 결과
 
-- 원자료에 기록된 Mobile FE `55 tests`와 Backend `224 tests`를 이 Case Study의 검증 근거로 사용합니다.
-- scanner·offline·부분 피킹·상태 mapping은 unit/contract 시나리오로 확인했습니다.
+- scanner·offline·부분 피킹·상태 mapping의 구현 근거를 프로젝트 코드와 작업 기록으로 확인했습니다.
 - commit 수는 개인 기여 범위를 추적하는 보조 근거일 뿐 사용자 성과나 코드 기여율로 노출하지 않습니다.
 - 실제 처리량, 작업 시간 단축률, 오스캔 감소율은 확인되지 않아 작성하지 않았습니다.
 

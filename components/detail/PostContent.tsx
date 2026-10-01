@@ -26,6 +26,7 @@ interface PostContentProps {
 const PostContent: React.FC<PostContentProps> = (props) => {
   const customRenderers = {
     a: ({ href, children }) => <Link href={href as string}>{children}</Link>,
+    h1: ({ children }) => <h2>{children}</h2>,
     code: ({ inline, className, children }: { inline?: boolean; className?: string; children?: React.ReactNode }) => {
       if (!inline && className) {
         return <code className={className}>{children}</code>;

@@ -12,6 +12,7 @@ export interface PortfolioProjectFrontmatter {
   category?: string;
   github?: string;
   demo?: string;
+  store?: string;
   problem?: string;
   contribution?: string;
   implementation?: string;
@@ -140,6 +141,7 @@ function normalizeFrontmatter(data: Record<string, unknown>): PortfolioProjectFr
     category: typeof data.category === 'string' ? data.category : undefined,
     github: typeof data.github === 'string' ? data.github : undefined,
     demo: typeof data.demo === 'string' ? data.demo : undefined,
+    store: typeof data.store === 'string' ? data.store : undefined,
     problem: typeof data.problem === 'string' ? data.problem : undefined,
     contribution: typeof data.contribution === 'string' ? data.contribution : undefined,
     implementation: typeof data.implementation === 'string' ? data.implementation : undefined,

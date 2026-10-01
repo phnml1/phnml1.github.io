@@ -5,7 +5,8 @@ period: '2025.06 - 2025.11'
 team: '팀 프로젝트 (FE 2 / BE 2 / Design 1)'
 role: 'Frontend / Mobile'
 github: 'https://github.com/SQUAD-FLY-ON/FLY-ON'
-description: '여행 일정 생성과 편집을 모바일에서 직접 조작할 수 있게 만든 React Native 플래너'
+store: 'https://m.onestore.co.kr/v2/ko-kr/app/0001002231'
+description: '패러글라이딩 비행·관광 일정을 편집하는 React Native 모바일 앱'
 problem: 'React Native에서 일정 Drag & Drop을 직접 구현해야 했고, 드래그 상태 변경이 넓게 전파되면서 렌더링 시간이 증가했습니다.'
 contribution: 'PanResponder 기반 Drag & Drop을 구현하고, 편집 상태와 서버 캐시를 분리한 뒤 React Profiler로 렌더링 병목을 줄였습니다.'
 implementation: 'PanResponder, layout 측정, floating layer를 연결하고 React.memo와 컴포넌트 분리로 드래그 중 렌더링 범위를 제한했으며 SecureStore에서 인증 상태를 복원했습니다.'
@@ -26,7 +27,7 @@ stack:
 
 ## Overview
 
-- 여행 일정을 생성하고 모바일에서 직접 편집할 수 있게 만든 React Native 플래너입니다.
+- 패러글라이딩 비행·관광 일정을 생성하고 모바일에서 편집하는 React Native 앱입니다.
 - 복잡한 일정 편집 경험을 모바일 제스처와 상태 분리, 성능 측정 기준까지 맞춰 구현했습니다.
 - 일정 생성 단계와 서버 조회 데이터를 분리해 캐시와 임시 상태가 충돌하지 않도록 설계했습니다.
 - FE 2명, BE 2명, Designer 1명의 팀에서 모바일 Frontend를 담당했습니다.
@@ -96,5 +97,5 @@ stack:
 
 ## Portfolio Summary
 
-- FlyOn은 여행 일정을 모바일에서 직접 편집할 수 있게 만든 React Native 프로젝트입니다.
+- Fly:On은 패러글라이딩 비행·관광 일정을 모바일에서 편집하는 React Native 프로젝트입니다. 원스토어에 게시된 앱을 확인할 수 있습니다.
 - 인터랙션 구현 후 프로파일링 데이터로 렌더링 병목을 줄인 점에 초점을 맞췄습니다.

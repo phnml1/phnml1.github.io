@@ -1,6 +1,7 @@
 ---
 title: "Career Hub"
 slug: "career-hub"
+category: "archive"
 period: "2025.11 - 2026.02"
 team: "팀 프로젝트 (FE 2 / BE 2)"
 role: "Frontend"
@@ -10,11 +11,12 @@ problem: "전형 결과와 현재 단계가 화면마다 어긋날 수 있었고
 contribution: "지원 단계 동기화 규칙과 수정 유형별 TanStack Query 캐시 갱신 전략을 설계하고 PWA 알림 권한 흐름을 분리했습니다."
 implementation: "timelineSyncRules를 UI 밖으로 분리하고, 안전한 변경은 setQueryData로 반영하며 서버 재생성이 필요한 변경만 invalidateQueries로 처리했습니다."
 decision: "서버 데이터는 TanStack Query, 입력·필터 상태는 Zustand, 인증 전달과 API 응답 규칙은 Next.js Route Handler 기반 BFF로 분리했습니다."
-evidence: "상세 수정 후 전체 refetch를 1→0회로 줄였고, 서버 재생성이 필요한 변경만 invalidateQueries로 재검증했습니다."
+evidence: "이전 프로젝트 기록입니다. 최신 채용 이력서의 검증 사례에는 포함하지 않았으며, 정량 성과를 주장하지 않습니다."
 stack: ["TypeScript", "React", "Next.js App Router", "TanStack Query", "Zustand", "Firebase Cloud Messaging", "Service Worker", "Tailwind CSS"]
 ---
 
 ## Overview
+- 이 페이지는 이전 프로젝트 기록으로 보존합니다. 현재 채용 이력서의 핵심 사례와는 구분합니다.
 - 채용 공고, 지원 단계, 일정, 알림을 하나의 흐름으로 관리하는 취업 준비 대시보드입니다.
 - 지원 상태가 화면마다 어긋나지 않도록 단계 규칙과 캐시 갱신 경로를 분리했습니다.
 - 브라우저, iOS Safari, standalone PWA처럼 알림 권한 흐름이 달라지는 환경을 고려했습니다.
@@ -62,7 +64,7 @@ stack: ["TypeScript", "React", "Next.js App Router", "TanStack Query", "Zustand"
 - **Zustand**: 필터 UI와 입력 상태처럼 서버 상태와 분리해야 하는 클라이언트 상태를 담당하게 했습니다.
 
 ## Achievements
-- 상세 수정 흐름에서 전체 상세 refetch `1회` 대신 변경 필드만 캐시에 반영해 불필요한 재요청을 `0회`로 줄였습니다.
+- 상세 수정 흐름에서 변경 필드의 캐시 반영과 서버 재검증이 필요한 변경을 분리했습니다. 실제 요청 수 감소는 검증 자료가 없어 수치로 제시하지 않습니다.
 - 목록 로딩은 페이지 단위로 분리해 필요한 페이지까지만 조회하도록 구성했습니다.
 - 푸시 권한 흐름은 `iOS Safari / standalone PWA / 일반 브라우저 / 권한 거부 상태`로 분기했습니다.
 
