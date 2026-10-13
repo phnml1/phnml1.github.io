@@ -6,7 +6,7 @@ import Reveal from '@/components/motion/Reveal';
 export const metadata = {
   title: 'Projects',
   description:
-    '현재 프로젝트의 핵심 문제와 검증 결과, 직접 구축·운영하는 포트폴리오 플랫폼, 이전 프론트엔드 협업 경험을 구분해 정리한 프로젝트 목록',
+    '현재 프로젝트의 핵심 문제와 구현 내용, 직접 구축·운영하는 포트폴리오 플랫폼, 이전 프론트엔드 협업 경험을 구분해 정리한 프로젝트 목록',
   alternates: { canonical: '/projects' },
   openGraph: {
     title: 'Projects | 이주영',

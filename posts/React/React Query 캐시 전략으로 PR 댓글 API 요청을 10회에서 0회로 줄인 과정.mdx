@@ -5,11 +5,13 @@ image: index.png
 project:
   title: 'CodeMate'
   slug: 'codemate'
-summary: Socket 댓글 이벤트는 Query 캐시에 반영하고, 댓글 작성·수정·삭제 뒤에는 관련 Query를 다시 조회하는 이유를 정리했습니다.
+summary: 과거 Socket 댓글 이벤트의 캐시 반영 기록입니다. 현재 일반 댓글 패널은 10초 간격으로 조회하고 변경 뒤 관련 Query를 다시 조회합니다.
 tags: ['react','react-query','cache','performance','codemate','setQueryData','invalidateQueries']
 ---
 
 # PR 댓글 이벤트를 Query 캐시에 반영한 이유와 재조회 경계
+
+> **현재 구현 안내 (2026-10-13):** 아래 Socket 이벤트 기반 캐시 반영은 과거 구현 기록입니다. 현재 일반 댓글 패널은 10초 간격으로 조회하고, 작성·수정·삭제 뒤 관련 Query를 다시 조회합니다. PR 상세의 파일별 댓글 조회 훅 자체에는 주기 조회 설정이 없습니다. Socket.io는 별도 공동 리뷰방에서 사용합니다. 과거 synthetic 요청 수 비교는 현재 운영 결과가 아닙니다.
 
 > 기록 정정: 기존 제목의 요청 수 비교는 제한된 synthetic 이벤트 조건의 측정이었습니다. 실제 댓글 작성·수정·삭제까지 재조회가 없어졌다는 뜻으로 읽히지 않도록 본문을 고쳤습니다. 기존 글 주소는 유지합니다.
 

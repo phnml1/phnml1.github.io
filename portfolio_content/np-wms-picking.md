@@ -15,7 +15,6 @@ userFlow:
   - '연결 복구 후 전송'
 implementation: 'Android native layer에서 물리 스캐너 키 이벤트를 완성된 scan으로 변환해 WebView에 전달했습니다. 네트워크 요청 전에는 IndexedDB outbox에 clientEventId·expectedVersion·payload를 저장해 재연결 후에도 같은 명령을 복구했습니다.'
 decision: 'PDA에 명령을 저장한 상태와 WMS가 수락한 상태를 분리했습니다. 응답이 유실되어도 새 요청을 만들지 않고 같은 clientEventId를 가진 명령을 ordered outbox에서 순차 재전송했습니다. version conflict는 자동으로 덮어쓰지 않고 사용자가 확인할 차단 상태로 보존했습니다.'
-evidence: 'PDA 스캐너 입력, IndexedDB outbox, WMS 상태 mapping은 np-wms-picking main의 커밋과 테스트에서 확인했습니다. 별도 WMS 기능 브랜치와 로컬 Pilot은 본편의 배포 기능으로 포함하지 않았습니다.'
 stack:
   [
     'React',
@@ -120,19 +119,6 @@ WMS 응답을 PDA 작업 단계로 mapping하고, 진행할 수 없는 `BLOCKED`
 - online-only는 단순하지만 현장 네트워크 단절 동안 작업을 멈춰야 합니다. local-first outbox는 복구가 가능하지만 상태와 충돌 UX가 복잡해집니다.
 - 모든 스캐너를 keyboard wedge 설정에 맞출 수 있지만 장비·IME 차이를 UI가 떠안습니다. native bridge는 안정적이지만 Android 런타임 의존성이 생깁니다.
 - conflict를 항상 자동 rebase하면 작업은 빨리 이어지지만 수량과 소유권이 왜곡될 수 있어, 권위가 불명확한 경우는 차단을 선택했습니다.
-
-## 검증 방법과 결과
-
-- `np-wms-picking` main의 scanner·offline·WMS 상태 mapping은 코드와 관련 테스트로 확인했습니다. 부분 피킹 서버 로직은 별도 WMS 기능 브랜치 근거입니다.
-- commit 수는 개인 기여 범위를 추적하는 보조 근거일 뿐 사용자 성과나 코드 기여율로 노출하지 않습니다.
-- 실제 처리량, 작업 시간 단축률, 오스캔 감소율은 확인되지 않아 작성하지 않았습니다.
-
-## 현재 한계와 다음 개선
-
-- 실물 PDA의 장시간 사용, 실제 scanner suffix·한글 키보드 조합, 장시간 오프라인 replay를 추가 검증해야 합니다.
-- Bluetooth printer와 외부 WMS 장애를 포함한 end-to-end smoke가 필요합니다.
-- 현행 구현과 feature branch·local pilot의 상태 머신이 완전히 같지 않아 공개 화면에는 범위 badge가 필요합니다.
-- offline conflict와 수동 대사 시간을 관측할 수 있는 event ledger를 다음 측정 기준으로 삼아야 합니다.
 
 ## 회고
 

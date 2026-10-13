@@ -15,7 +15,6 @@ userFlow:
   - '산출물 생성·보관'
 implementation: 'Frontend는 활성 queue·run에만 조건부 polling을 적용하고, 상태가 바뀌면 관련 Query cache를 갱신했습니다. Backend는 transform run 시작 시 snapshot id·version·hash를 고정하고, 시간이 오래 걸리는 Storage I/O·POI parsing을 DB transaction에서 분리했습니다.'
 decision: '한 번 시작한 변환 작업의 모든 행은 동일한 기준을 사용해야 했습니다. 따라서 매번 최신값을 조회하는 대신, 변환 작업(run) 시작 시점의 기준정보 id·version·hash를 snapshot으로 고정했습니다. 이로써 같은 원본의 결과를 재현하고, 결과가 다를 때 사용한 기준을 추적할 수 있게 했습니다.'
-evidence: '2026-08-18에 남은 서버 테스트 결과는 59개 중 58개 통과, 1개 미실행, 실패 0개입니다. 현재 환경에서 다시 확인하려 했지만, 테스트 코드가 시작되기 전 실행 환경 설정 문제로 중단됐습니다. 프론트엔드 배포용 빌드는 성공했습니다.'
 stack:
   [
     'React',
@@ -140,32 +139,6 @@ Excel 원본과 결과물은 크기가 크고 계속 쌓입니다. 파일 자체
 - DB LOB는 일관성이 단순하지만 데이터베이스가 파일 저장소 역할까지 맡습니다. Object Storage 분리는 download 경계를 가볍게 하지만 object와 DB 사이 보상·대사가 필요합니다.
 - custom OOXML writer는 sheet contract를 통제하기 쉽지만 style·formula 표현이 제한되고 생성 중 전체 XML/ZIP ByteArray가 메모리에 남습니다.
 - snapshot lock은 master data 재현성을 높이지만 manual mapping과 mutable output config까지 포함한 완전한 실행 snapshot은 아닙니다.
-
-## Excel/VBA 호환성 검증 범위
-
-| 업무 계약 | 현재 근거 | 아직 확인하지 못한 범위 |
-|---|---|---|
-| 주문·상품 식별자를 text로 유지 | parsing·출력 helper test | 모든 실고객 workbook 변형 |
-| 중복 key의 source row 순 첫 매칭 | synthetic fixture 기반 test | 운영 기준정보 전체 조합 |
-| RoundUp, EA/BOX와 label·scan 분리 규칙 | 주요 sheet/header/수량 규칙 test | 실제 VBA 결과와 cell-by-cell 전수 비교 |
-| sheet 이름·header·row 순서 | VBA 지향 compatibility test | style·formula·print area·macro 결과 |
-
-따라서 이 프로젝트는 VBA의 주요 업무 계약을 서버 코드와 test로 옮긴 사례이며, VBA와 100% 동일한 결과를 검증했다고 표현하지 않습니다.
-
-## 검증 방법과 결과
-
-- 2026-08-18 Backend 테스트 산출물에서 `59 tests`, 실패 `0`, `1 skip`을 확인했습니다.
-- 최신 Backend 재실행은 Gradle 환경 문제로 테스트 시작 전에 중단됐습니다. 코드 테스트 실패로 판정하지도, 현재 59 tests 통과로 표현하지도 않습니다.
-- Frontend production build는 성공했고 JavaScript `966.51kB`의 큰 chunk warning이 남았습니다.
-- VBA 관련 테스트는 주요 sheet/header/분리 규칙의 synthetic fixture를 검증합니다. 실제 승인 workbook의 모든 cell·formula·style을 비교하는 golden E2E는 아닙니다.
-
-## 현재 한계와 다음 개선
-
-- stale transform run lease, multi-instance atomic claim과 durable progress가 필요합니다.
-- manual mapping과 설정 version까지 포함하는 immutable execution snapshot을 설계해야 합니다.
-- XLSX 생성 시 전체 ByteArray가 남아 있어 writer 자체의 streaming 또는 메모리 상한 검증이 필요합니다.
-- 실제 VBA 결과와 승인 fixture를 cell-level로 비교하고, work history의 전체 로딩과 schema migration drift를 개선해야 합니다.
-- 직접 WMS API client는 확인되지 않았으며 운영 처리량·업무 시간 단축률·오류 감소율도 측정되지 않았습니다.
 
 ## 회고
 

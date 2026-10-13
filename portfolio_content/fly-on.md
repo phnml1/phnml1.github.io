@@ -17,7 +17,6 @@ userFlow:
   - '저장된 일정 확인'
 implementation: 'PanResponder로 제스처를 추적하고 카드 위치를 측정해 이동 중인 카드만 별도 레이어에 표시했습니다. React.memo와 Zustand selector로 드래그 중 다시 그리는 컴포넌트 범위를 줄였습니다.'
 decision: '제스처 좌표와 일정 데이터의 변경 책임을 분리하고, 감으로 최적화하지 않도록 React DevTools Profiler의 전후 측정값을 기준으로 병목을 좁혔습니다.'
-evidence: '동일 시나리오의 total commit duration 211.5→72.9ms, 평균 commit duration 17.6→6.6ms를 측정했습니다.'
 stack:
   [
     'TypeScript',

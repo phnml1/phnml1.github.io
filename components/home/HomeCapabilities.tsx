@@ -10,9 +10,9 @@ const capabilities = [
     project: 'NP-OIS',
   },
   {
-    category: '실시간 상태',
-    items: '댓글 이벤트와 Query 캐시',
-    note: 'CodeMate에서 Socket payload는 캐시에 반영하고 댓글 변경 mutation 뒤에는 관련 Query를 다시 조회합니다.',
+    category: '코드 리뷰 협업',
+    items: '파일·스크롤 위치 공유',
+    note: 'CodeMate 공동 리뷰방에서는 Socket.io로 검토 위치와 코드 대화를 공유합니다. 일반 댓글 패널과 알림은 주기적으로 다시 조회합니다.',
     href: '/projects/codemate',
     project: 'CodeMate',
   },

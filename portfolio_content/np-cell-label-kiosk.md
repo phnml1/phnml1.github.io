@@ -15,7 +15,6 @@ userFlow:
   - '결과 기록·상태 확인'
 implementation: 'WCS가 반환한 `agentRequest`를 Windows Local Agent에 전달하고, Agent의 항목별 응답을 라벨 ID와 연결해 WCS print-result API에 기록했습니다. 기능 브랜치에서는 여러 셀의 라벨·Agent 요청을 batch로 묶고 항목별 결과를 다시 라벨에 mapping했습니다.'
 decision: 'QR·라벨 payload의 source of truth는 WCS로 유지하고, Frontend는 셀 선택과 WCS → Local Agent → 결과 기록의 orchestration을 담당하게 했습니다. 라벨 발행, Agent 요청, 결과 기록을 별도 상태로 다뤄 한 단계의 성공을 전체 출력 성공으로 오해하지 않게 했습니다. Agent의 성공은 Windows spooler가 요청을 접수했다는 뜻이며, 실제 종이 배출 완료와는 구분했습니다.'
-evidence: '키오스크 초기 구조와 단건 발행·재출력은 main 커밋에 있습니다. 배치 출력·종속 필터·설정 화면은 기능 브랜치에만 있으며, 자동화된 FE 테스트와 현장 프린터 E2E 결과는 확인되지 않았습니다.'
 stack:
   - React
   - TypeScript
@@ -86,12 +85,6 @@ Frontend가 WCS 발행·재출력 응답의 `agentRequest`를 Local Agent에 전
 - Frontend에서 라벨 payload를 만들면 화면 개발은 단순해지지만 WCS의 주문 원본과 어긋날 수 있어 서버 응답을 기준으로 삼았습니다.
 - 실패한 batch를 무조건 다시 보내면 이미 접수된 라벨이 중복 출력될 수 있어, 처리 여부가 불명확한 timeout과 응답 유실은 자동 재시도하지 않았습니다.
 - Agent 성공은 Windows spooler 접수를 뜻하며 실제 용지 배출까지 보장하지는 않습니다.
-
-## 검증과 남은 경계
-
-- 초기 SPA와 단건 출력 연결은 해당 FE 저장소의 `main` 커밋에서 확인됩니다. 기능 브랜치의 batch·설정·종속 필터는 별도 범위입니다.
-- FE 저장소에는 자동화된 unit·E2E 테스트 파일이 확인되지 않았습니다. 과거 typecheck·build·로컬 브라우저 점검 기록을 운영 검증으로 바꾸어 말하지 않습니다.
-- WCS API, FE, Agent의 브랜치와 설치 버전이 일치하는지, timeout 뒤 중복 출력이 없는지, 실제 프린터가 종이를 배출했는지는 추가 확인이 필요합니다.
 
 ## 회고
 

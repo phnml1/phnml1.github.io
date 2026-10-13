@@ -1,15 +1,17 @@
 ---
-title: 'Next.js 서버 컴포넌트에서 Promise.all()로 대시보드 응답 시간 2배 단축하기'
+title: '과거 대시보드 병렬 조회 실험 기록'
 date: 2026-04-04 12:00:24
 image: index.png
 project:
   title: "CodeMate"
   slug: "codemate"
-summary: Next.js 서버 컴포넌트에서 Promise.all을 활용해 데이터 페칭을 병렬화하고, 대시보드 응답 시간을 약 2배 개선한 과정과 구조를 정리했습니다.
+summary: 2026년 4월 당시 대시보드 병렬 조회 실험입니다. 현재 구현이나 성능 수치를 나타내지 않습니다.
 tags: ['nextjs','react','performance','server-components','promise-all','optimization']
 ---
 
-# Next.js 서버 컴포넌트에서 Promise.all()로 대시보드 응답 시간 2배 단축하기
+# 과거 대시보드 병렬 조회 실험 기록
+
+> **측정 시점 안내 (2026-10-13):** 아래 비교는 2026년 4월 당시의 구현과 측정 기록입니다. 현재 대시보드는 서버 컴포넌트에서 통계 카드·차트·최근 PR을 별도 로딩 경계로 표시합니다. 아래의 '2배' 비교를 현재 배포본의 응답 시간이나 전체 성능으로 해석할 수 없습니다.
 
 ## 서론 - CodeMate 프로젝트 소개
 

@@ -17,7 +17,6 @@ export interface PortfolioProjectFrontmatter {
   contribution?: string;
   implementation?: string;
   decision?: string;
-  evidence?: string;
   description?: string;
   audience?: string;
   userFlow?: string[];
@@ -46,7 +45,6 @@ export type PortfolioSectionKind =
   | 'tradeoffs'
   | 'workflow'
   | 'contribution'
-  | 'evidence'
   | 'reflection'
   | 'summary'
   | 'highlights'
@@ -148,7 +146,6 @@ function normalizeFrontmatter(data: Record<string, unknown>): PortfolioProjectFr
     contribution: typeof data.contribution === 'string' ? data.contribution : undefined,
     implementation: typeof data.implementation === 'string' ? data.implementation : undefined,
     decision: typeof data.decision === 'string' ? data.decision : undefined,
-    evidence: typeof data.evidence === 'string' ? data.evidence : undefined,
     description: typeof data.description === 'string' ? data.description : undefined,
     audience: typeof data.audience === 'string' ? data.audience : undefined,
     userFlow: Array.isArray(data.userFlow)
@@ -236,7 +233,6 @@ function getSectionKind(title: string): PortfolioSectionKind {
     return 'workflow';
   }
   if (normalized.includes('나의 역할') || normalized.includes('기여의 경계')) return 'contribution';
-  if (normalized.includes('검증 방법') || normalized.includes('검증 결과')) return 'evidence';
   if (normalized.includes('회고')) return 'reflection';
   if (normalized.includes('portfolio summary') || normalized === 'summary') return 'summary';
   if (normalized.includes('highlight points')) return 'highlights';

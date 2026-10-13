@@ -11,8 +11,8 @@ import Reveal from '@/components/motion/Reveal';
 
 const projectMedia: Record<string, { src: string; alt: string; caption: string }[]> = {
   codemate: [
-    { src: '/projects/codemate/codemate-comment.gif', alt: 'CodeMate PR 댓글 화면에서 댓글을 작성하는 과정', caption: 'PR 댓글 흐름' },
-    { src: '/projects/codemate/codemate-ai-review.gif', alt: 'CodeMate AI 리뷰 요청과 결과 화면', caption: 'AI 리뷰 흐름' },
+    { src: '/projects/codemate/codemate-comment.gif', alt: 'CodeMate의 일반 PR 댓글 화면에서 댓글을 작성하고 확인하는 과정', caption: '일반 PR 댓글 작성·확인 화면' },
+    { src: '/projects/codemate/codemate-ai-review.gif', alt: 'CodeMate에서 AI 코드 리뷰를 요청하고 결과를 확인하는 화면', caption: 'AI 리뷰 요청·결과 확인 화면' },
   ],
   'fly-on': [
     { src: '/projects/fly-on/dragdrop.gif', alt: 'Fly:On 모바일 일정 카드 Drag & Drop 편집 화면', caption: '모바일 일정 편집' },
@@ -87,6 +87,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const designSections = project.sections.filter((section) =>
     designSectionTitles.has(section.displayTitle),
   );
+  const codeMateFeatures = project.slug === 'codemate'
+    ? project.sections.find((section) => section.displayTitle === '내가 구현한 핵심 기능')
+    : null;
 
   return (
     <section className="w-full px-5 pb-24 pt-28 md:px-12 md:pt-36">
@@ -138,6 +141,13 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </section>
         ) : null}
 
+        {codeMateFeatures ? (
+          <section className="mt-16 max-w-5xl" aria-labelledby="codemate-features">
+            <SectionTitle id="codemate-features" eyebrow="Core features" title="내가 구현한 핵심 기능" />
+            <div className="mt-7"><MarkdownContent content={codeMateFeatures.content} /></div>
+          </section>
+        ) : null}
+
         {projectMedia[project.slug] ? (
           <section className="mt-16" aria-label="프로젝트 실제 화면">
             <SectionTitle eyebrow="Product screens" title="실제 사용 화면" />
@@ -164,7 +174,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <StoryRow label="상황"><MarkdownContent content={featuredProblem.problemContent} compact /></StoryRow>
               <StoryRow label="판단"><p>{frontmatter.decision}</p></StoryRow>
               <StoryRow label="구현"><MarkdownContent content={featuredProblem.solutionContent} compact /></StoryRow>
-              <StoryRow label="확인"><p>{frontmatter.evidence}</p></StoryRow>
             </div>
           </section>
         ) : null}
@@ -226,7 +235,7 @@ function TechnicalHighlights({ blocks }: { blocks: ProblemSolutionBlock[] }) {
   return (
     <div className="mt-7 divide-y divide-outline/70 border-y border-outline/70">
       {blocks.map((block, index) => (
-        <details key={block.problemTitle} className="group py-5">
+        <details key={block.problemTitle} open className="group py-5">
           <summary className="cursor-pointer break-keep text-base font-semibold leading-7 text-white group-open:text-primary">
             <span className="mr-4 font-label text-xs text-primary">{String(index + 1).padStart(2, '0')}</span>
             {cleanProblemTitle(block.problemTitle)}
