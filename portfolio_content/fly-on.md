@@ -8,16 +8,15 @@ github: 'https://github.com/SQUAD-FLY-ON/FLY-ON'
 store: 'https://m.onestore.co.kr/v2/ko-kr/app/0001002231'
 description: '패러글라이딩 비행과 관광 일정을 모바일에서 만들고 순서를 바꿔 편집하는 여행 계획 앱입니다.'
 audience: '비행·관광 일정을 계획하는 모바일 사용자'
-problem: '모바일에서 일정 카드를 옮길 때 제스처가 자연스럽게 이어져야 하고, 편집 중 화면이 느려지지 않아야 했습니다.'
+problem: '일정 카드를 끌어 순서를 바꿀 때 목록 전체가 반복해서 다시 그려지면 손가락 움직임보다 화면이 늦게 따라오는 문제가 있었습니다.'
 contribution: '팀의 모바일 프론트엔드에서 일정 Drag & Drop과 편집 상태 관리를 구현하고, Profiler로 렌더링 병목을 측정·개선했습니다.'
 userFlow:
   - '비행·관광지 선택'
   - '일정 생성'
   - '카드 이동·순서 편집'
   - '저장된 일정 확인'
-scope: 'Drag 성능 수치는 동일한 로컬 React Profiler 시나리오의 전후 측정값입니다. 전체 사용자 경험이나 운영 성능으로 일반화하지 않습니다.'
-implementation: 'PanResponder, layout 측정, floating layer를 연결하고 React.memo와 컴포넌트 분리로 드래그 중 렌더링 범위를 제한했으며 SecureStore에서 인증 상태를 복원했습니다.'
-decision: '즉시 바뀌는 편집 상태는 Zustand, 서버가 원본인 일정·관광지 데이터는 TanStack Query로 분리하고 Profiler 측정값으로 최적화 여부를 판단했습니다.'
+implementation: 'PanResponder로 제스처를 추적하고 카드 위치를 측정해 이동 중인 카드만 별도 레이어에 표시했습니다. React.memo와 Zustand selector로 드래그 중 다시 그리는 컴포넌트 범위를 줄였습니다.'
+decision: '제스처 좌표와 일정 데이터의 변경 책임을 분리하고, 감으로 최적화하지 않도록 React DevTools Profiler의 전후 측정값을 기준으로 병목을 좁혔습니다.'
 evidence: '동일 시나리오의 total commit duration 211.5→72.9ms, 평균 commit duration 17.6→6.6ms를 측정했습니다.'
 stack:
   [
@@ -49,39 +48,40 @@ stack:
 
 ## Technical Highlights
 
-### Problem 01 - React Native Drag & Drop 구현 제약
+### Problem 01 - 드래그할 때 손가락보다 늦게 따라오는 일정 카드
 
-- React Native에는 웹처럼 바로 가져다 쓸 Drag & Drop API가 없어 일정 카드 이동을 직접 구현해야 했습니다.
+- 사용자는 여러 비행·관광 일정을 손가락으로 끌어 원하는 순서에 놓아야 했습니다. React Native에는 이 흐름을 그대로 제공하는 Drag & Drop API가 없어 제스처, 카드 위치 계산, 목록 순서 변경을 직접 연결해야 했습니다.
+- 이 과정에서 드래그 좌표가 바뀔 때마다 목록 전체가 다시 렌더링되면 카드가 손가락 움직임을 늦게 따라왔습니다.
 
-### Solution 01 - PanResponder와 floating layer
+### Solution 01 - 이동 중인 카드와 목록 렌더링 분리
 
-- `PanResponder`, layout 측정, floating layer를 조합해 카드 이동을 구현했습니다.
-- Drag 중 렌더 비용은 React DevTools Profiler로 먼저 측정한 뒤 `React.memo`, Zustand selector, drag layer 분리로 줄였습니다.
+- `PanResponder`로 손가락 이동을 추적하고 각 카드의 layout을 측정해 어느 위치로 옮길지 계산했습니다. 이동 중인 카드는 floating layer에서 따로 그려 목록 전체가 제스처 좌표를 따라 갱신되지 않게 했습니다.
+- React DevTools Profiler로 같은 동작을 전후 비교한 뒤 `React.memo`와 Zustand selector를 적용했습니다. 그 결과 total commit duration은 `211.5ms → 72.9ms`, 평균 commit duration은 `17.6ms → 6.6ms`로 줄었습니다.
 
-### Problem 02 - 생성 단계 상태와 서버 캐시 충돌
+### Problem 02 - 작성 중인 일정과 서버에서 받은 일정의 충돌
 
-- 일정 생성 단계 상태와 서버 조회 데이터가 섞이면 캐시와 UI 임시 상태가 충돌했습니다.
+- 사용자가 아직 저장하지 않은 선택값과 서버에 이미 저장된 일정 데이터를 같은 상태로 관리하면, 단계 이동이나 재조회 때 작성 중인 값이 덮일 수 있었습니다.
 
-### Solution 02 - Client state와 server state 분리
+### Solution 02 - 작성 상태와 서버 데이터의 책임 분리
 
-- 일정 생성 단계와 선택값은 `useScheduleStore`로, 일정/관광지/숙소 조회 데이터는 TanStack Query로 분리했습니다.
-- 단계 이동 조건은 `validateNextStepEnabled` 순수 함수와 Jest 테스트로 검증했습니다.
+- 일정 생성 단계와 사용자의 선택값은 Zustand의 `useScheduleStore`가 관리하고, 일정·관광지·숙소처럼 서버가 원본인 데이터는 TanStack Query가 관리하도록 나눴습니다.
+- 다음 단계로 이동할 수 있는 조건은 `validateNextStepEnabled` 순수 함수로 분리하고 Jest 테스트를 작성해 화면과 무관하게 검증했습니다.
 
-### Problem 03 - 지도 탐색 범위 확장
+### Problem 03 - 선택 지역 밖의 장소까지 불필요하게 조회
 
-- 지도 탐색이 사용자가 고른 지역 밖까지 열리면 탐색 비용이 커졌습니다.
+- 사용자가 제주 지역을 골랐는데도 지도가 전국 범위로 열리거나 이동할 때마다 장소를 다시 요청하면, 원하는 장소를 찾기 어렵고 네트워크 요청도 늘어났습니다.
 
-### Solution 03 - Boundary와 요청 조건 제어
+### Solution 03 - 지도 범위와 조회 시점 제한
 
-- 지도는 선택 지역 좌표로 boundary를 제한하고 marker 조회에 `enabled`, `staleTime`을 적용했습니다.
+- 지도 이동 범위를 선택 지역의 boundary로 제한했습니다. marker 조회에는 TanStack Query의 `enabled`와 `staleTime`을 적용해 좌표가 준비된 뒤 요청하고, 짧은 시간 안에는 같은 데이터를 다시 가져오지 않게 했습니다.
 
-### Problem 04 - 앱 재시작 직후 인증 상태 공백
+### Problem 04 - 앱을 다시 열 때 로그인 화면이 잠시 보이는 현상
 
-- 보안 저장소를 읽기 전에 인증 화면을 결정하면 로그인 사용자가 잠시 비로그인 화면을 보거나 보호 API가 먼저 실행될 수 있었습니다.
+- 앱을 시작하자마자 로그인 여부를 판단하면 보안 저장소에서 token을 읽기 전까지 기존 사용자도 비로그인 상태로 처리됐습니다. 이때 로그인 화면이 잠시 나타나거나 인증이 필요한 API가 먼저 실행될 수 있었습니다.
 
-### Solution 04 - SecureStore 기반 인증 복원
+### Solution 04 - 인증 복원이 끝난 뒤 화면과 요청 활성화
 
-- 앱 시작 시 SecureStore에서 token을 복원하는 준비 단계를 두고, 복원 완료 뒤 인증 의존 화면과 Query를 활성화했습니다.
+- 앱 시작 시 SecureStore에서 token을 복원하는 준비 상태를 두었습니다. 복원이 끝난 뒤에만 인증이 필요한 화면과 Query를 활성화해 화면 깜빡임과 불필요한 요청을 막았습니다.
 
 ## Tech Stack & Reason
 

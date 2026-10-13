@@ -3,20 +3,19 @@ title: 'NP-OIS'
 slug: 'np-ois'
 period: '2026.05 - 2026.07'
 team: '팀 프로젝트 / 익명 물류 운영사'
-role: 'Frontend 중심 / Backend workflow·정합성 영역 기여'
-description: '물류 운영자가 주문 Excel 파일을 업로드하고 변환 결과를 검수·보정한 뒤 목적별 파일로 내려받는 업무 웹입니다.'
+role: 'Frontend 중심 / 변환 기준·실패 기록·파일 저장 방식 개선'
+description: '물류 운영자가 주문 Excel 파일을 업로드하고, 변환 결과를 검수·수정한 뒤 업무용 파일로 내려받는 웹 도구입니다.'
 audience: '주문 파일을 처리하고 검수하는 물류 운영자'
-problem: '긴 파일 변환이 실패하거나 기준정보가 바뀌면 어떤 원본과 기준으로 결과가 만들어졌는지 추적하기 어려웠습니다.'
-contribution: '기존 MVP를 인수해 업로드·변환 진행·검수·보관 화면을 연결하고, Backend의 기준정보 고정·실패 이력·파일 저장 경계에도 기여했습니다.'
+problem: '처리 중에 상품·주문 기준이 바뀌거나 변환이 실패하면, 결과가 어떤 원본과 기준으로 만들어졌는지 알기 어려웠습니다.'
+contribution: '기존 MVP를 인수해 업로드부터 변환, 검수, 다운로드까지 한 흐름으로 연결했습니다. 변환에 쓴 기준과 실패 이유가 남도록 서버 처리 방식도 개선했습니다.'
 userFlow:
   - '주문 Excel 업로드'
   - '양식 확인·변환 요청'
   - '오류 검수·보정'
   - '산출물 생성·보관'
-scope: '초기 MVP는 다른 팀원이 구축했습니다. 별도 프론트 성능 기능 브랜치의 반영 상태와 실제 운영 개선률은 확인되지 않았습니다.'
-implementation: 'queue/run은 활성 시 1초, 세부 progress는 처리 중 350ms만 polling하고 상태 전이에 맞춰 cache를 갱신했습니다. Backend에서는 run 시점 snapshot id/version/hash를 고정하고 긴 storage I/O·POI parsing을 핵심 DB transaction 밖으로 분리했습니다.'
-decision: '실행 기준은 snapshot으로 잠그고 실패 상태는 별도 transaction에 남겼으며, 파일 payload는 storage에 두고 DB에는 hash/key/size metadata를 저장했습니다.'
-evidence: '2026-08-18 테스트 산출물에서 59 tests, 실패 0, 1 skip을 확인했으며 최신 재실행은 Gradle 환경 문제로 테스트 시작 전에 중단됐습니다. Frontend production build는 큰 chunk warning과 함께 성공했습니다.'
+implementation: 'Frontend는 활성 queue·run에만 조건부 polling을 적용하고, 상태가 바뀌면 관련 Query cache를 갱신했습니다. Backend는 transform run 시작 시 snapshot id·version·hash를 고정하고, 시간이 오래 걸리는 Storage I/O·POI parsing을 DB transaction에서 분리했습니다.'
+decision: '한 번 시작한 변환 작업의 모든 행은 동일한 기준을 사용해야 했습니다. 따라서 매번 최신값을 조회하는 대신, 변환 작업(run) 시작 시점의 기준정보 id·version·hash를 snapshot으로 고정했습니다. 이로써 같은 원본의 결과를 재현하고, 결과가 다를 때 사용한 기준을 추적할 수 있게 했습니다.'
+evidence: '2026-08-18에 남은 서버 테스트 결과는 59개 중 58개 통과, 1개 미실행, 실패 0개입니다. 현재 환경에서 다시 확인하려 했지만, 테스트 코드가 시작되기 전 실행 환경 설정 문제로 중단됐습니다. 프론트엔드 배포용 빌드는 성공했습니다.'
 stack:
   [
     'React',
@@ -34,24 +33,24 @@ stack:
 
 ## 프로젝트 한 줄 설명
 
-외부 주문 workbook을 업로드하고 변환 기준을 고정한 뒤 검수·보정과 목적별 산출물 보관까지 이어가는 물류 운영 웹 애플리케이션입니다.
+주문 Excel을 업로드하면 회사의 처리 기준에 맞게 변환해 주고, 운영자가 결과를 검수·수정·다운로드할 수 있게 한 물류 업무 도구입니다.
 
 ## 해결한 업무 문제
 
-- Excel/VBA 처리만으로는 원본, 사용 기준정보, 변환 run과 산출물의 관계를 추적하기 어려웠습니다.
-- 긴 storage I/O와 POI parsing이 하나의 DB transaction에 묶이면 connection을 오래 점유하고 실패 이력도 rollback될 수 있었습니다.
-- 기준정보가 계속 동기화되는 동안 `latest`만 조회하면 같은 run 안에서 판단 기준이 달라질 수 있었습니다.
-- 대형 파일 payload를 DB LOB에 보관하고 전체 ZIP을 메모리에서 만들면 저장·다운로드 경계가 무거워졌습니다.
+- 처리 중에 상품·주문 기준이 바뀌면, 파일 앞부분과 뒷부분이 서로 다른 기준으로 변환될 수 있었습니다.
+- 파일을 읽는 데 오래 걸리다 오류가 나면, 실패했다는 기록까지 사라져 원인을 찾기 어려웠습니다.
+- 누락된 주문과 상품 정보가 많아질수록 검수 목록을 불러오는 비용이 커졌습니다.
+- Excel과 ZIP 파일을 DB에 직접 쌓으면 저장과 다운로드 모두 DB에 큰 부담을 주게 됩니다.
 
 ## 대상 사용자와 사용 흐름
 
-물류 운영자는 원본을 업로드하고 workbook 양식과 preview를 확인합니다. 변환을 queue에 등록하면 서버가 그 시점의 master snapshot을 고정해 변환하고, 운영자는 오류·누락 기준정보를 검수·보정·재검증합니다. 이후 목적별 XLSX를 생성해 archive에서 개별 또는 ZIP으로 다운로드합니다.
+물류 운영자는 주문 파일을 업로드하고 양식과 미리보기를 확인합니다. 변환을 시작하면 서버는 그 시점의 상품·주문 기준을 기록하고 끝까지 같은 기준을 사용합니다. 운영자는 누락·오류를 수정하고 다시 확인한 뒤, 목적별 Excel 또는 ZIP 파일을 다운로드합니다.
 
 `업로드 → workbook preview → transform queue → snapshot lock → transform → review/revalidate → output → archive/download`
 
 ## 나의 역할
 
-Frontend에서는 upload, queue/progress, review, output archive와 이력을 하나의 업무 흐름으로 연결하고 TanStack Query의 조건부 polling·cache invalidation을 구성했습니다. Backend에서는 snapshot lock, transform transaction 분리, projection·pagination, Object Storage metadata와 streaming download를 구현했습니다.
+프론트엔드에서는 업로드, 진행 상태, 검수, 결과 보관 화면을 하나의 업무 흐름으로 연결했습니다. 서버에서는 변환에 사용한 기준이 바뀌지 않게 기록하고, 오래 걸리는 파일 처리와 상태 저장을 분리했습니다. 파일은 별도 저장소에 두고 다운로드할 때 필요한 부분만 순서대로 전달하게 했습니다.
 
 ## 팀 기여와 개인 기여의 경계
 
@@ -88,52 +87,52 @@ React 업무 UI가 upload와 queue 요청을 보내고 TanStack Query가 활성 
 
 ## Technical Highlights · 대표 기술 문제
 
-### Problem 01 - 변환 도중 바뀌는 기준정보
+### Problem 01 - 같은 원본의 변환 결과를 재현하기 어려운 문제
 
-source별 최신 기준정보를 매 lookup마다 조회하면 긴 run 안에서 서로 다른 snapshot이 섞이거나 같은 파일을 재처리했을 때 결과가 달라질 수 있었습니다.
+주문 변환은 상품, 판매처, 수량 단위 같은 기준정보를 계속 참조합니다. 각 행을 처리할 때마다 최신값(`latest`)을 조회하면, 처리 중 기준이 수정된 순간부터 파일 앞·뒷부분에 서로 다른 기준이 적용될 수 있었습니다. 같은 원본을 재실행해도 결과가 달라져 오류 원인을 추적하기 어려운 구조였습니다.
 
-### Solution 01 - Run 시점의 snapshot lock
+### Solution 01 - Run-scoped snapshot으로 기준정보 고정
 
-run 시작 transaction에서 source별 snapshot id/version/hash를 관계 row로 저장하고 이후 lookup을 locked snapshot ID로 제한했습니다. 이 결정은 master data 범위의 추적성을 높이지만 manual mapping과 mutable config까지 완전히 잠그지는 않습니다.
+변환 작업(run)을 시작할 때 source별 snapshot id·version·hash를 저장하고, 이후 모든 조회를 고정된 snapshot ID로 제한했습니다. snapshot은 '이 작업이 시작할 때 사용한 기준 버전'을 의미합니다. 이로써 처리 중 최신 기준이 바뀌어도 하나의 run은 동일한 기준을 유지하고, 결과와 사용 기준을 함께 추적할 수 있습니다.
 
-### Problem 02 - 긴 I/O와 실패 이력의 transaction 결합
+### Problem 02 - 긴 파일 처리와 DB 트랜잭션이 묶여 실패 이력까지 사라지는 문제
 
-원본 파일 읽기와 POI parsing을 run 생성·상태 변경과 같은 transaction에 두면 장시간 DB 자원을 점유하고 예외 때 run row도 사라질 수 있었습니다.
+원본 Excel을 Storage에서 읽고 Apache POI로 parsing하는 작업은 시간이 오래 걸립니다. 이 과정을 run 생성·상태 변경과 하나의 DB transaction으로 묶으면 connection을 오래 점유하게 됩니다. 예외가 발생해 transaction 전체가 rollback되면 '실패함'이라는 run 기록까지 사라져, 운영자가 원인을 확인하지 못할 수 있었습니다.
 
 ### Solution 02 - 시작·연산·완료/실패 transaction 분리
 
-짧은 start TX에서 run과 snapshot을 commit하고 storage I/O·parsing·mapping은 transaction 밖에서 수행했습니다. 성공 저장과 실패 상태는 각각 별도 write transaction으로 처리해 rollback과 실패 이력을 분리했습니다.
+짧은 start transaction에서 run과 snapshot을 먼저 commit한 뒤, 긴 Storage I/O·parsing·mapping은 transaction 밖에서 수행했습니다. 처리가 끝나면 성공 데이터를, 오류가 나면 실패 상태와 원인을 각각 별도 transaction으로 저장했습니다. 이렇게 transaction 경계를 나눠 DB 점유 시간을 줄이고, 파일 처리가 실패해도 추적할 run 이력은 보존했습니다.
 
-### Problem 03 - 기준정보 목록의 N+1·전체 로딩 후보
+### Problem 03 - 반복 조회와 전체 로딩으로 검수 목록이 느려지는 문제
 
-source별 최신 snapshot과 큰 raw CSV를 entity graph로 읽거나 누락 line을 메모리에서 집계하면 데이터가 늘수록 목록 비용이 커집니다.
+운영자가 필요한 것은 '어느 작업에 누락이 몇 개 있는지'와 같은 요약 정보입니다. 하지만 목록을 열 때마다 원본 데이터 전체를 불러와 개수를 계산하면 데이터가 쌓일수록 화면 응답이 느려집니다.
 
-### Solution 03 - Projection과 DB pagination
+### Solution 03 - Summary projection과 DB pagination 적용
 
-source/run ID 집합의 summary projection을 batch 조회하고 normalized row table과 native aggregate pagination을 사용했습니다. 다만 work history와 일부 review/output 경로에는 전체 로딩이 남아 있습니다.
+목록에 필요한 상태·누락 개수만 summary projection으로 모아 batch 조회했습니다. 원본 행 같은 상세 데이터는 사용자가 해당 run을 열었을 때만 불러오고, 누락 항목은 DB aggregate pagination으로 페이지 단위로 나눴습니다. 필요한 컬럼만 한번에 조회해 목록 비용을 줄였지만, 일부 이력·검수 경로에는 전체 로딩이 남아 있습니다.
 
-### Problem 04 - 파일 payload와 업무 metadata의 결합
+### Problem 04 - 파일 바이너리를 DB에 저장해 저장·다운로드 비용이 커지는 문제
 
-XLSX를 DB LOB에 저장하고 다운로드 때 한 번에 읽으면 DB와 응답 메모리 부담이 함께 커집니다.
+Excel 원본과 결과물은 크기가 크고 계속 쌓입니다. 파일 자체를 DB에 저장하고 다운로드할 때 한 번에 메모리로 읽으면, 검색을 담당해야 할 DB와 서버 메모리 모두 부담이 커집니다.
 
-### Solution 04 - Storage metadata와 streaming download
+### Solution 04 - Object Storage와 streaming download로 책임 분리
 
-local/Object Storage 아래에 payload를 저장하고 DB에는 storage type/key, SHA-256, size와 supersede 관계를 남겼습니다. 개별 파일과 ZIP은 stream으로 응답하고 DB 저장 실패 시 신규 object를 보상 삭제합니다.
+실제 Excel·ZIP payload는 local/Object Storage에 저장하고, DB에는 storage key·size·SHA-256·업무 상태 같은 metadata만 남겼습니다. 개별 파일과 ZIP은 전체를 메모리에 올리지 않고 stream으로 응답했습니다. DB metadata 저장이 실패하면 방금 생성한 object를 보상 삭제해, 업무 기록 없이 파일만 남는 상태를 방지했습니다.
 
-### Problem 05 - 제한 없는 workbook preview
+### Problem 05 - 제한 없는 Excel 미리보기로 서버 자원이 고갈될 수 있는 문제
 
-업로드 직후 workbook 전체를 미리보기 위해 읽으면 비정상적으로 큰 파일·행·열·문자열이 서버 자원과 화면 응답을 함께 점유할 수 있었습니다.
+업로드 직후 파일 전체를 미리보기로 보여 주려면 서버가 모든 행과 열을 읽어야 합니다. 잘못 만든 파일에 수만 개의 행이나 지나치게 긴 문자열이 들어 있으면 서버 메모리와 화면 응답을 동시에 점유할 수 있었습니다.
 
-### Solution 05 - Parsing과 UI에 같은 방어 한도 적용
+### Solution 05 - Parsing과 UI에 동일한 resource guardrail 적용
 
-파일 30MB, scan 10,000 rows, preview 8 rows·80 columns, data 160 columns, cell 220 characters 등의 상한을 두고 한도 초과를 명시적인 오류로 반환했습니다. 이 수치는 운영 최대 처리량이 아니라 preview 경로의 자원 방어 기준입니다.
+파일 30MB, scan 10,000행, preview 8행·80열, cell 220자로 parsing 상한을 고정했습니다. Backend와 UI가 같은 제한을 사용하고, 한도를 넘는 파일은 무리하게 열지 않고 명시적인 validation error를 반환했습니다. 이 수치는 전체 변환 용량이 아니라, 업로드 직후 미리보기 경로의 메모리와 응답 시간을 보호하는 방어 기준입니다.
 
 ## 선택한 해결 방법
 
-- 활성 queue와 run에만 polling을 켜고 상태 전이 때 관련 Query를 invalidate해 긴 작업과 화면 cache를 연결했습니다.
-- 변환 기준을 `latest`가 아니라 run에 고정된 snapshot으로 조회해 감사 가능한 실행 단위를 만들었습니다.
-- DB transaction은 상태·업무 데이터 commit에 집중시키고 긴 파일 I/O·parsing을 분리했습니다.
-- 입력 workbook은 Apache POI로 해석하고, 출력 계약은 custom OOXML writer와 부분적인 VBA compatibility test로 고정했습니다.
+- 활성 queue·run에만 polling(주기 조회)을 켜고, 완료·실패 시 관련 Query cache를 갱신해 화면이 최신 상태를 보여 주도록 했습니다.
+- 변환 기준을 `latest`로 매번 조회하지 않고 run-scoped snapshot으로 고정해, 각 결과가 어떤 기준으로 만들어졌는지 추적할 수 있게 했습니다.
+- DB transaction은 상태·업무 데이터 저장에 집중시키고, 긴 파일 I/O·parsing을 분리해 connection 점유와 rollback 범위를 줄였습니다.
+- 입력 workbook은 Apache POI로 해석하고, 출력 Excel은 custom OOXML writer와 부분적인 VBA compatibility test로 sheet·header·수량 규칙을 검증했습니다.
 
 ## 고려한 대안과 Trade-offs
 

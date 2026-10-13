@@ -13,10 +13,9 @@ userFlow:
   - '위치·상품 스캔'
   - '수량·분류 확인'
   - '연결 복구 후 전송'
-scope: 'PDA 본편은 np-wms-picking main 기준입니다. 별도 WMS 기능 브랜치의 서버 기능과 원격·배포 근거가 없는 로컬 Pilot은 연관 작업으로 구분합니다.'
-implementation: 'Android dispatchKeyEvent를 WebView CustomEvent로 전달하고 IndexedDB work package·journal·command outbox에 stable clientEventId와 expectedVersion을 보존했습니다.'
-decision: '로컬 저장과 서버 수락을 다른 상태로 표현하고 재연결 시 같은 명령을 순차 replay하며, version conflict는 자동 덮어쓰기 대신 차단했습니다.'
-evidence: 'PDA 스캐너 입력·오프라인 명령·WMS 상태 소비는 np-wms-picking main 커밋과 테스트에 남아 있습니다. 별도 WMS 기능 브랜치와 로컬 Pilot의 병합·배포는 확인되지 않았습니다.'
+implementation: 'Android native layer에서 물리 스캐너 키 이벤트를 완성된 scan으로 변환해 WebView에 전달했습니다. 네트워크 요청 전에는 IndexedDB outbox에 clientEventId·expectedVersion·payload를 저장해 재연결 후에도 같은 명령을 복구했습니다.'
+decision: 'PDA에 명령을 저장한 상태와 WMS가 수락한 상태를 분리했습니다. 응답이 유실되어도 새 요청을 만들지 않고 같은 clientEventId를 가진 명령을 ordered outbox에서 순차 재전송했습니다. version conflict는 자동으로 덮어쓰지 않고 사용자가 확인할 차단 상태로 보존했습니다.'
+evidence: 'PDA 스캐너 입력, IndexedDB outbox, WMS 상태 mapping은 np-wms-picking main의 커밋과 테스트에서 확인했습니다. 별도 WMS 기능 브랜치와 로컬 Pilot은 본편의 배포 기능으로 포함하지 않았습니다.'
 stack:
   [
     'React',
@@ -71,37 +70,37 @@ stack:
 
 ## Technical Highlights · 대표 기술 문제
 
-### Problem 01 - 물리 스캐너와 한글 IME가 같은 input을 흔드는 문제
+### Problem 01 - 물리 스캐너와 한글 IME 입력이 충돌하는 문제
 
-일반 `onChange`만 사용하면 keyCode 229, `beforeinput`, paste와 suffix 입력이 중복되고 focus가 다른 control로 이동했을 때 scan을 놓칠 수 있었습니다.
+현장 PDA의 물리 스캐너는 바코드 문자와 완료 키를 입력 이벤트로 보냅니다. 웹의 `onChange`만 사용하면 한글 IME의 keyCode 229, `beforeinput`, paste, suffix가 중복 처리되거나 focus가 다른 control에 있을 때 scan을 놓칠 수 있었습니다.
 
-### Solution 01 - Native bridge와 Web 입력 정규화
+### Solution 01 - Native bridge와 Web input stream 정규화
 
-Android `dispatchKeyEvent`에서 완성된 scan을 WebView CustomEvent로 전달하고, Web에서는 keydown·beforeinput·paste를 하나의 stream으로 정규화했습니다. 한글 IME/QWERTY 복원, prefix·형식 검증, 불완전 입력 경고와 focus 재무장을 단계별로 적용했습니다.
+Android `dispatchKeyEvent`에서 문자를 모아 하나의 완성된 scan을 만든 뒤 WebView CustomEvent로 전달했습니다. Web에서는 keydown·beforeinput·paste를 하나의 input stream으로 정규화하고, 한글 IME/QWERTY 복원·prefix 검증·불완전 입력 경고·focus 재무장을 단계별로 적용했습니다. Native bridge가 장치 입력을 안정화하고, React 화면은 정규화된 scan만 처리하게 책임을 나눴습니다.
 
-### Problem 02 - 응답 유실 뒤 재전송의 중복 반영
+### Problem 02 - 응답 유실 후 재전송이 수량을 중복 반영할 수 있는 문제
 
-서버가 업무 효과를 적용한 뒤 응답만 사라지면 사용자는 실패로 보고 다시 시도하지만 새 request는 같은 수량을 두 번 반영할 수 있습니다.
+WMS가 피킹 수량을 정상 반영한 뒤 네트워크 문제로 응답만 유실될 수 있습니다. PDA는 이를 실패로 판단하고 새 요청을 보내기 쉽지만, 서버에서는 같은 수량이 두 번 반영될 수 있었습니다. 즉, 재시도 가능성과 명령의 멱등성(idempotency)을 함께 보장해야 했습니다.
 
-### Solution 02 - Stable ID와 ordered outbox
+### Solution 02 - Idempotency key와 ordered outbox로 재전송 제어
 
-첫 요청 전 `deviceId`, `clientEventId`, `expectedVersion`과 payload를 IndexedDB에 저장하고 같은 ID로 순차 replay했습니다. ACK 전 outbox를 지우지 않고 연결 실패에는 backoff를 적용했으며 version conflict는 quarantine했습니다.
+첫 전송 전 `deviceId`, `clientEventId`, `expectedVersion`, payload를 IndexedDB outbox에 저장했습니다. `clientEventId`를 멱등성 키로 사용해 재연결 후에도 같은 명령을 순서대로 replay했고, WMS 응답(ACK)을 받기 전에는 outbox에서 삭제하지 않았습니다. 연결 실패에는 backoff를 적용하고 version conflict는 quarantine 상태로 분리해, 자동 재시도가 서버의 최신 상태를 덮어쓰지 않게 했습니다.
 
-### Problem 03 - 부분 피킹에서 남은 수량의 출처 유실
+### Problem 03 - 부분 피킹 후 완료분과 미처리 수량의 출처가 사라지는 문제
 
-기존 task의 remaining 수량만 0으로 만들면 실제 완료분과 미처리분, allocation 귀속을 추적하기 어렵습니다.
+작업자가 지정 수량의 일부만 피킹했을 때 기존 task의 `remaining`만 0으로 바꾸면, 얼마나 완료했고 얼마나 남았는지와 원래 allocation의 귀속을 추적하기 어렵습니다.
 
 ### Solution 03 - 완료분과 residual task 분리
 
-별도 `np-wms-tmp` 기능 브랜치에서 source task의 완료분과 residual task·allocation split을 분리했습니다. 일반 partial과 shortage는 다른 후속 상태로 두었습니다. 이 서버 작업을 `np-wms-picking`의 main 배포 기능으로 합치지는 않습니다.
+별도 `np-wms-tmp` 기능 브랜치에서 source task에는 실제 완료분을 남기고, 미처리 수량은 residual task와 allocation으로 split했습니다. 일반 partial과 재고 부족(shortage)은 서로 다른 후속 상태로 분리했습니다. 다만 이 서버 작업은 `np-wms-picking` main 배포 기능으로 포함하지 않습니다.
 
 ### Problem 04 - 외부 WMS 상태와 PDA 단계의 의미 차이
 
-외부 WMS의 claim·location·product·quantity·complete 응답과 version이 기존 PDA 화면 단계와 일대일로 맞지 않았습니다.
+외부 WMS는 claim·location·product·quantity·complete로 작업 상태를 표현했지만, 기존 PDA 화면은 작업자가 보는 단계 중심이었습니다. 두 상태 모델이 일대일로 맞지 않아 어떤 응답을 다음 화면으로 연결할지 명시적인 변환 규칙이 필요했습니다.
 
 ### Solution 04 - 소비 경계의 상태 mapping
 
-WMS 응답을 PDA 단계에 mapping하고 BLOCKED·DEFERRED·conflict를 별도 UI 상태로 노출했습니다. WMS의 배정·버전·완료 응답을 권위 값으로 두고 PDA는 미전송 명령과 로컬 작업 표시를 관리했습니다.
+WMS 응답을 PDA 작업 단계로 mapping하고, 진행할 수 없는 `BLOCKED`, 나중에 처리할 `DEFERRED`, 버전이 어긋난 `conflict`를 별도 UI 상태로 표시했습니다. 배정·버전·완료 여부는 WMS 응답을 권위 값(source of truth)으로 두고, PDA는 아직 전송하지 못한 명령과 화면용 로컬 상태만 관리하게 책임을 분리했습니다.
 
 ## 연관 개발과 반영 단계
 

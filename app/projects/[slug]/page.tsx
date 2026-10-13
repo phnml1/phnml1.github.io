@@ -8,7 +8,6 @@ import raw from 'rehype-raw';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
 import Reveal from '@/components/motion/Reveal';
-import CaseStudyVisuals from '@/components/projects/CaseStudyVisuals';
 
 const projectMedia: Record<string, { src: string; alt: string; caption: string }[]> = {
   codemate: [
@@ -25,18 +24,25 @@ const primaryProblemIndex: Record<string, number> = {
   'runners-high': 1,
 };
 
-const visualProjects = new Set(['np-wms-picking', 'np-ois', 'codemate', 'np-cell-label-kiosk']);
-const repeatedSections = new Set([
-  '프로젝트 한 줄 설명',
-  '해결한 업무 문제',
-  '대상 사용자와 사용 흐름',
-  '나의 역할',
+const designSectionTitles = new Set([
+  '시스템 또는 데이터 흐름',
+  '핵심 상태 머신',
+  'Frontend 상태 동기화와 검수 UX',
   '선택한 해결 방법',
-  '검증 방법과 결과',
-  'Overview',
-  'Achievements',
-  'Portfolio Summary',
+  '고려한 대안과 Trade-offs',
+  'Tech Stack & Reason',
+  'Trade-offs / Limitations',
 ]);
+
+const designSectionLabels: Record<string, string> = {
+  '시스템 또는 데이터 흐름': '전체 처리 흐름',
+  '핵심 상태 머신': '상태 변화와 복구',
+  'Frontend 상태 동기화와 검수 UX': '화면 상태 동기화',
+  '선택한 해결 방법': '핵심 기술 선택',
+  '고려한 대안과 Trade-offs': '고려한 대안과 Trade-off',
+  'Tech Stack & Reason': '기술 선택과 이유',
+  'Trade-offs / Limitations': '고려한 대안과 Trade-off',
+};
 
 export function generateStaticParams() {
   return getPortfolioProjectSlugs().map((slug) => ({ slug }));
@@ -78,8 +84,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const featuredIndex = primaryProblemIndex[project.slug] ?? 0;
   const featuredProblem = technicalProblems[featuredIndex];
   const additionalProblems = technicalProblems.filter((_, index) => index !== featuredIndex);
-  const additionalSections = project.sections.filter(
-    (section) => section.kind !== 'technical' && !repeatedSections.has(section.displayTitle),
+  const designSections = project.sections.filter((section) =>
+    designSectionTitles.has(section.displayTitle),
   );
 
   return (
@@ -165,36 +171,41 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
         {additionalProblems.length ? (
           <section className="mt-20 max-w-5xl" aria-labelledby="additional-problems">
-            <SectionTitle id="additional-problems" eyebrow="Engineering" title="추가 기술 과제" />
+            <SectionTitle id="additional-problems" eyebrow="More cases" title="추가 문제 해결" />
             <TechnicalHighlights blocks={additionalProblems} />
           </section>
         ) : null}
 
-        {frontmatter.scope ? (
-          <section className="mt-20 max-w-5xl border-t border-outline/70 pt-8" aria-labelledby="project-scope">
-            <SectionTitle id="project-scope" eyebrow="Scope" title="기여 범위와 남은 검증" />
-            <p className="mt-5 max-w-4xl break-keep text-base leading-8 text-text-secondary">{frontmatter.scope}</p>
-          </section>
-        ) : null}
-
-        {visualProjects.has(project.slug) ? (
-          <details className="mt-16 border-t border-outline/70 pt-6">
-            <summary className="cursor-pointer text-base font-bold text-primary">시스템 흐름과 검증 경계 자세히 보기</summary>
-            <CaseStudyVisuals slug={project.slug} />
-          </details>
-        ) : null}
-
-        {additionalSections.length ? (
-          <details className="mt-8 border-t border-outline/70 pt-6">
-            <summary className="cursor-pointer text-base font-bold text-primary">설계·검증 기록 더 읽기</summary>
+        {designSections.length ? (
+          <details className="group mt-16 max-w-5xl border-y border-outline/70">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-5 py-5 marker:content-none">
+              <span className="text-base font-bold text-white group-open:text-primary">기술 설계 더 보기</span>
+              <span className="flex items-center gap-3 text-right text-xs font-semibold leading-5 text-text-secondary">
+                <span>처리 흐름 · 기술 선택 · 대안</span>
+                <span
+                  aria-hidden="true"
+                  className="text-lg font-normal text-primary transition-transform group-open:rotate-45"
+                >
+                  +
+                </span>
+              </span>
+            </summary>
             <article className="mt-8 grid max-w-5xl gap-8">
-              {additionalSections.map((section) => (
+              {designSections.map((section, index) => (
                 <section key={section.title} className="border-t border-outline/70 pt-6">
-                  <h2 className="font-label text-xs font-bold uppercase tracking-[0.18em] text-primary">{section.displayTitle}</h2>
+                  <div className="flex items-baseline gap-3">
+                    <span className="font-label text-xs font-bold text-primary">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <h2 className="text-lg font-bold text-white">
+                      {designSectionLabels[section.displayTitle] ?? section.displayTitle}
+                    </h2>
+                  </div>
                   <div className="mt-4"><MarkdownContent content={section.content} /></div>
                 </section>
               ))}
             </article>
+            <div className="h-8" aria-hidden="true" />
           </details>
         ) : null}
 

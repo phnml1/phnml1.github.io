@@ -13,9 +13,8 @@ userFlow:
   - 'PR 선택·AI 리뷰 요청'
   - '진행 상태·결과 확인'
   - '코드 댓글 협업'
-scope: '개인 프로젝트입니다. 테스트와 성능 수치는 명시된 로컬 조건의 결과이며 실제 사용자 규모나 운영 성능을 뜻하지 않습니다.'
-implementation: 'useSyncExternalStore 기반 socket store와 room hook을 분리하고 create/update/delete/reaction payload를 TanStack Query cache에 immutable하게 반영했습니다.'
-decision: 'PostgreSQL을 영속 상태의 원본으로 두고 Socket.io는 변경 이벤트 전송에 집중시켰으며, 연결 실패 때 같은 Query가 polling으로 최종 상태를 회복하게 했습니다.'
+implementation: 'Socket.io 연결 상태는 `useSyncExternalStore` 기반 공용 store에서 관리하고, PR room의 join·leave lifecycle은 별도 hook으로 분리했습니다. 댓글 create·update·delete·reaction 이벤트는 ID 기준으로 TanStack Query cache에 immutable update했습니다.'
+decision: "PostgreSQL을 영구 저장 상태의 source of truth로 두고, Socket.io는 '변경이 발생함'을 알리는 event transport로 한정했습니다. 소켓이 정상이면 event payload로 cache를 즉시 갱신하고, 연결이 끊기면 polling으로 전환해 DB의 최종 상태와 다시 일치시켰습니다."
 evidence: '2026-09-07 기준 Jest 23 suites / 133 tests와 Playwright 3 flows를 확인했습니다. 서버 내부 API 호출 제거와 LCP 개선은 각각 명시된 로컬 측정 조건에서 확인했습니다.'
 stack:
   [
@@ -73,37 +72,37 @@ PR metadata와 files/diff는 별도 loading 경로로 분리했습니다. 제목
 
 ## Technical Highlights · 대표 기술 문제
 
-### Problem 01 - 실시간 댓글 refetch와 중첩 thread 일관성
+### Problem 01 - 실시간 댓글을 받을 때마다 전체 refetch와 중복 답글이 발생할 수 있는 문제
 
-댓글 create/update/delete/reaction마다 전체 목록을 다시 읽으면 네트워크 요청이 늘고, reply tree의 특정 노드만 바꾸기도 어려웠습니다. client mutation과 socket echo가 같은 댓글을 중복 추가할 가능성도 있었습니다.
+PR 댓글은 답글이 여러 단계로 연결된 tree 구조입니다. create·update·delete·reaction event마다 전체 목록을 refetch하면 네트워크 요청이 늘고, tree 안의 특정 답글만 정확히 바꾸기도 어렵습니다. 사용자가 댓글을 작성한 직후 client mutation과 서버의 socket echo가 같은 댓글을 두 번 추가할 가능성도 있었습니다.
 
-### Solution 01 - Socket payload의 immutable cache update
+### Solution 01 - Event payload 기반 immutable cache update
 
-`setQueryData`에서 댓글 ID를 기준으로 tree를 재귀 순회해 create 중복을 막고 update/delete/reaction payload를 immutable하게 반영했습니다. socket이 정상일 때 create mutation의 local append를 생략하고, fallback에서는 직접 append한 뒤 mutation settle 시 DB 상태와 다시 맞춥니다.
+`setQueryData`에서 댓글 ID를 기준으로 reply tree를 재귀 순회하고, 해당 node에만 update·delete·reaction payload를 immutable하게 반영했습니다. create event는 이미 같은 ID가 있는지 확인해 중복을 막았습니다. socket이 정상일 때는 서버 echo를 단일 갱신 경로로 사용하고, fallback 모드에서만 로컬에 먼저 반영한 뒤 mutation이 끝나면 DB 상태와 재조정했습니다.
 
-### Problem 02 - 연결과 PR room lifecycle의 책임 혼합
+### Problem 02 - Socket 연결과 PR room lifecycle이 각 hook에 흩어지는 문제
 
-hook-local 연결 상태와 join/leave effect가 함께 있으면 consumer마다 다른 snapshot을 볼 수 있고 cleanup 책임도 불명확했습니다.
+각 화면 hook이 socket 연결 상태와 PR room join·leave를 동시에 관리하면, consumer마다 서로 다른 연결 snapshot을 볼 수 있습니다. 화면이 바뀌었을 때 누가 room을 leave하고 listener를 정리할지도 불명확했습니다.
 
 ### Solution 02 - useSyncExternalStore와 room hook 분리
 
-module singleton의 socket·연결 상태·fallback 상태를 `useSyncExternalStore`로 구독하고, `useSocketRoom(prId)`에는 join/leave만 남겼습니다. 최초 token/connect 실패는 즉시, 기존 연결 장애는 8초 grace 뒤 10초 polling으로 전환합니다.
+module singleton에 socket·연결·fallback 상태를 모으고 React의 `useSyncExternalStore`로 하나의 snapshot을 구독하게 했습니다. `useSocketRoom(prId)`는 현재 PR의 join·leave lifecycle만 담당합니다. 최초 token·connect 실패는 즉시 polling으로, 기존 연결 장애는 8초 grace period 후 10초 polling으로 전환해 잠깐의 네트워크 흔들림과 진짜 장애를 구분했습니다.
 
-### Problem 03 - AI review의 중복 실행과 상태 공백
+### Problem 03 - 동시 요청으로 AI review가 중복 실행될 수 있는 문제
 
-application의 `findFirst → create`만으로는 동시에 들어온 수동 요청과 webhook이 모두 active review를 만들 수 있습니다.
+사용자의 수동 요청과 GitHub webhook이 거의 동시에 들어오면, application code의 `findFirst → create`만으로는 두 요청이 모두 '진행 중인 review가 없다'고 판단할 수 있습니다. 그 결과 하나의 PR에 AI review가 중복 실행되는 race condition이 생길 수 있었습니다.
 
 ### Solution 03 - 상태 머신과 DB constraint
 
-요청 직후 `PENDING` cache를 만들고 진행 중에는 3초 polling과 알림 invalidation을 사용했습니다. DB에는 active status만 대상으로 하는 partial unique index를 두고 race에서 발생한 unique conflict를 이미 진행 중인 요청으로 처리했습니다.
+요청 직후 화면 cache에 `PENDING` 상태를 만들어 진행 공백을 없애고, 처리 중에는 3초 polling과 알림 event로 상태를 갱신했습니다. 중복 실행 방지는 UI가 아닌 DB에서 보장했습니다. `PENDING`·`IN_PROGRESS` 상태만 대상으로 하는 partial unique index를 두고, 동시 삽입의 unique conflict는 '이미 review가 진행 중'인 응답으로 변환했습니다.
 
-### Problem 04 - PR 첫 화면과 보조 데이터의 결합
+### Problem 04 - PR 핵심 정보가 보조 데이터를 기다리느라 늦게 보이는 문제
 
-PR metadata와 files가 모두 끝날 때까지 전체 skeleton을 보여주고 syntax highlighter를 초기 경로에 포함하면 제목 표시까지 늦어졌습니다.
+PR 제목·상태·작성자 metadata는 빨리 받을 수 있지만, files·diff는 용량이 크고 더 오래 걸립니다. 두 요청이 모두 끝날 때까지 전체 skeleton을 보여 주고 syntax highlighter까지 초기 bundle에 포함하면, 사용자가 먼저 확인할 수 있는 PR 기본 정보까지 늦게 나타났습니다.
 
 ### Solution 04 - dependency별 loading과 지연 로딩
 
-metadata와 files/diff의 loading gate를 분리하고 syntax highlighter, diff viewer, issue modal, chart를 dynamic import했습니다. historical localhost Desktop 3회 평균은 여러 최적화를 묶은 전후 비교이며 특정 변경 하나의 단독 성과로 해석하지 않습니다.
+metadata와 files/diff의 loading boundary를 분리해 PR 기본 정보를 먼저 렌더링했습니다. syntax highlighter·diff viewer·issue modal·chart는 dynamic import로 필요할 때만 로드했습니다. localhost Desktop 3회 평균으로 확인한 LCP 개선은 이 변경들을 묶은 전후 비교이며, 특정 최적화 하나의 단독 효과로 표현하지 않습니다.
 
 ## 선택한 해결 방법
 
