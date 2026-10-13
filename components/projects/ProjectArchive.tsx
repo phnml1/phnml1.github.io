@@ -8,7 +8,7 @@ export default function ProjectArchive() {
         className="mt-24 border-t border-outline/70 pt-16"
         aria-labelledby="current-platform-title"
       >
-        <header className="grid gap-6 md:grid-cols-[minmax(0,1fr)_420px] md:items-end">
+        <header>
           <div>
             <span className="mb-4 block font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">
               Ongoing Personal Platform
@@ -20,10 +20,6 @@ export default function ProjectArchive() {
               {currentPortfolioProject.title}.
             </h2>
           </div>
-          <p className="max-w-md text-sm leading-7 text-text-secondary">
-            프로젝트의 문제 해결 과정과 기술 학습 기록을 같은 콘텐츠 구조에서 지속적으로 관리하고
-            있습니다.
-          </p>
         </header>
 
         <article className="mt-8 grid gap-7 rounded-2xl border border-outline/70 bg-surface-container p-6 md:p-8 lg:grid-cols-[minmax(230px,0.75fr)_minmax(0,1.6fr)] lg:gap-10">

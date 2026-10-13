@@ -20,38 +20,22 @@ const PROJECT_ORDER = [
   'np-wms-picking',
   'np-ois',
   'codemate',
+  'np-cell-label-kiosk',
   'fly-on',
   'runners-high',
   'career-hub',
 ];
 
-const PRIMARY_PROJECTS = ['np-wms-picking', 'np-ois', 'codemate'];
+const PRIMARY_PROJECTS = ['np-wms-picking', 'np-ois', 'codemate', 'np-cell-label-kiosk'];
 const MOBILE_PROJECTS = ['fly-on', 'runners-high'];
-
-const PROJECT_SIGNALS: Record<string, { label: string; value: string; tone: string }> = {
-  'np-ois': {
-    label: 'Workflow stages',
-    value: '8',
-    tone: 'Upload → snapshot lock → archive',
-  },
-  'fly-on': {
-    label: 'Drag duration',
-    value: '211.5→72.9ms',
-    tone: 'Same React Profiler scenario',
-  },
-};
 
 const PROJECT_GROUPS = [
   {
-    label: 'Selected Case Studies',
-    description:
-      'MJ Corporation 계약직에서 맡은 현장 피킹·주문 운영 화면과 개인 프로젝트 CodeMate를 구분해 설명합니다.',
+    label: 'Main Projects',
     slugs: PRIMARY_PROJECTS,
   },
   {
     label: 'Mobile & Realtime Experience',
-    description:
-      '모바일 Drag & Drop의 렌더링 비용과 위치 스트림의 재연결·복구를 제품 경험으로 구현했습니다.',
     slugs: MOBILE_PROJECTS,
   },
 ];
@@ -70,13 +54,12 @@ export default function ProjectsPage() {
               <span className="mb-5 block font-label text-sm font-bold uppercase tracking-[0.28em] text-primary">
                 Projects
               </span>
-              <h1 className="font-headline text-[clamp(3.2rem,8vw,6.5rem)] font-black leading-[0.9] tracking-[-0.055em] text-white">
-                Projects with evidence.
+              <h1 className="font-headline text-4xl font-black leading-tight text-white md:text-6xl">
+                프로젝트
               </h1>
             </div>
             <p className="max-w-md text-base leading-8 text-text-secondary">
-              React와 TypeScript로 복잡한 업무 상태, 실시간 이벤트, 오프라인 복구와 물리 입력을 다룬
-              과정과 검증 범위를 정리했습니다.
+              무엇을 만들었고, 어떤 문제를 해결하려 했으며, 그 안에서 제가 맡은 일을 정리했습니다.
             </p>
           </header>
         </Reveal>
@@ -93,19 +76,16 @@ export default function ProjectsPage() {
 
             return (
               <section key={group.label} className="grid gap-6">
-                <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)] md:items-end">
+                <div>
                   <h2 className="font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">
                     {group.label}
                   </h2>
-                  <p className="max-w-2xl text-sm leading-7 text-text-secondary">
-                    {group.description}
-                  </p>
                 </div>
 
-                <div className="grid gap-5 lg:grid-cols-3">
+                <div className="grid gap-5 lg:grid-cols-2">
                   {groupProjects.map((project, index) => (
                     <Reveal key={project.slug} delay={index * 0.06} className="h-full">
-                      <ProjectCard project={project} index={index + 1} />
+                      <ProjectCard project={project} />
                     </Reveal>
                   ))}
                 </div>
@@ -122,97 +102,55 @@ export default function ProjectsPage() {
   );
 }
 
-function ProjectCard({ project, index }: { project: PortfolioProject; index: number }) {
+function ProjectCard({ project }: { project: PortfolioProject }) {
   const { frontmatter } = project;
-  const signal = PROJECT_SIGNALS[project.slug];
-  const groupLabel = PRIMARY_PROJECTS.includes(project.slug) ? 'Case' : 'Mobile';
 
   return (
     <Link
       href={`/projects/${project.slug}`}
       aria-label={`${frontmatter.title} 프로젝트 상세 보기`}
-      className="group grid h-full min-h-[350px] rounded-lg border border-outline/70 bg-surface-container p-6 transition duration-300 hover:border-primary/60 hover:bg-surface-high focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+      className="group block h-full rounded-lg border border-outline/70 bg-surface-container p-6 transition duration-300 hover:border-primary/60 hover:bg-surface-high focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
     >
-      <article className="grid h-full grid-rows-[auto_1fr_auto]">
+      <article className="flex h-full min-h-[320px] flex-col">
         <div>
-          <div className="flex items-center justify-between gap-4">
-            <span className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
-              {groupLabel} {String(index).padStart(2, '0')}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="font-label text-xs font-bold text-primary">
+              {frontmatter.team}
             </span>
-            <span className="rounded-full border border-outline/70 px-3 py-1 font-label text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary transition-colors group-hover:border-primary/70 group-hover:text-primary">
-              Detail
-            </span>
+            <span className="text-xs text-text-secondary">{frontmatter.period}</span>
           </div>
 
-          <h2 className="mt-5 text-3xl font-black leading-tight text-white transition-colors group-hover:text-primary">
+          <h2 className="mt-4 text-2xl font-black leading-tight text-white transition-colors group-hover:text-primary md:text-3xl">
             {frontmatter.title}
           </h2>
-          <p className="mt-3 line-clamp-3 text-sm leading-7 text-text-secondary">
+          <p className="mt-3 line-clamp-3 break-keep text-base leading-7 text-white">
             {project.summary}
           </p>
         </div>
 
-        <div className="mt-6 grid content-start gap-2">
-          <MetaRow label="Period" value={frontmatter.period} />
-          <MetaRow label="Role" value={frontmatter.role} />
-          <MetaRow label="Team" value={frontmatter.team} />
-
-          {signal ? (
-            <div className="mt-2 border-t border-outline/60 pt-3">
-              <div className="text-gradient text-2xl font-black">
-                {signal.value}
-              </div>
-              <div className="mt-2 font-label text-xs font-bold uppercase tracking-[0.16em] text-text-secondary">
-                {signal.label}
-              </div>
-              <p className="mt-2 text-xs leading-5 text-text-secondary">{signal.tone}</p>
-            </div>
-          ) : null}
+        <div className="mt-6 grid gap-3 border-t border-outline/70 pt-5">
+          <CardFact label="핵심 문제" value={frontmatter.problem} />
+          <CardFact label="내 역할" value={frontmatter.contribution} />
         </div>
 
-        <div className="mt-6">
-          <div className="flex flex-wrap gap-2">
-            {frontmatter.stack.slice(0, 5).map((tech) => (
-              <span
-                key={tech}
-                className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary"
-              >
-                {tech}
-              </span>
-            ))}
-          </div>
-          {frontmatter.github || frontmatter.demo ? (
-            <div className="mt-4 flex flex-wrap gap-2 font-label text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
-              {frontmatter.github ? <span>GitHub available</span> : null}
-              {frontmatter.demo ? <span>· Live demo</span> : null}
-            </div>
-          ) : null}
-          <div className="mt-5 flex items-center justify-between border-t border-outline/70 pt-4">
-            <span className="font-label text-xs font-bold uppercase tracking-[0.18em] text-primary opacity-80 group-hover:opacity-100">
-              Open Case Study
-            </span>
-            <span
-              aria-hidden="true"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-primary/50 text-xl text-primary transition duration-300 group-hover:translate-x-1 group-hover:bg-primary group-hover:text-surface"
-            >
-              →
-            </span>
-          </div>
+        <div className="mt-auto flex items-center justify-between border-t border-outline/70 pt-4">
+          <span className="font-label text-xs font-bold text-primary">사례 읽기</span>
+          <span aria-hidden="true" className="text-2xl text-primary transition-transform group-hover:translate-x-1">→</span>
         </div>
       </article>
     </Link>
   );
 }
 
-function MetaRow({ label, value }: { label: string; value?: string }) {
+function CardFact({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
 
   return (
-    <div className="grid grid-cols-[76px_minmax(0,1fr)] gap-3 text-sm leading-6">
-      <span className="font-label text-[10px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+    <div className="grid gap-1 text-sm leading-6 sm:grid-cols-[80px_minmax(0,1fr)] sm:gap-3">
+      <span className="font-label text-xs font-bold text-primary">
         {label}
       </span>
-      <span className="font-semibold text-white">{value}</span>
+      <span className="line-clamp-2 break-keep text-text-secondary">{value}</span>
     </div>
   );
 }

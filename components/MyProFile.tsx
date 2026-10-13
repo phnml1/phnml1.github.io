@@ -14,7 +14,7 @@ const MyProFile: React.FC = () => {
           </p>
           <div className="mt-4 flex gap-4 font-label text-xs uppercase tracking-[0.18em] text-primary">
             <Link href="https://github.com/phnml1" target="_blank" rel="noopener noreferrer">GitHub</Link>
-            <Link href="mailto:juyung0903@gmail.com">Email</Link>
+            <Link href="mailto:juyung0903@naver.com">Email</Link>
           </div>
         </div>
       </div>

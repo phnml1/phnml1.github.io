@@ -4,9 +4,16 @@ slug: 'np-ois'
 period: '2026.05 - 2026.07'
 team: '팀 프로젝트 / 익명 물류 운영사'
 role: 'Frontend 중심 / Backend workflow·정합성 영역 기여'
-description: '기존 Excel/VBA 주문 처리 MVP를 실행 기준을 추적하고 검수·복구할 수 있는 8단계 운영 workflow로 확장한 프로젝트'
-problem: '장시간 Excel 변환이 실패하면 실행 이력이 사라질 수 있고, 변환 도중 기준정보가 바뀌면 어떤 기준으로 산출물이 만들어졌는지 설명하기 어려웠습니다.'
-contribution: '기존 MVP 위에서 upload·queue/progress·review·archive 화면을 연결하고, Backend의 snapshot lock·transaction 분리·Object Storage·조회 성능 영역에 직접 기여했습니다.'
+description: '물류 운영자가 주문 Excel 파일을 업로드하고 변환 결과를 검수·보정한 뒤 목적별 파일로 내려받는 업무 웹입니다.'
+audience: '주문 파일을 처리하고 검수하는 물류 운영자'
+problem: '긴 파일 변환이 실패하거나 기준정보가 바뀌면 어떤 원본과 기준으로 결과가 만들어졌는지 추적하기 어려웠습니다.'
+contribution: '기존 MVP를 인수해 업로드·변환 진행·검수·보관 화면을 연결하고, Backend의 기준정보 고정·실패 이력·파일 저장 경계에도 기여했습니다.'
+userFlow:
+  - '주문 Excel 업로드'
+  - '양식 확인·변환 요청'
+  - '오류 검수·보정'
+  - '산출물 생성·보관'
+scope: '초기 MVP는 다른 팀원이 구축했습니다. 별도 프론트 성능 기능 브랜치의 반영 상태와 실제 운영 개선률은 확인되지 않았습니다.'
 implementation: 'queue/run은 활성 시 1초, 세부 progress는 처리 중 350ms만 polling하고 상태 전이에 맞춰 cache를 갱신했습니다. Backend에서는 run 시점 snapshot id/version/hash를 고정하고 긴 storage I/O·POI parsing을 핵심 DB transaction 밖으로 분리했습니다.'
 decision: '실행 기준은 snapshot으로 잠그고 실패 상태는 별도 transaction에 남겼으며, 파일 payload는 storage에 두고 DB에는 hash/key/size metadata를 저장했습니다.'
 evidence: '2026-08-18 테스트 산출물에서 59 tests, 실패 0, 1 skip을 확인했으며 최신 재실행은 Gradle 환경 문제로 테스트 시작 전에 중단됐습니다. Frontend production build는 큰 chunk warning과 함께 성공했습니다.'
@@ -49,6 +56,13 @@ Frontend에서는 upload, queue/progress, review, output archive와 이력을 �
 ## 팀 기여와 개인 기여의 경계
 
 초기 MVP는 다른 팀원이 먼저 구축했습니다. 개인 기여는 기존 기반을 인수한 뒤 운영 workflow, 데이터 정합성·재현성, storage와 성능 경계를 확장한 범위입니다. 시스템 전체를 혼자 처음부터 만들었다고 표현하지 않으며, 직접 WMS API 연동 완료나 VBA 100% 동일성도 주장하지 않습니다.
+
+## 추가로 확인된 직접 구현 범위
+
+- 한 파일에 집중돼 있던 React SPA를 공통 컴포넌트·업무 페이지·타입으로 나누고, 원본 등록부터 queue·검수·산출물까지 이동하는 화면 흐름을 확장했습니다.
+- 여러 원본 파일을 배치로 등록해 storage metadata와 DB 관계를 연결하고, 같은 배치의 활성 변환을 중복 실행하지 않도록 서버 guard와 테스트를 추가했습니다.
+- 검수 화면에서 원본 행·표준 주문·제외 행을 구분하고, 누락 매핑 보정·재검증·검수 재개를 연결했습니다.
+- 상세 패널 query dedupe, route lazy loading과 행 렌더링 최적화는 별도 프론트 성능 기능 브랜치의 코드입니다. 이 변경을 현재 운영 버전의 개선 수치로 표현하지 않습니다.
 
 ## 시스템 또는 데이터 흐름
 

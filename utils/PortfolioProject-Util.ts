@@ -19,6 +19,9 @@ export interface PortfolioProjectFrontmatter {
   decision?: string;
   evidence?: string;
   description?: string;
+  audience?: string;
+  userFlow?: string[];
+  scope?: string;
   relatedPosts?: string[];
 }
 
@@ -148,6 +151,11 @@ function normalizeFrontmatter(data: Record<string, unknown>): PortfolioProjectFr
     decision: typeof data.decision === 'string' ? data.decision : undefined,
     evidence: typeof data.evidence === 'string' ? data.evidence : undefined,
     description: typeof data.description === 'string' ? data.description : undefined,
+    audience: typeof data.audience === 'string' ? data.audience : undefined,
+    userFlow: Array.isArray(data.userFlow)
+      ? data.userFlow.filter((item): item is string => typeof item === 'string')
+      : undefined,
+    scope: typeof data.scope === 'string' ? data.scope : undefined,
     relatedPosts: Array.isArray(data.relatedPosts)
       ? data.relatedPosts.filter((item): item is string => typeof item === 'string')
       : undefined,

@@ -3,13 +3,20 @@ title: 'NP WMS Picking'
 slug: 'np-wms-picking'
 period: '2026.07 - 2026.08'
 team: '팀 프로젝트 / 익명 물류 운영사'
-role: 'Frontend 중심 / Full-stack 협업'
-description: 'PDA의 물리 스캔과 오프라인 작업을 서버·외부 WMS 상태에 연결한 현장 피킹 시스템'
-problem: '640×480급 PDA에서 물리 스캐너 입력, 부분 피킹과 네트워크 단절을 처리하면서 로컬 작업과 서버·외부 WMS 상태를 구분해야 했습니다.'
-contribution: '개인 기여는 Mobile FE의 단계 UI, scanner 정규화, offline outbox, WMS 상태 소비와 연결에 집중했고 Backend의 부분 피킹 흐름을 보강했습니다.'
+role: 'PDA Frontend 중심 / 초기 Backend·관리자 화면 기여'
+description: '창고 작업자가 PDA와 물리 스캐너로 위치·상품·수량을 확인하며 피킹을 진행하는 현장 작업 화면입니다.'
+audience: '창고 현장 작업자'
+problem: '스캔 입력이 흔들리거나 네트워크가 끊겨도 작업 기록을 잃거나 같은 수량을 중복 반영하지 않아야 했습니다.'
+contribution: 'PDA 단계 UI, Android 스캐너 입력 연결, IndexedDB 오프라인 명령 보존과 WMS 응답 표시를 구현했습니다. 초기 Backend·관리자 화면에도 일부 기여했습니다.'
+userFlow:
+  - '배정된 작업 확인'
+  - '위치·상품 스캔'
+  - '수량·분류 확인'
+  - '연결 복구 후 전송'
+scope: 'PDA 본편은 np-wms-picking main 기준입니다. 별도 WMS 기능 브랜치의 서버 기능과 원격·배포 근거가 없는 로컬 Pilot은 연관 작업으로 구분합니다.'
 implementation: 'Android dispatchKeyEvent를 WebView CustomEvent로 전달하고 IndexedDB work package·journal·command outbox에 stable clientEventId와 expectedVersion을 보존했습니다.'
 decision: '로컬 저장과 서버 수락을 다른 상태로 표현하고 재연결 시 같은 명령을 순차 replay하며, version conflict는 자동 덮어쓰기 대신 차단했습니다.'
-evidence: 'PDA 스캐너 입력, 오프라인 명령 보존, 부분 피킹과 상태 버전 경계를 구현했습니다. 실제 처리량·시간 단축률·오스캔 감소율은 확인되지 않았습니다.'
+evidence: 'PDA 스캐너 입력·오프라인 명령·WMS 상태 소비는 np-wms-picking main 커밋과 테스트에 남아 있습니다. 별도 WMS 기능 브랜치와 로컬 Pilot의 병합·배포는 확인되지 않았습니다.'
 stack:
   [
     'React',
@@ -39,28 +46,28 @@ stack:
 
 ## 대상 사용자와 사용 흐름
 
-창고 현장 작업자는 배정된 작업을 열고 로케이션 → 상품 → 수량 → 분류 순서로 스캔합니다. 연결이 끊기면 허용된 명령을 로컬에 저장하고, 재연결 시 순차 replay합니다. 부분 피킹은 완료분과 residual task로 나뉘며 외부 WMS의 최종 상태를 확인한 뒤 다음 단계로 이동합니다.
+창고 현장 작업자는 배정된 작업을 열고 로케이션 → 상품 → 수량 → 분류 순서로 스캔합니다. 연결이 끊기면 허용된 명령을 로컬에 저장하고, 재연결 시 순차 replay합니다. 별도 WMS 저장소의 기능 브랜치에서는 부분 피킹의 완료분과 잔여 작업을 분리하는 서버 흐름도 구현했습니다.
 
 ## 나의 역할
 
-Frontend를 중심으로 PDA 단계 UI, scanner 입력 정규화, focus·IME 복구, barcode validation, IndexedDB outbox와 WMS 응답 상태 연결을 담당했습니다. Kotlin/Spring 영역에서는 부분 피킹과 완료 routing을 보강해 프론트엔드가 소비하는 상태 의미를 맞췄습니다.
+`np-wms-picking`에서는 PDA 단계 UI, scanner 입력 정규화, focus·IME 복구, barcode validation, IndexedDB outbox와 WMS 응답 상태 연결을 담당했습니다. 같은 저장소의 초기 Kotlin/Spring API와 관리자 QA 화면도 일부 구현했습니다. 피킹 정책·부분 피킹 서버 로직은 별도 `np-wms-tmp` 기능 브랜치의 작업입니다.
 
 ## 팀 기여와 개인 기여의 경계
 
-- **개인 기여 중심**: Mobile FE, scanner 입력, 단계별 validation, offline outbox, WMS 상태 소비와 화면 연결.
-- **팀·기존 기반**: WMS backend import 멱등성, event outbox 전체, Android WebView shell의 초기 기반과 공동 파일.
-- **범위 구분**: 현행 mainline, Android bridge 이관이 남은 기능 브랜치, 더 엄격한 ownership·inbox/outbox를 실험한 local pilot을 하나의 운영 완료 기능으로 합치지 않습니다.
+- **np-wms-picking main**: Mobile FE, Android scanner bridge, 단계별 validation, offline outbox, WMS 모바일 API 소비와 초기 Backend·관리자 기능에 직접 기여했습니다.
+- **np-wms-tmp 기능 브랜치**: 작업자·장비 배정 정책, 모바일 명령의 멱등성·버전, 부분 피킹·팔레트 복구와 출력 상태를 구현했습니다. 최신 작업 다수의 `origin/main` 포함과 운영 반영은 확인되지 않았습니다.
+- **np-picking-execution 로컬 Pilot**: WMS와 실행 책임을 나눈 계약, React PDA·IndexedDB, Kotlin/Spring 상태 저장을 별도 저장소에서 구현했습니다. 원격·PR·운영 배포 근거가 없어 이 페이지의 본편과 합치지 않습니다.
 
 ## 시스템 또는 데이터 흐름
 
-물리 Scanner → Android `dispatchKeyEvent` → WebView CustomEvent → React barcode normalization → IndexedDB work package/journal/outbox → Picking server → 외부 WMS 순서입니다. PDA의 로컬 사본은 미확정 상태이고, Picking server가 수락한 실행 사실과 외부 WMS의 최종 상태도 별도로 표시합니다.
+`np-wms-picking`의 주 경로는 물리 Scanner → Android `dispatchKeyEvent` → WebView CustomEvent → React barcode normalization → IndexedDB work package/outbox → WMS 모바일 API입니다. 로컬 저장은 서버 수락이 아니며, WMS의 배정·버전·완료 응답을 화면에 따로 반영합니다. 독립 Picking server는 별도 로컬 Pilot의 구조이지 이 main 경로의 배포 구성으로 주장하지 않습니다.
 
 ## 핵심 상태 머신
 
 - 화면 단계: `LOCATION → ITEM → QUANTITY → SORT → DONE`
 - 오프라인 명령: `LOCAL_PENDING → REPLAYING → SERVER_ACCEPTED → LOCAL_ACKED`
 - 충돌: `expectedVersion` 또는 idempotency conflict가 발생하면 자동 덮어쓰지 않고 차단 상태로 이동합니다.
-- 부분 피킹: source 완료 + residual `ACTIVE`, 부족 residual은 관리자 판단이 필요한 상태로 분리합니다.
+- 부분 피킹: 별도 WMS 기능 브랜치에서 완료분과 residual task를 분리하고 부족 상태를 일반 완료와 다르게 처리했습니다.
 
 ## Technical Highlights · 대표 기술 문제
 
@@ -86,7 +93,7 @@ Android `dispatchKeyEvent`에서 완성된 scan을 WebView CustomEvent로 전달
 
 ### Solution 03 - 완료분과 residual task 분리
 
-source task에는 완료 수량을 확정하고 residual task와 allocation split을 같은 transaction에서 생성했습니다. 일반 partial과 shortage를 다른 후속 상태로 두어 부족 수량이 정상 완료로 사라지지 않게 했습니다.
+별도 `np-wms-tmp` 기능 브랜치에서 source task의 완료분과 residual task·allocation split을 분리했습니다. 일반 partial과 shortage는 다른 후속 상태로 두었습니다. 이 서버 작업을 `np-wms-picking`의 main 배포 기능으로 합치지는 않습니다.
 
 ### Problem 04 - 외부 WMS 상태와 PDA 단계의 의미 차이
 
@@ -94,7 +101,13 @@ source task에는 완료 수량을 확정하고 residual task와 allocation spli
 
 ### Solution 04 - 소비 경계의 상태 mapping
 
-WMS 응답을 PDA state machine에 mapping하고 BLOCKED·DEFERRED·conflict를 별도 UI 상태로 노출했습니다. WMS의 계획·마스터·최종 상태는 권위 값으로 두고 PDA는 실행 명령과 로컬 projection만 소유하게 했습니다.
+WMS 응답을 PDA 단계에 mapping하고 BLOCKED·DEFERRED·conflict를 별도 UI 상태로 노출했습니다. WMS의 배정·버전·완료 응답을 권위 값으로 두고 PDA는 미전송 명령과 로컬 작업 표시를 관리했습니다.
+
+## 연관 개발과 반영 단계
+
+- **WMS 기능 브랜치:** React PDA·관리자 설정과 Kotlin/Spring 모바일 명령 서비스에서 작업자·장비 호환 정책, assignment version, 부분 피킹, 팔레트 복구, 출력 요청 상태를 다뤘습니다. 여러 `dev-v*`·`fix/*` 브랜치에 코드·테스트가 있지만 최신 기능의 main 병합과 현장 설치 버전은 확인되지 않았습니다.
+- **독립 Picking 실행 Pilot:** WMS의 계획·최종 상태와 Picking의 Work Grant·Journal·Commit 소유권을 분리하고 React PDA·IndexedDB와 Kotlin/Spring API를 로컬에서 검증했습니다. 별도 저장소에 원격이 없고 일부 후속 로더 기능은 미커밋이므로 운영 시스템으로 소개하지 않습니다.
+- **실기기·출력 확인:** 라벨 템플릿은 로컬 DB와 프린터로 일부 검증했지만, 같은 QR 연속 2회 출력·장시간 오프라인·전체 장비 조합은 확인되지 않았습니다.
 
 ## 선택한 해결 방법
 
@@ -111,7 +124,7 @@ WMS 응답을 PDA state machine에 mapping하고 BLOCKED·DEFERRED·conflict를 
 
 ## 검증 방법과 결과
 
-- scanner·offline·부분 피킹·상태 mapping의 구현 근거를 프로젝트 코드와 작업 기록으로 확인했습니다.
+- `np-wms-picking` main의 scanner·offline·WMS 상태 mapping은 코드와 관련 테스트로 확인했습니다. 부분 피킹 서버 로직은 별도 WMS 기능 브랜치 근거입니다.
 - commit 수는 개인 기여 범위를 추적하는 보조 근거일 뿐 사용자 성과나 코드 기여율로 노출하지 않습니다.
 - 실제 처리량, 작업 시간 단축률, 오스캔 감소율은 확인되지 않아 작성하지 않았습니다.
 

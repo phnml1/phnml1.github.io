@@ -1,4 +1,5 @@
 import { getPortfolioProject, getPortfolioProjectSlugs } from '@/utils/PortfolioProject-Util';
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
@@ -18,6 +19,24 @@ const projectMedia: Record<string, { src: string; alt: string; caption: string }
     { src: '/projects/fly-on/dragdrop.gif', alt: 'Fly:On 모바일 일정 카드 Drag & Drop 편집 화면', caption: '모바일 일정 편집' },
   ],
 };
+
+const primaryProblemIndex: Record<string, number> = {
+  'np-wms-picking': 1,
+  'runners-high': 1,
+};
+
+const visualProjects = new Set(['np-wms-picking', 'np-ois', 'codemate', 'np-cell-label-kiosk']);
+const repeatedSections = new Set([
+  '프로젝트 한 줄 설명',
+  '해결한 업무 문제',
+  '대상 사용자와 사용 흐름',
+  '나의 역할',
+  '선택한 해결 방법',
+  '검증 방법과 결과',
+  'Overview',
+  'Achievements',
+  'Portfolio Summary',
+]);
 
 export function generateStaticParams() {
   return getPortfolioProjectSlugs().map((slug) => ({ slug }));
@@ -52,6 +71,16 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   if (!project) notFound();
 
   const { frontmatter } = project;
+  const technicalSection = project.sections.find((section) => section.kind === 'technical');
+  const technicalProblems = technicalSection
+    ? parseProblemSolutionBlocks(technicalSection.content)
+    : [];
+  const featuredIndex = primaryProblemIndex[project.slug] ?? 0;
+  const featuredProblem = technicalProblems[featuredIndex];
+  const additionalProblems = technicalProblems.filter((_, index) => index !== featuredIndex);
+  const additionalSections = project.sections.filter(
+    (section) => section.kind !== 'technical' && !repeatedSections.has(section.displayTitle),
+  );
 
   return (
     <section className="w-full px-5 pb-24 pt-28 md:px-12 md:pt-36">
@@ -65,104 +94,48 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </Link>
 
         <Reveal amount={0.05}>
-          <header className="grid gap-10 border-b border-outline/70 pb-14 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end">
-            <div>
-              <span className="mb-5 block font-label text-sm font-bold uppercase tracking-[0.28em] text-primary">
-                Project Detail
-              </span>
-              <h1 className="break-words font-headline text-4xl font-black leading-tight text-white sm:text-5xl lg:text-6xl">
-                {frontmatter.title}
-              </h1>
-              <p className="mt-8 max-w-3xl text-lg leading-8 text-text-secondary md:text-xl">
-                {project.summary}
-              </p>
-            </div>
-
-            <aside className="rounded-xl border border-outline/70 bg-surface-container p-5">
-              <ProjectMeta label="Period" value={frontmatter.period} />
-              <ProjectMeta label="Team" value={frontmatter.team} />
-              <ProjectMeta label="Role" value={frontmatter.role} />
-              <div className="mt-5 flex flex-wrap gap-2 border-t border-outline/70 pt-5">
-                {frontmatter.stack.slice(0, 8).map((tech) => (
-                  <span
-                    key={tech}
-                    className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary"
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
-              {frontmatter.github || frontmatter.demo || frontmatter.store ? (
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {frontmatter.github ? (
-                    <Link
-                      href={frontmatter.github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex rounded-full border border-primary/50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary hover:text-surface"
-                    >
-                      GitHub
-                    </Link>
-                  ) : null}
-                  {frontmatter.demo ? (
-                    <Link
-                      href={frontmatter.demo}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex rounded-full bg-primary px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-surface transition-colors hover:bg-white"
-                    >
-                      Live Demo
-                    </Link>
-                  ) : null}
-                  {frontmatter.store ? (
-                    <Link href={frontmatter.store} target="_blank" rel="noopener noreferrer" className="inline-flex rounded-lg border border-primary/50 px-4 py-2 text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-surface">원스토어 앱</Link>
-                  ) : null}
-                </div>
-              ) : null}
-            </aside>
+          <header className="max-w-5xl border-b border-outline/70 pb-10">
+            <span className="font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">
+              {frontmatter.category === 'archive' ? '이전 팀 프로젝트' : frontmatter.team}
+            </span>
+            <h1 className="mt-5 break-words font-headline text-4xl font-black leading-tight text-white sm:text-5xl lg:text-6xl">
+              {frontmatter.title}
+            </h1>
+            <p className="mt-5 max-w-4xl break-keep text-xl leading-9 text-white md:text-2xl md:leading-10">
+              {project.summary}
+            </p>
+            <p className="mt-5 text-sm text-text-secondary">
+              {[frontmatter.period, frontmatter.role].filter(Boolean).join(' · ')}
+            </p>
           </header>
         </Reveal>
 
-        {frontmatter.problem ||
-        frontmatter.contribution ||
-        frontmatter.implementation ||
-        frontmatter.decision ||
-        frontmatter.evidence ? (
-          <section className="mt-10" aria-labelledby="project-summary">
-            <h2
-              id="project-summary"
-              className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary"
-            >
-              Case Study Summary
-            </h2>
-            <div className="mt-4 grid gap-4 lg:grid-cols-6">
-              <ProjectStoryCard
-                number="01"
-                title="Problem"
-                content={frontmatter.problem}
-                className="lg:col-span-3"
-              />
-              <ProjectStoryCard
-                number="02"
-                title="Role"
-                content={[frontmatter.role, frontmatter.contribution].filter(Boolean).join(' · ')}
-                className="lg:col-span-3"
-              />
-              <ProjectStoryCard
-                number="03"
-                title="Verification"
-                content={frontmatter.evidence}
-                className="lg:col-span-6"
-                cardClassName="border-primary/35 bg-surface-low"
-              />
-            </div>
+        <section className="mt-8 max-w-5xl" aria-label="프로젝트 핵심 정보">
+          <dl className="divide-y divide-outline/70 border-y border-outline/70">
+            <ProjectFact label="사용자" value={frontmatter.audience} />
+            <ProjectFact label="해결 과제" value={frontmatter.problem} />
+            <ProjectFact label="내 기여" value={frontmatter.contribution} />
+          </dl>
+        </section>
+
+        {frontmatter.userFlow?.length ? (
+          <section className="mt-16" aria-labelledby="project-user-flow">
+            <SectionTitle id="project-user-flow" eyebrow="User flow" title="사용자는 이렇게 사용합니다" />
+            <ol className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {frontmatter.userFlow.map((step, index) => (
+                <li key={step} className="min-h-24 border-t-2 border-primary/60 bg-surface-low px-4 py-4">
+                  <span className="font-label text-xs font-bold text-primary">{String(index + 1).padStart(2, '0')}</span>
+                  <p className="mt-3 break-keep text-sm font-semibold leading-6 text-white">{step}</p>
+                </li>
+              ))}
+            </ol>
           </section>
         ) : null}
 
         {projectMedia[project.slug] ? (
-          <section className="mt-14" aria-label="프로젝트 실제 화면">
-            <h2 className="mb-5 text-2xl font-bold text-white">제품 화면</h2>
-            <div className="grid gap-6 lg:grid-cols-2">
+          <section className="mt-16" aria-label="프로젝트 실제 화면">
+            <SectionTitle eyebrow="Product screens" title="실제 사용 화면" />
+            <div className="mt-7 grid gap-6 lg:grid-cols-2">
               {projectMedia[project.slug].map((media) => (
                 <figure key={media.src} className="min-w-0">
                   {/* Existing project GIFs preserve the original interaction and aspect ratio. */}
@@ -175,69 +148,83 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </section>
         ) : null}
 
-        <CaseStudyVisuals slug={project.slug} />
+        {featuredProblem ? (
+          <section className="mt-20 max-w-5xl" aria-labelledby="featured-problem">
+            <SectionTitle id="featured-problem" eyebrow="Representative case" title="대표 문제 해결" />
+            <h3 className="mt-7 break-keep text-2xl font-bold text-white">
+              {cleanProblemTitle(featuredProblem.problemTitle)}
+            </h3>
+            <div className="mt-5 divide-y divide-outline/70 border-y border-outline/70">
+              <StoryRow label="상황"><MarkdownContent content={featuredProblem.problemContent} compact /></StoryRow>
+              <StoryRow label="판단"><p>{frontmatter.decision}</p></StoryRow>
+              <StoryRow label="구현"><MarkdownContent content={featuredProblem.solutionContent} compact /></StoryRow>
+              <StoryRow label="확인"><p>{frontmatter.evidence}</p></StoryRow>
+            </div>
+          </section>
+        ) : null}
 
-        <article className="mt-14 grid w-full gap-6">
-          {project.sections.map((section, index) => (
-            <Reveal key={section.title} delay={Math.min(index * 0.04, 0.12)}>
-              <section className="border-t border-outline/70 py-6">
-                <h2 className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
-                  {section.displayTitle}
-                </h2>
-                <div className="mt-5">
-                  {section.kind === 'technical' ? (
-                    <TechnicalHighlights content={section.content} />
-                  ) : (
-                    <MarkdownContent content={section.content} />
-                  )}
-                </div>
-              </section>
-            </Reveal>
+        {additionalProblems.length ? (
+          <section className="mt-20 max-w-5xl" aria-labelledby="additional-problems">
+            <SectionTitle id="additional-problems" eyebrow="Engineering" title="추가 기술 과제" />
+            <TechnicalHighlights blocks={additionalProblems} />
+          </section>
+        ) : null}
+
+        {frontmatter.scope ? (
+          <section className="mt-20 max-w-5xl border-t border-outline/70 pt-8" aria-labelledby="project-scope">
+            <SectionTitle id="project-scope" eyebrow="Scope" title="기여 범위와 남은 검증" />
+            <p className="mt-5 max-w-4xl break-keep text-base leading-8 text-text-secondary">{frontmatter.scope}</p>
+          </section>
+        ) : null}
+
+        {visualProjects.has(project.slug) ? (
+          <details className="mt-16 border-t border-outline/70 pt-6">
+            <summary className="cursor-pointer text-base font-bold text-primary">시스템 흐름과 검증 경계 자세히 보기</summary>
+            <CaseStudyVisuals slug={project.slug} />
+          </details>
+        ) : null}
+
+        {additionalSections.length ? (
+          <details className="mt-8 border-t border-outline/70 pt-6">
+            <summary className="cursor-pointer text-base font-bold text-primary">설계·검증 기록 더 읽기</summary>
+            <article className="mt-8 grid max-w-5xl gap-8">
+              {additionalSections.map((section) => (
+                <section key={section.title} className="border-t border-outline/70 pt-6">
+                  <h2 className="font-label text-xs font-bold uppercase tracking-[0.18em] text-primary">{section.displayTitle}</h2>
+                  <div className="mt-4"><MarkdownContent content={section.content} /></div>
+                </section>
+              ))}
+            </article>
+          </details>
+        ) : null}
+
+        <footer className="mt-20 flex flex-wrap items-center gap-3 border-t border-outline/70 pt-6">
+          {frontmatter.stack.slice(0, 8).map((tech) => (
+            <span key={tech} className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary">{tech}</span>
           ))}
-        </article>
+          {frontmatter.github ? <ProjectLink href={frontmatter.github} label="GitHub" /> : null}
+          {frontmatter.demo ? <ProjectLink href={frontmatter.demo} label="Live Demo" /> : null}
+          {frontmatter.store ? <ProjectLink href={frontmatter.store} label="원스토어 앱" /> : null}
+        </footer>
       </div>
     </section>
   );
 }
 
-function TechnicalHighlights({ content }: { content: string }) {
-  const blocks = parseProblemSolutionBlocks(content);
-
-  if (blocks.length === 0) {
-    return <MarkdownContent content={content} />;
-  }
-
+function TechnicalHighlights({ blocks }: { blocks: ProblemSolutionBlock[] }) {
   return (
-    <div className="grid gap-5">
+    <div className="mt-7 divide-y divide-outline/70 border-y border-outline/70">
       {blocks.map((block, index) => (
-        <article
-          key={`${block.problemTitle}-${index}`}
-          className="overflow-hidden rounded-2xl border border-primary/35 bg-surface-container"
-        >
-          <div className="border-b border-outline/70 bg-surface-low px-5 py-4">
-            <span className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
-              Problem {String(index + 1).padStart(2, '0')}
-            </span>
-            <h3 className="mt-2 text-2xl font-black tracking-[-0.035em] text-white">
-              {cleanProblemTitle(block.problemTitle)}
-            </h3>
+        <details key={block.problemTitle} className="group py-5">
+          <summary className="cursor-pointer break-keep text-base font-semibold leading-7 text-white group-open:text-primary">
+            <span className="mr-4 font-label text-xs text-primary">{String(index + 1).padStart(2, '0')}</span>
+            {cleanProblemTitle(block.problemTitle)}
+          </summary>
+          <div className="mt-5 grid gap-6 pl-7 text-sm leading-7 lg:grid-cols-2">
+            <div><span className="font-label text-xs font-bold text-primary">문제</span><MarkdownContent content={block.problemContent} compact /></div>
+            <div><span className="font-label text-xs font-bold text-primary">해결</span><MarkdownContent content={block.solutionContent} compact /></div>
           </div>
-
-          <div className="grid gap-0 lg:grid-cols-2">
-            <section className="border-b border-outline/70 px-5 py-5 lg:border-b-0 lg:border-r">
-              <span className="mb-3 block font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">
-                Problem
-              </span>
-              <MarkdownContent content={block.problemContent} compact />
-            </section>
-            <section className="px-5 py-5">
-              <span className="mb-3 block font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">
-                Solution
-              </span>
-              <MarkdownContent content={block.solutionContent} compact />
-            </section>
-          </div>
-        </article>
+        </details>
       ))}
     </div>
   );
@@ -355,44 +342,39 @@ function cleanProblemTitle(title: string) {
   return title.replace(/^Problem\s*\d*\s*[-–—:]?\s*/i, '').trim() || title;
 }
 
-function ProjectMeta({ label, value }: { label: string; value?: string }) {
+function ProjectFact({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
 
   return (
-    <div className="mt-3 first:mt-0">
-      <div className="text-xs font-bold uppercase tracking-[0.18em] text-text-secondary">
-        {label}
-      </div>
-      <div className="mt-1 text-sm font-semibold leading-6 text-white">{value}</div>
+    <div className="grid gap-2 py-4 sm:grid-cols-[120px_minmax(0,1fr)] sm:gap-6">
+      <dt className="font-label text-xs font-bold text-primary">{label}</dt>
+      <dd className="m-0 max-w-4xl break-keep text-sm leading-7 text-white md:text-base">{value}</dd>
     </div>
   );
 }
 
-function ProjectStoryCard({
-  number,
-  title,
-  content,
-  className = '',
-  cardClassName = '',
-}: {
-  number: string;
-  title: string;
-  content?: string;
-  className?: string;
-  cardClassName?: string;
-}) {
-  if (!content) return null;
-
+function SectionTitle({ id, eyebrow, title }: { id?: string; eyebrow: string; title: string }) {
   return (
-    <Reveal className={className} delay={(Number(number) - 1) * 0.04}>
-      <article
-        className={`h-full rounded-2xl border border-outline/70 bg-surface-container p-6 ${cardClassName}`}
-      >
-        <div className="font-label text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-          {number} · {title}
-        </div>
-        <p className="mt-4 text-sm leading-7 text-text-secondary">{content}</p>
-      </article>
-    </Reveal>
+    <div>
+      <span className="font-label text-xs font-bold uppercase tracking-[0.18em] text-primary">{eyebrow}</span>
+      <h2 id={id} className="mt-3 break-keep font-headline text-2xl font-bold text-white md:text-3xl">{title}</h2>
+    </div>
+  );
+}
+
+function StoryRow({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="grid gap-2 py-5 sm:grid-cols-[100px_minmax(0,1fr)] sm:gap-6">
+      <span className="font-label text-xs font-bold text-primary">{label}</span>
+      <div className="max-w-4xl break-keep text-sm leading-7 text-text-secondary md:text-base">{children}</div>
+    </div>
+  );
+}
+
+function ProjectLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Link href={href} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-primary/50 px-4 py-2 text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-surface">
+      {label}
+    </Link>
   );
 }

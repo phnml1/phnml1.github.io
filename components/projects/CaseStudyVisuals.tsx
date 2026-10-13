@@ -83,16 +83,15 @@ const visualConfigs: Record<string, VisualConfig> = {
   },
   'np-wms-picking': {
     eyebrow: 'Field Execution Flow',
-    flowTitle: '물리 스캔부터 외부 WMS 상태까지',
+    flowTitle: '물리 스캔부터 WMS 모바일 응답까지',
     flowDescription:
-      '로컬 저장, Picking 서버 수락, 외부 WMS 반영을 하나의 성공으로 합치지 않고 각 경계의 상태와 복구 책임을 분리했습니다.',
+      'PDA 로컬 저장과 WMS 모바일 API의 수락을 다른 상태로 다뤘습니다. 독립 Picking 서버는 별도 로컬 Pilot이며 이 경로의 배포 구성에 포함하지 않습니다.',
     steps: [
       { label: 'Scanner', detail: '물리 키·suffix 입력', owner: 'external' },
       { label: 'Android WebView', detail: 'dispatchKeyEvent → CustomEvent', owner: 'personal' },
       { label: 'PDA React UI', detail: 'IME 복원·barcode validation', owner: 'personal' },
       { label: 'IndexedDB outbox', detail: 'stable clientEventId·순차 보존', owner: 'personal' },
-      { label: 'Picking server', detail: 'expectedVersion·residual 처리', owner: 'shared' },
-      { label: 'External WMS', detail: '최종 상태의 권위 시스템', owner: 'external' },
+      { label: 'WMS mobile API', detail: '배정·버전·완료 응답의 권위 값', owner: 'external' },
     ],
     timelineTitle: '오프라인 명령 상태',
     timeline: [
@@ -109,7 +108,7 @@ const visualConfigs: Record<string, VisualConfig> = {
       {
         label: 'Before',
         title: '성공 상태가 하나',
-        body: '로컬 저장과 서버·WMS 반영을 같은 완료로 보면 응답 유실에서 중복·유실 위험이 생깁니다.',
+        body: '로컬 저장과 WMS API 수락을 같은 완료로 보면 응답 유실에서 중복·유실 위험이 생깁니다.',
       },
       {
         label: 'Decision',
@@ -125,7 +124,7 @@ const visualConfigs: Record<string, VisualConfig> = {
     evidence: [
       {
         title: 'Implementation evidence',
-        body: 'PDA UI·스캐너 입력·IndexedDB outbox·상태 버전 경계를 프로젝트 코드와 작업 기록에서 확인했습니다.',
+        body: 'PDA UI·스캐너 입력·IndexedDB outbox·WMS 상태 mapping은 np-wms-picking main 코드와 관련 테스트에서 확인됩니다.',
       },
       {
         title: 'Contribution boundary',
@@ -135,11 +134,68 @@ const visualConfigs: Record<string, VisualConfig> = {
     limitations: [
       {
         title: 'Release boundary',
-        body: '현행 구현, 기능 브랜치의 native 이관, local pilot 아키텍처를 하나의 운영 완료 버전으로 합치지 않았습니다.',
+        body: 'np-wms-picking main, 별도 WMS 기능 브랜치와 독립 Picking Pilot의 반영 단계를 분리했습니다.',
       },
       {
         title: 'Field validation',
         body: '실물 PDA, 장시간 오프라인, Bluetooth printer, 외부 WMS 장애와 처리량·오스캔 변화는 확인되지 않았습니다.',
+      },
+    ],
+  },
+  'np-cell-label-kiosk': {
+    eyebrow: 'WCS to Printer Flow',
+    flowTitle: '셀 주문 라벨이 프린터에 도달하는 경로',
+    flowDescription:
+      'WCS가 라벨 내용을 결정하고, React 키오스크가 Local Agent 요청과 결과 기록을 조정합니다. Agent 접수와 실물 인쇄 완료는 같은 상태가 아닙니다.',
+    steps: [
+      { label: 'WCS label API', detail: '셀·주문 문맥에서 labelId와 출력 요청 생성', owner: 'personal' },
+      { label: 'React kiosk', detail: '발행·재출력 및 단계별 오류 표시', owner: 'personal' },
+      { label: 'Local Agent', detail: 'Windows 프린터 요청 접수', owner: 'personal' },
+      { label: 'Windows spooler', detail: '작업 접수, 물리 출력은 별도 확인', owner: 'external' },
+      { label: 'WCS print-result', detail: '라벨별 Agent 응답과 오류 기록', owner: 'personal' },
+    ],
+    timelineTitle: '단건 출력의 상태 경계',
+    timeline: [
+      { label: 'ISSUED', detail: 'WCS에서 라벨 발행·재출력 요청' },
+      { label: 'AGENT REQUEST', detail: 'WCS가 준 요청을 로컬 Agent로 전달' },
+      { label: 'RESULT RECORD', detail: '접수·실패 결과를 WCS에 기록' },
+      { label: 'REFRESH', detail: '셀 목록·상세를 다시 조회' },
+    ],
+    comparison: [
+      {
+        label: 'Before',
+        title: '발행과 인쇄 상태가 분리',
+        body: '라벨 생성이 성공해도 키오스크의 Agent 요청이나 결과 기록이 실패할 수 있습니다.',
+      },
+      {
+        label: 'Decision',
+        title: 'FE는 두 API를 연결',
+        body: 'WCS의 agentRequest를 전달하고 단계별 오류를 나눠 표시했습니다. QR payload는 FE에서 만들지 않습니다.',
+      },
+      {
+        label: 'After',
+        title: '실패 지점을 다시 확인',
+        body: '라벨별 출력 결과를 기록하고 셀 상태를 다시 조회합니다. 중복 출력이 안전하게 차단됐다고 주장하지 않습니다.',
+      },
+    ],
+    evidence: [
+      {
+        title: 'Main branch',
+        body: 'React SPA의 WCS·Agent client와 단건 발행·재출력·결과 기록은 FE 저장소 main 커밋에 있습니다.',
+      },
+      {
+        title: 'Feature branch',
+        body: '종속 필터, 복수 셀 batch, 프린터 설정·대기열 화면은 별도 기능 브랜치의 구현입니다.',
+      },
+    ],
+    limitations: [
+      {
+        title: 'Integration status',
+        body: '기능 브랜치의 main 병합과 WCS 새 endpoint·Agent 설치 버전의 일치는 확인되지 않았습니다.',
+      },
+      {
+        title: 'Print verification',
+        body: 'FE 자동 테스트와 실제 프린터 E2E 결과는 확인되지 않았습니다. Agent 성공은 spooler 접수이며 용지 배출 보증이 아닙니다.',
       },
     ],
   },

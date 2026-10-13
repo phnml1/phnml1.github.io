@@ -5,6 +5,7 @@ import Reveal from '@/components/motion/Reveal';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { recentPosts } from '@/utils/Post-Util';
+import { getPortfolioProjects } from '@/utils/PortfolioProject-Util';
 
 export const metadata: Metadata = {
   title: '이주영 | Frontend Engineer',
@@ -25,43 +26,47 @@ type HomeProject = {
   type: string;
   period: string;
   summary: string;
+  problem: string;
   contribution: string;
 };
 
-const selectedProjects: HomeProject[] = [
+const featuredProjects = [
   {
-    title: 'NP WMS Picking',
-    href: '/projects/np-wms-picking',
+    slug: 'np-wms-picking',
     type: '회사 프로젝트 · MJ Corporation',
-    period: '2026.07 - 2026.08',
-    summary: 'PDA 작업자의 스캔·피킹 순서를 작은 화면에 맞추고, 연결이 끊겨도 작업 명령을 보존했습니다.',
-    contribution: 'PDA UI · 스캐너 입력 통합 · IndexedDB outbox',
   },
   {
-    title: 'NP-OIS',
-    href: '/projects/np-ois',
+    slug: 'np-ois',
     type: '회사 프로젝트 · MJ Corporation',
-    period: '2026.05 - 2026.07',
-    summary: 'Excel/VBA 주문 가공 업무를 업로드·변환·검수·산출물 생성 화면으로 연결했습니다.',
-    contribution: 'React 업무 화면 · 조건부 polling · 검수 API 연동',
   },
   {
-    title: 'CodeMate',
-    href: '/projects/codemate',
+    slug: 'codemate',
     type: '개인 프로젝트',
-    period: '2026.02 - 현재',
-    summary: 'GitHub PR 리뷰와 실시간 댓글·알림을 다루는 코드 리뷰 협업 플랫폼입니다.',
-    contribution: 'TanStack Query 댓글 캐시 · Socket.io · AI 리뷰 상태',
   },
   {
-    title: 'Fly:On',
-    href: '/projects/fly-on',
-    type: '팀 프로젝트 · 모바일',
-    period: '2025.06 - 2025.11',
-    summary: '패러글라이딩 비행·관광 일정을 편집하는 React Native 앱입니다.',
-    contribution: 'Drag & Drop · 렌더링 성능 개선 · 인증 상태 복원',
+    slug: 'np-cell-label-kiosk',
+    type: '회사 프로젝트 · React 키오스크',
   },
 ];
+
+const projectBySlug = new Map(getPortfolioProjects().map((project) => [project.slug, project]));
+const selectedProjects: HomeProject[] = featuredProjects.map((item) => {
+  const project = projectBySlug.get(item.slug);
+
+  if (!project) {
+    throw new Error(`Featured project not found: ${item.slug}`);
+  }
+
+  return {
+    title: project.frontmatter.title,
+    href: `/projects/${project.slug}`,
+    type: item.type,
+    period: project.frontmatter.period ?? '',
+    summary: project.summary,
+    problem: project.frontmatter.problem ?? '',
+    contribution: project.frontmatter.contribution ?? '',
+  };
+});
 
 export default function HomePage() {
   const posts = JSON.parse(JSON.stringify(recentPosts));
@@ -73,7 +78,7 @@ export default function HomePage() {
       <ProjectSection
         eyebrow="Selected Case Studies"
         title="대표 프로젝트"
-        description="회사에서 맡은 업무와 개인·팀 프로젝트의 구현 범위를 구분해 정리했습니다."
+        description="회사에서 구현한 업무 화면과 개인 프로젝트를 기여 범위와 검증 단계에 맞춰 정리했습니다."
         projects={selectedProjects}
       />
 
@@ -180,7 +185,7 @@ function HomeProjectCard({
       aria-label={`${project.title} Case Study 보기`}
       className="group block h-full min-w-0 rounded-lg border border-outline/70 bg-surface-container p-6 transition duration-300 hover:border-primary/60 hover:bg-surface-high focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary md:p-8"
     >
-      <article className="flex h-full min-h-[250px] min-w-0 flex-col">
+      <article className="flex h-full min-h-[300px] min-w-0 flex-col">
         <div>
           <div className="flex flex-wrap items-center gap-3">
             <span className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
@@ -191,12 +196,16 @@ function HomeProjectCard({
           <h3 className="mt-5 break-words text-2xl font-black leading-tight text-white transition-colors group-hover:text-primary md:text-3xl">
             {project.title}
           </h3>
-          <p className="mt-3 text-sm leading-7 text-text-secondary">
+          <p className="mt-3 line-clamp-3 break-keep text-base leading-7 text-white">
             {project.summary}
           </p>
+          <div className="mt-5 grid gap-2 border-t border-outline/70 pt-4 text-sm leading-6">
+            <p className="line-clamp-2 text-text-secondary"><span className="mr-2 font-bold text-primary">핵심 문제</span>{project.problem}</p>
+            <p className="line-clamp-2 text-text-secondary"><span className="mr-2 font-bold text-primary">내 역할</span>{project.contribution}</p>
+          </div>
         </div>
-        <div className="mt-auto flex min-w-0 items-end justify-between gap-5 border-t border-outline/70 pt-5">
-          <p className="min-w-0 text-sm font-medium leading-6 text-primary">{project.contribution}</p>
+        <div className="mt-auto flex min-w-0 items-end justify-between gap-5 pt-5">
+          <p className="min-w-0 text-sm font-bold leading-6 text-primary">사례 읽기</p>
           <span
             aria-hidden="true"
             className="shrink-0 text-3xl text-primary transition-transform group-hover:translate-x-1"
