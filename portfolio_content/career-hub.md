@@ -17,12 +17,10 @@ userFlow:
   - "변경 알림 확인"
 implementation: "지원 단계 계산을 timelineSyncRules로 분리하고, 수정 결과를 TanStack Query 캐시에 반영했습니다. 서버가 새 값을 만들어야 하는 경우에만 invalidateQueries로 다시 조회했습니다."
 decision: "화면마다 지원 상태를 따로 계산하지 않고 하나의 규칙을 사용했습니다. 즉시 확정할 수 있는 필드는 setQueryData로 갱신하고, 파일 URL처럼 서버 확인이 필요한 값은 재검증하도록 구분했습니다."
-evidence: "이전 프로젝트 기록입니다. 최신 채용 이력서의 검증 사례에는 포함하지 않았으며, 정량 성과를 주장하지 않습니다."
 stack: ["TypeScript", "React", "Next.js App Router", "TanStack Query", "Zustand", "Firebase Cloud Messaging", "Service Worker", "Tailwind CSS"]
 ---
 
 ## Overview
-- 이 페이지는 이전 프로젝트 기록으로 보존합니다. 현재 채용 이력서의 핵심 사례와는 구분합니다.
 - 채용 공고, 지원 단계, 일정, 알림을 하나의 흐름으로 관리하는 취업 준비 대시보드입니다.
 - 지원 상태가 화면마다 어긋나지 않도록 단계 규칙과 캐시 갱신 경로를 분리했습니다.
 - 브라우저, iOS Safari, standalone PWA처럼 알림 권한 흐름이 달라지는 환경을 고려했습니다.
@@ -70,7 +68,7 @@ stack: ["TypeScript", "React", "Next.js App Router", "TanStack Query", "Zustand"
 - **Zustand**: 필터 UI와 입력 상태처럼 서버 상태와 분리해야 하는 클라이언트 상태를 담당하게 했습니다.
 
 ## Achievements
-- 상세 수정 흐름에서 변경 필드의 캐시 반영과 서버 재검증이 필요한 변경을 분리했습니다. 실제 요청 수 감소는 검증 자료가 없어 수치로 제시하지 않습니다.
+- 상세 수정 흐름에서 변경 필드의 캐시 반영과 서버 재검증이 필요한 변경을 분리했습니다.
 - 목록 로딩은 페이지 단위로 분리해 필요한 페이지까지만 조회하도록 구성했습니다.
 - 푸시 권한 흐름은 `iOS Safari / standalone PWA / 일반 브라우저 / 권한 거부 상태`로 분기했습니다.
 

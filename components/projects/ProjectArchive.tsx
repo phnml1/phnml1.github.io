@@ -84,7 +84,7 @@ export default function ProjectArchive() {
         className="mt-24 border-t border-outline/70 pt-16"
         aria-labelledby="project-archive-title"
       >
-        <header className="grid gap-6 md:grid-cols-[minmax(0,1fr)_420px] md:items-end">
+        <header>
           <div>
             <span className="mb-4 block font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">
               More Projects / Archive
@@ -96,10 +96,6 @@ export default function ProjectArchive() {
               Project Archive.
             </h2>
           </div>
-          <p className="max-w-md text-sm leading-7 text-text-secondary">
-            Career Hub와 기존 프로젝트를 대표 Case Study와 구분해 보존했습니다. 각 상세 라우트와
-            이전 협업 경험은 그대로 확인할 수 있습니다.
-          </p>
         </header>
 
         <div className="mt-12 grid gap-12">

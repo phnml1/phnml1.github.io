@@ -3,25 +3,15 @@ import Link from 'next/link';
 
 const capabilities = [
   {
-    category: '업무 화면',
-    items: '주문 변환과 검수',
-    note: 'NP-OIS에서 변환이 진행되는 동안만 상태를 조회하고, 완료 뒤 검수 화면이 새 결과를 읽도록 연결했습니다.',
-    href: '/projects/np-ois',
-    project: 'NP-OIS',
-  },
-  {
     category: '코드 리뷰 협업',
-    items: '파일·스크롤 위치 공유',
-    note: 'CodeMate 공동 리뷰방에서는 Socket.io로 검토 위치와 코드 대화를 공유합니다. 일반 댓글 패널과 알림은 주기적으로 다시 조회합니다.',
+    items: 'AI 리뷰와 공동 검토',
+    note: 'CodeMate에서 GitHub PR의 변경 코드를 AI로 분석하고, Socket.IO 공동 리뷰방에서 파일·코드 위치와 대화를 공유하도록 구현했습니다.',
     href: '/projects/codemate',
     project: 'CodeMate',
-  },
-  {
-    category: '현장 장비',
-    items: '스캐너 입력과 오프라인 명령',
-    note: 'NP WMS Picking에서 물리 키·IME·paste 입력을 한 흐름으로 처리하고, 미전송 작업은 IndexedDB에 보존했습니다.',
-    href: '/projects/np-wms-picking',
-    project: 'NP WMS Picking',
+    media: {
+      src: '/projects/codemate/codemate-ai-review.gif',
+      alt: 'CodeMate에서 GitHub PR의 변경 코드를 AI로 리뷰한 결과를 확인하는 화면',
+    },
   },
   {
     category: '측정과 검증',
@@ -29,6 +19,26 @@ const capabilities = [
     note: 'Fly:On의 같은 Drag & Drop 시나리오에서 React Profiler로 commit duration을 비교하고 렌더 범위를 조정했습니다.',
     href: '/projects/fly-on',
     project: 'Fly:On',
+    media: {
+      src: '/projects/fly-on/dragdrop.gif',
+      alt: 'Fly:On 모바일 일정 카드를 드래그해 순서를 바꾸는 화면',
+    },
+  },
+  {
+    category: '업무 화면',
+    items: '주문 변환과 검수',
+    note: '주문 엑셀 파일을 변환하는 동안 진행 상황을 보여주고, 처리가 끝나면 결과를 확인·수정할 수 있도록 화면을 연결했습니다.',
+    href: '/projects/np-ois',
+    project: 'NP-OIS',
+    media: null,
+  },
+  {
+    category: '현장 장비',
+    items: '바코드 스캔과 작업 보존',
+    note: '창고 작업자의 바코드 입력이 중복되거나 빠지지 않게 처리했습니다. 네트워크가 끊기면 전송 대기 중인 작업을 기기에 보관하고, 다시 연결되면 순서대로 보냅니다.',
+    href: '/projects/np-wms-picking',
+    project: 'NP WMS Picking',
+    media: null,
   },
 ];
 
@@ -47,28 +57,37 @@ export default function HomeCapabilities() {
             id="capabilities-title"
             className="font-headline text-4xl font-black tracking-[-0.05em] md:text-5xl"
           >
-            기술이 쓰인 자리
+            구현 경험
           </h2>
-          <p className="mt-5 max-w-sm text-sm leading-7 text-text-secondary">
-            어떤 기술을 썼는지보다 어느 화면에서 왜 필요했는지에 맞춰 정리했습니다.
-          </p>
         </Reveal>
 
         <div className="grid gap-5 sm:grid-cols-2 lg:col-span-9">
           {capabilities.map((item, index) => (
             <Reveal key={item.category} delay={index * 0.05} className="h-full">
-              <article className="group h-full min-w-0 rounded-xl border border-outline/70 bg-surface-container p-6 transition-colors hover:border-primary/50 hover:bg-surface-high">
-                <div className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
-                  {item.category}
+              <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-outline/70 bg-surface-container transition-colors hover:border-primary/50 hover:bg-surface-high">
+                {item.media && (
+                  <div className="flex aspect-video w-full items-center justify-center overflow-hidden border-b border-outline/70 bg-surface-low">
+                    <img
+                      src={item.media.src}
+                      alt={item.media.alt}
+                      loading="lazy"
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                )}
+                <div className="flex flex-1 flex-col p-6">
+                  <div className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
+                    {item.category}
+                  </div>
+                  <h3 className="mt-3 break-words text-2xl font-black tracking-[-0.04em] text-white">
+                    {item.items}
+                  </h3>
+                  <div className="my-5 h-px bg-outline/60" />
+                  <p className="text-sm leading-7 text-text-secondary">{item.note}</p>
+                  <Link href={item.href} className="mt-auto inline-flex pt-5 text-sm font-semibold text-primary hover:underline">
+                    {item.project} 상세 보기 <span aria-hidden="true" className="ml-1">↗</span>
+                  </Link>
                 </div>
-                <h3 className="mt-3 break-words text-2xl font-black tracking-[-0.04em] text-white">
-                  {item.items}
-                </h3>
-                <div className="my-5 h-px bg-outline/60" />
-                <p className="text-sm leading-7 text-text-secondary">{item.note}</p>
-                <Link href={item.href} className="mt-5 inline-flex text-sm font-semibold text-primary hover:underline">
-                  {item.project} 상세 보기 <span aria-hidden="true" className="ml-1">↗</span>
-                </Link>
               </article>
             </Reveal>
           ))}

@@ -43,10 +43,6 @@ const featuredProjects = [
     slug: 'codemate',
     type: '개인 프로젝트',
   },
-  {
-    slug: 'np-cell-label-kiosk',
-    type: '회사 프로젝트 · React 키오스크',
-  },
 ];
 
 const projectBySlug = new Map(getPortfolioProjects().map((project) => [project.slug, project]));
@@ -78,7 +74,6 @@ export default function HomePage() {
       <ProjectSection
         eyebrow="Selected Case Studies"
         title="대표 프로젝트"
-        description="회사에서 구현한 업무 화면과 개인 프로젝트를 기여 범위와 검증 단계에 맞춰 정리했습니다."
         projects={selectedProjects}
       />
 
@@ -90,13 +85,13 @@ export default function HomePage() {
             <div className="mb-16 flex flex-col justify-between gap-8 md:flex-row md:items-end">
               <div>
                 <span className="mb-4 block font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">
-                  Tech Journal
+                  Tech Blog
                 </span>
                 <h2
                   id="journal-title"
                   className="font-headline text-5xl font-black tracking-[-0.05em] md:text-6xl"
                 >
-                  기술 기록
+                  기술 블로그
                 </h2>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -132,13 +127,11 @@ export default function HomePage() {
 function ProjectSection({
   eyebrow,
   title,
-  description,
   projects,
   surface = 'low',
 }: {
   eyebrow: string;
   title: string;
-  description: string;
   projects: HomeProject[];
   surface?: 'low' | 'default';
 }) {
@@ -149,20 +142,17 @@ function ProjectSection({
     >
       <div className="mx-auto w-full max-w-[1440px]">
         <Reveal>
-          <header className="mb-14 flex flex-col justify-between gap-8 md:flex-row md:items-end">
-            <div>
-              <span className="mb-4 block font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">
-                {eyebrow}
-              </span>
-              <h2 className="max-w-4xl font-headline text-4xl font-black tracking-[-0.05em] md:text-6xl">
-                {title}
-              </h2>
-            </div>
-            <p className="max-w-md text-sm leading-7 text-text-secondary">{description}</p>
+          <header className="mb-14">
+            <span className="mb-4 block font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">
+              {eyebrow}
+            </span>
+            <h2 className="max-w-4xl font-headline text-4xl font-black tracking-[-0.05em] md:text-6xl">
+              {title}
+            </h2>
           </header>
         </Reveal>
 
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project, index) => (
             <Reveal key={project.href} delay={index * 0.07} className="h-full">
               <HomeProjectCard project={project} />
@@ -196,16 +186,15 @@ function HomeProjectCard({
           <h3 className="mt-5 break-words text-2xl font-black leading-tight text-white transition-colors group-hover:text-primary md:text-3xl">
             {project.title}
           </h3>
-          <p className="mt-3 line-clamp-3 break-keep text-base leading-7 text-white">
+          <p className="mt-3 break-keep text-base leading-7 text-white">
             {project.summary}
           </p>
           <div className="mt-5 grid gap-2 border-t border-outline/70 pt-4 text-sm leading-6">
-            <p className="line-clamp-2 text-text-secondary"><span className="mr-2 font-bold text-primary">핵심 문제</span>{project.problem}</p>
-            <p className="line-clamp-2 text-text-secondary"><span className="mr-2 font-bold text-primary">내 역할</span>{project.contribution}</p>
+            <p className="text-text-secondary"><span className="mr-2 font-bold text-primary">핵심 문제</span>{project.problem}</p>
+            <p className="text-text-secondary"><span className="mr-2 font-bold text-primary">내 역할</span>{project.contribution}</p>
           </div>
         </div>
-        <div className="mt-auto flex min-w-0 items-end justify-between gap-5 pt-5">
-          <p className="min-w-0 text-sm font-bold leading-6 text-primary">사례 읽기</p>
+        <div className="mt-auto flex min-w-0 items-end justify-end pt-5">
           <span
             aria-hidden="true"
             className="shrink-0 text-3xl text-primary transition-transform group-hover:translate-x-1"

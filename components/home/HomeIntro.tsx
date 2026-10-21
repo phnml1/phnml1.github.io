@@ -12,13 +12,9 @@ export default function HomeIntro() {
     <section className="w-full border-b border-outline/70 px-5 pb-16 pt-32 md:px-12 md:pb-20 md:pt-40">
       <div className="mx-auto w-full max-w-[1440px]">
         <Reveal amount={0.05}>
-          <span className="font-label text-sm font-bold uppercase tracking-[0.2em] text-primary">이주영 · Frontend Engineer</span>
-          <h1 className="mt-6 max-w-5xl break-keep font-headline text-2xl font-semibold leading-[1.45] text-white sm:text-3xl lg:text-4xl">
-            MJ Corporation에서 React 업무 화면과 PDA·키오스크 UI를 개발하고 Kotlin·Spring Boot API, 현장 장비와 연결했습니다. 개인 프로젝트에서는 Next.js 기반 코드 리뷰 협업 기능을 구현했습니다.
+          <h1 className="max-w-5xl break-keep font-headline text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
+            이주영 · Frontend Engineer
           </h1>
-          <p className="mt-5 max-w-4xl break-keep text-base leading-8 text-text-secondary">
-            개인 프로젝트 <Link href="/projects/codemate" className="font-semibold text-primary hover:underline">CodeMate</Link>에서는 GitHub PR의 변경 파일을 살펴보고 AI 코드 리뷰를 요청해 결과를 확인할 수 있습니다.
-          </p>
           <div className="mt-9 flex flex-wrap gap-3">
             <Link href="/projects" className="rounded-lg bg-primary px-5 py-3 text-sm font-bold text-surface transition-colors hover:bg-white">프로젝트</Link>
             <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className="rounded-lg border border-primary/60 px-5 py-3 text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-surface">이력서 PDF</a>

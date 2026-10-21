@@ -83,13 +83,20 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     : [];
   const featuredIndex = primaryProblemIndex[project.slug] ?? 0;
   const featuredProblem = technicalProblems[featuredIndex];
-  const additionalProblems = technicalProblems.filter((_, index) => index !== featuredIndex);
+  const collaborationProblem = project.slug === 'codemate' ? technicalProblems[1] : null;
+  const additionalProblems = technicalProblems.filter((_, index) =>
+    index !== featuredIndex && !(collaborationProblem && index === 1),
+  );
   const designSections = project.sections.filter((section) =>
     designSectionTitles.has(section.displayTitle),
   );
-  const codeMateFeatures = project.slug === 'codemate'
-    ? project.sections.find((section) => section.displayTitle === '내가 구현한 핵심 기능')
+  const codeMateLatency = project.slug === 'codemate'
+    ? project.sections.find((section) => section.displayTitle === '협업방 채팅 지연 진단과 개선')
     : null;
+  const codeMateCi = project.slug === 'codemate'
+    ? project.sections.find((section) => section.displayTitle === 'CI 검증')
+    : null;
+  const [latencyIntro, latencyDetails] = codeMateLatency?.content.split('<!-- chat-request-flow -->') ?? [];
 
   return (
     <section className="w-full px-5 pb-24 pt-28 md:px-12 md:pt-36">
@@ -129,7 +136,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
         {frontmatter.userFlow?.length ? (
           <section className="mt-16" aria-labelledby="project-user-flow">
-            <SectionTitle id="project-user-flow" eyebrow="User flow" title="사용자는 이렇게 사용합니다" />
+            <SectionTitle
+              id="project-user-flow"
+              eyebrow={project.slug === 'codemate' ? 'Review flow' : 'User flow'}
+              title={project.slug === 'codemate' ? 'AI 리뷰는 이렇게 처리됩니다' : '사용자는 이렇게 사용합니다'}
+            />
             <ol className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {frontmatter.userFlow.map((step, index) => (
                 <li key={step} className="min-h-24 border-t-2 border-primary/60 bg-surface-low px-4 py-4">
@@ -138,13 +149,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 </li>
               ))}
             </ol>
-          </section>
-        ) : null}
-
-        {codeMateFeatures ? (
-          <section className="mt-16 max-w-5xl" aria-labelledby="codemate-features">
-            <SectionTitle id="codemate-features" eyebrow="Core features" title="내가 구현한 핵심 기능" />
-            <div className="mt-7"><MarkdownContent content={codeMateFeatures.content} /></div>
           </section>
         ) : null}
 
@@ -178,10 +182,46 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </section>
         ) : null}
 
+        {collaborationProblem ? (
+          <section className="mt-20 max-w-5xl" aria-labelledby="codemate-collaboration">
+            <SectionTitle id="codemate-collaboration" eyebrow="Collaboration case" title="실시간 공동 리뷰" />
+            <TechnicalHighlights blocks={[collaborationProblem]} />
+          </section>
+        ) : null}
+
+        {codeMateLatency ? (
+          <section className="mt-20 max-w-5xl" aria-labelledby="codemate-chat-latency">
+            <SectionTitle id="codemate-chat-latency" eyebrow="Performance case" title={codeMateLatency.displayTitle} />
+            <div className="mt-7"><MarkdownContent content={latencyIntro} /></div>
+            <ol className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="채팅 요청과 계측 흐름">
+              {[
+                ['브라우저 Network', '채팅 POST 응답 시간'],
+                ['Next.js Server-Timing', '인증 · 방 조회 · DB 저장'],
+                ['Next.js Server-Timing', 'Socket 내부 HTTP 호출'],
+                ['Socket 서버 로그', '내부 호출 처리 시간'],
+              ].map(([source, measure], index) => (
+                <li key={`${source}-${measure}`} className="min-h-28 border-t-2 border-primary/60 bg-surface-low px-4 py-4">
+                  <span className="font-label text-xs font-bold text-primary">{String(index + 1).padStart(2, '0')}</span>
+                  <p className="mt-3 text-xs font-semibold leading-5 text-white">{source}</p>
+                  <p className="mt-1 break-keep text-sm leading-6 text-text-secondary">{measure}</p>
+                </li>
+              ))}
+            </ol>
+            {latencyDetails ? <div className="mt-9"><MarkdownContent content={latencyDetails} responsiveTables /></div> : null}
+          </section>
+        ) : null}
+
         {additionalProblems.length ? (
           <section className="mt-20 max-w-5xl" aria-labelledby="additional-problems">
             <SectionTitle id="additional-problems" eyebrow="More cases" title="추가 문제 해결" />
             <TechnicalHighlights blocks={additionalProblems} />
+          </section>
+        ) : null}
+
+        {codeMateCi ? (
+          <section className="mt-16 max-w-5xl" aria-labelledby="codemate-ci">
+            <SectionTitle id="codemate-ci" eyebrow="Verification" title={codeMateCi.displayTitle} />
+            <div className="mt-5"><MarkdownContent content={codeMateCi.content} /></div>
           </section>
         ) : null}
 
@@ -250,7 +290,7 @@ function TechnicalHighlights({ blocks }: { blocks: ProblemSolutionBlock[] }) {
   );
 }
 
-function MarkdownContent({ content, compact }: { content: string; compact?: boolean }) {
+function MarkdownContent({ content, compact, responsiveTables }: { content: string; compact?: boolean; responsiveTables?: boolean }) {
   return (
     <div
       className={`portfolio-prose prose prose-invert max-w-none prose-headings:font-black prose-p:text-text-secondary prose-li:text-text-secondary prose-img:rounded-xl ${
@@ -261,6 +301,19 @@ function MarkdownContent({ content, compact }: { content: string; compact?: bool
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[raw, rehypeSlug] as PluggableList}
         components={{
+          ...(responsiveTables ? {
+            table: ({ children }: { children?: ReactNode }) => (
+              <div className="my-6 overflow-x-auto rounded-lg border border-outline/70">
+                <table className="my-0 w-full min-w-[680px] text-sm">{children}</table>
+              </div>
+            ),
+            th: ({ children }: { children?: ReactNode }) => (
+              <th className="border-b border-outline/70 bg-surface-low px-4 py-3 text-left font-semibold text-white">{children}</th>
+            ),
+            td: ({ children }: { children?: ReactNode }) => (
+              <td className="border-b border-outline/50 px-4 py-3 text-text-secondary">{children}</td>
+            ),
+          } : {}),
           img: ({ alt, src }) => (
             // Markdown assets have mixed intrinsic ratios, so the browser preserves their own dimensions.
             // eslint-disable-next-line @next/next/no-img-element

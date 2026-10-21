@@ -14,7 +14,7 @@ userFlow:
   - '수량·분류 확인'
   - '연결 복구 후 전송'
 implementation: 'Android native layer에서 물리 스캐너 키 이벤트를 완성된 scan으로 변환해 WebView에 전달했습니다. 네트워크 요청 전에는 IndexedDB outbox에 clientEventId·expectedVersion·payload를 저장해 재연결 후에도 같은 명령을 복구했습니다.'
-decision: 'PDA에 명령을 저장한 상태와 WMS가 수락한 상태를 분리했습니다. 응답이 유실되어도 새 요청을 만들지 않고 같은 clientEventId를 가진 명령을 ordered outbox에서 순차 재전송했습니다. version conflict는 자동으로 덮어쓰지 않고 사용자가 확인할 차단 상태로 보존했습니다.'
+decision: 'PDA에 작업을 저장한 것과 WMS 서버가 작업을 받아들인 것을 별도 상태로 표시했습니다. 응답이 사라져도 같은 작업 번호로 다시 보내고, 서버의 작업 버전이 달라졌다면 자동 처리하지 않고 멈추도록 했습니다.'
 stack:
   [
     'React',
@@ -69,37 +69,37 @@ stack:
 
 ## Technical Highlights · 대표 기술 문제
 
-### Problem 01 - 물리 스캐너와 한글 IME 입력이 충돌하는 문제
+### Problem 01 - 바코드를 스캔했는데 값이 중복되거나 누락되는 문제
 
-현장 PDA의 물리 스캐너는 바코드 문자와 완료 키를 입력 이벤트로 보냅니다. 웹의 `onChange`만 사용하면 한글 IME의 keyCode 229, `beforeinput`, paste, suffix가 중복 처리되거나 focus가 다른 control에 있을 때 scan을 놓칠 수 있었습니다.
+현장 PDA의 물리 스캐너는 바코드 문자와 입력 완료 키를 빠르게 보냅니다. 한글 키보드가 켜져 있거나 입력 초점이 다른 곳에 있으면 웹 입력 이벤트가 겹쳐 같은 바코드가 두 번 처리되거나 아예 누락될 수 있었습니다.
 
-### Solution 01 - Native bridge와 Web input stream 정규화
+### Solution 01 - 스캐너 입력을 완성된 바코드로 전달
 
-Android `dispatchKeyEvent`에서 문자를 모아 하나의 완성된 scan을 만든 뒤 WebView CustomEvent로 전달했습니다. Web에서는 keydown·beforeinput·paste를 하나의 input stream으로 정규화하고, 한글 IME/QWERTY 복원·prefix 검증·불완전 입력 경고·focus 재무장을 단계별로 적용했습니다. Native bridge가 장치 입력을 안정화하고, React 화면은 정규화된 scan만 처리하게 책임을 나눴습니다.
+Android의 `dispatchKeyEvent`에서 스캐너가 보낸 문자를 모아 완성된 바코드 하나로 만든 뒤 WebView에 전달했습니다. 웹 화면에서는 키 입력·붙여넣기·한글 입력을 같은 규칙으로 처리하고, 바코드 형식 확인과 불완전 입력 경고를 넣었습니다. 장치 입력을 모으는 일은 Android가, 작업에 맞는 바코드인지 확인하는 일은 React 화면이 맡도록 나눴습니다.
 
-### Problem 02 - 응답 유실 후 재전송이 수량을 중복 반영할 수 있는 문제
+### Problem 02 - 통신이 끊긴 뒤 다시 보내면 피킹 수량이 두 번 기록될 수 있음
 
-WMS가 피킹 수량을 정상 반영한 뒤 네트워크 문제로 응답만 유실될 수 있습니다. PDA는 이를 실패로 판단하고 새 요청을 보내기 쉽지만, 서버에서는 같은 수량이 두 번 반영될 수 있었습니다. 즉, 재시도 가능성과 명령의 멱등성(idempotency)을 함께 보장해야 했습니다.
+작업자가 상품 3개를 피킹했다고 입력하면 WMS 서버가 그 수량을 저장합니다. 그런데 저장은 성공했어도 PDA로 돌아오는 응답만 끊길 수 있습니다. 이때 PDA가 새 작업으로 다시 보내면 서버에는 3개를 두 번 피킹한 것처럼 기록될 위험이 있었습니다.
 
-### Solution 02 - Idempotency key와 ordered outbox로 재전송 제어
+### Solution 02 - 같은 작업 번호로 다시 보내고 서버 확인 후 완료 처리
 
-첫 전송 전 `deviceId`, `clientEventId`, `expectedVersion`, payload를 IndexedDB outbox에 저장했습니다. `clientEventId`를 멱등성 키로 사용해 재연결 후에도 같은 명령을 순서대로 replay했고, WMS 응답(ACK)을 받기 전에는 outbox에서 삭제하지 않았습니다. 연결 실패에는 backoff를 적용하고 version conflict는 quarantine 상태로 분리해, 자동 재시도가 서버의 최신 상태를 덮어쓰지 않게 했습니다.
+PDA는 전송 전에 작업 내용과 고유 번호(`clientEventId`)를 IndexedDB의 대기 목록(outbox)에 저장합니다. 연결이 돌아오면 새 번호를 만들지 않고 같은 번호로 작업을 순서대로 다시 보냅니다. WMS가 접수했다고 확인할 때까지 대기 목록에서 지우지 않습니다. 서버에 저장된 작업 버전이 그사이 달라졌다면 자동 재전송을 멈추고 충돌 상태로 표시해, 최신 수량을 덮어쓰지 않게 했습니다.
 
-### Problem 03 - 부분 피킹 후 완료분과 미처리 수량의 출처가 사라지는 문제
+### Problem 03 - 일부만 피킹했을 때 남은 수량을 추적하기 어려움
 
-작업자가 지정 수량의 일부만 피킹했을 때 기존 task의 `remaining`만 0으로 바꾸면, 얼마나 완료했고 얼마나 남았는지와 원래 allocation의 귀속을 추적하기 어렵습니다.
+예를 들어 10개 중 6개만 피킹했는데 기존 작업의 남은 수량만 0으로 바꾸면, 완료한 6개와 아직 처리해야 할 4개를 구분하기 어렵습니다. 나중에 남은 물량이 어느 주문에 속했는지도 추적해야 했습니다.
 
-### Solution 03 - 완료분과 residual task 분리
+### Solution 03 - 완료한 수량과 남은 작업을 분리
 
-별도 `np-wms-tmp` 기능 브랜치에서 source task에는 실제 완료분을 남기고, 미처리 수량은 residual task와 allocation으로 split했습니다. 일반 partial과 재고 부족(shortage)은 서로 다른 후속 상태로 분리했습니다. 다만 이 서버 작업은 `np-wms-picking` main 배포 기능으로 포함하지 않습니다.
+별도 `np-wms-tmp` 기능 브랜치에서 원래 작업에는 완료한 수량을 남기고, 처리하지 못한 수량은 새 작업(residual task)으로 분리했습니다. 단순한 부분 완료와 재고 부족도 다른 상태로 기록했습니다. 이 서버 기능은 `np-wms-picking` main의 배포 기능으로 소개하지 않습니다.
 
 ### Problem 04 - 외부 WMS 상태와 PDA 단계의 의미 차이
 
-외부 WMS는 claim·location·product·quantity·complete로 작업 상태를 표현했지만, 기존 PDA 화면은 작업자가 보는 단계 중심이었습니다. 두 상태 모델이 일대일로 맞지 않아 어떤 응답을 다음 화면으로 연결할지 명시적인 변환 규칙이 필요했습니다.
+WMS 서버는 작업 배정, 위치 확인, 상품 확인, 수량 입력, 완료를 각각의 상태로 돌려줍니다. PDA 화면은 작업자가 지금 해야 할 행동 중심으로 구성돼 있어 서버 상태를 그대로 보여주면 다음에 무엇을 해야 하는지 알기 어려웠습니다.
 
-### Solution 04 - 소비 경계의 상태 mapping
+### Solution 04 - 서버 응답을 작업자의 다음 행동으로 연결
 
-WMS 응답을 PDA 작업 단계로 mapping하고, 진행할 수 없는 `BLOCKED`, 나중에 처리할 `DEFERRED`, 버전이 어긋난 `conflict`를 별도 UI 상태로 표시했습니다. 배정·버전·완료 여부는 WMS 응답을 권위 값(source of truth)으로 두고, PDA는 아직 전송하지 못한 명령과 화면용 로컬 상태만 관리하게 책임을 분리했습니다.
+WMS 응답을 PDA의 작업 단계에 맞게 연결하고, 진행 불가(`BLOCKED`), 나중에 처리(`DEFERRED`), 서버와 작업 버전이 다름(`conflict`)을 각각 다른 화면 상태로 표시했습니다. 배정·완료 여부는 WMS 응답을 기준으로 삼고, PDA에는 아직 전송하지 못한 작업만 별도로 보관했습니다.
 
 ## 연관 개발과 반영 단계
 

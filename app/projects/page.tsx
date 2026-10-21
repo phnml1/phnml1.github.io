@@ -133,8 +133,7 @@ function ProjectCard({ project }: { project: PortfolioProject }) {
           <CardFact label="내 역할" value={frontmatter.contribution} />
         </div>
 
-        <div className="mt-auto flex items-center justify-between border-t border-outline/70 pt-4">
-          <span className="font-label text-xs font-bold text-primary">사례 읽기</span>
+        <div className="mt-auto flex items-center justify-end border-t border-outline/70 pt-4">
           <span aria-hidden="true" className="text-2xl text-primary transition-transform group-hover:translate-x-1">→</span>
         </div>
       </article>
