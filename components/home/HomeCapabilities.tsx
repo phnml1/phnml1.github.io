@@ -48,8 +48,8 @@ export default function HomeCapabilities() {
       className="w-full bg-surface-low px-5 py-24 md:px-12"
       aria-labelledby="capabilities-title"
     >
-      <div className="mx-auto grid w-full max-w-[1440px] gap-10 lg:grid-cols-12">
-        <Reveal className="lg:col-span-3">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-10">
+        <Reveal>
           <span className="mb-4 block font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">
             Technical Capabilities
           </span>
@@ -61,7 +61,7 @@ export default function HomeCapabilities() {
           </h2>
         </Reveal>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:col-span-9">
+        <div className="grid gap-5 sm:grid-cols-2">
           {capabilities.map((item, index) => (
             <Reveal key={item.category} delay={index * 0.05} className="h-full">
               <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-outline/70 bg-surface-container transition-colors hover:border-primary/50 hover:bg-surface-high">

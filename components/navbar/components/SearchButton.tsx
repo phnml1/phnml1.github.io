@@ -12,7 +12,7 @@ const SearchButton: React.FC<SearchButtonProps> = () => {
       aria-label="Search posts"
       className="grid h-10 w-10 place-items-center rounded-lg bg-surface-container text-primary transition-colors hover:bg-surface-high"
     >
-      <span className="text-lg leading-none">⌕</span>
+      <span className="relative -top-1 text-lg leading-none">⌕</span>
     </Link>
   );
 };

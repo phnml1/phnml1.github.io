@@ -261,13 +261,13 @@ function ProjectCases({ blocks, latencyIntro, latencyDetails }: {
   if (cases.length === 0) return null;
 
   return (
-    <section className="mt-20 max-w-5xl" aria-labelledby="project-cases">
+    <section className="mt-20" aria-labelledby="project-cases">
       <SectionTitle id="project-cases" eyebrow="Case studies" title="문제 해결" />
       <div className="mt-7 divide-y divide-outline/70 border-y border-outline/70">
         {cases.map((caseStudy, index) => (
           <article key={caseStudy.title} className="py-8">
-            <div className="flex items-start gap-4">
-              <span className="pt-1 font-label text-xs font-bold text-primary">{String(index + 1).padStart(2, '0')}</span>
+            <div className="flex items-baseline gap-4">
+              <span className="font-label text-xs font-bold text-primary">{String(index + 1).padStart(2, '0')}</span>
               <h3 className="break-keep text-xl font-bold leading-8 text-white md:text-2xl">{caseStudy.title}</h3>
             </div>
             <div className="mt-5 divide-y divide-outline/70 border-t border-outline/70">
@@ -303,7 +303,7 @@ function MarkdownContent({ content, compact, responsiveTables }: { content: stri
   return (
     <div
       className={`portfolio-prose prose prose-invert max-w-none prose-headings:font-black prose-p:text-text-secondary prose-li:text-text-secondary prose-img:rounded-xl ${
-        compact ? 'prose-p:my-2 prose-ul:my-2' : ''
+        compact ? 'prose-p:my-2 prose-ul:my-2 [&>*:first-child]:mt-0' : ''
       }`}
     >
       <ReactMarkdown
@@ -446,9 +446,9 @@ function SectionTitle({ id, eyebrow, title }: { id?: string; eyebrow: string; ti
 
 function StoryRow({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="grid gap-2 py-5 sm:grid-cols-[100px_minmax(0,1fr)] sm:gap-6">
+    <div className="grid items-baseline gap-2 py-5 sm:grid-cols-[100px_minmax(0,1fr)] sm:gap-6">
       <span className="font-label text-xs font-bold text-primary">{label}</span>
-      <div className="max-w-4xl break-keep text-sm leading-7 text-text-secondary md:text-base">{children}</div>
+      <div className="min-w-0 break-keep text-sm leading-7 text-text-secondary md:text-base">{children}</div>
     </div>
   );
 }
