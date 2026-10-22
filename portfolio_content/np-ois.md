@@ -86,7 +86,7 @@ React 업무 UI가 upload와 queue 요청을 보내고 TanStack Query가 활성 
 
 ## Technical Highlights · 대표 기술 문제
 
-### Problem 01 - 같은 원본의 변환 결과를 재현하기 어려운 문제
+### Problem 01 - 같은 파일인데 변환 기준이 중간에 바뀔 수 있음
 
 주문 변환은 상품, 판매처, 수량 단위 같은 기준정보를 계속 참조합니다. 각 행을 처리할 때마다 최신값(`latest`)을 조회하면, 처리 중 기준이 수정된 순간부터 파일 앞·뒷부분에 서로 다른 기준이 적용될 수 있었습니다. 같은 원본을 재실행해도 결과가 달라져 오류 원인을 추적하기 어려운 구조였습니다.
 
@@ -94,7 +94,7 @@ React 업무 UI가 upload와 queue 요청을 보내고 TanStack Query가 활성 
 
 변환 작업(run)을 시작할 때 source별 snapshot id·version·hash를 저장하고, 이후 모든 조회를 고정된 snapshot ID로 제한했습니다. snapshot은 '이 작업이 시작할 때 사용한 기준 버전'을 의미합니다. 이로써 처리 중 최신 기준이 바뀌어도 하나의 run은 동일한 기준을 유지하고, 결과와 사용 기준을 함께 추적할 수 있습니다.
 
-### Problem 02 - 긴 파일 처리와 DB 트랜잭션이 묶여 실패 이력까지 사라지는 문제
+### Problem 02 - 파일 변환에 실패하면 실패 기록도 사라짐
 
 원본 Excel을 Storage에서 읽고 Apache POI로 parsing하는 작업은 시간이 오래 걸립니다. 이 과정을 run 생성·상태 변경과 하나의 DB transaction으로 묶으면 connection을 오래 점유하게 됩니다. 예외가 발생해 transaction 전체가 rollback되면 '실패함'이라는 run 기록까지 사라져, 운영자가 원인을 확인하지 못할 수 있었습니다.
 
@@ -102,7 +102,7 @@ React 업무 UI가 upload와 queue 요청을 보내고 TanStack Query가 활성 
 
 짧은 start transaction에서 run과 snapshot을 먼저 commit한 뒤, 긴 Storage I/O·parsing·mapping은 transaction 밖에서 수행했습니다. 처리가 끝나면 성공 데이터를, 오류가 나면 실패 상태와 원인을 각각 별도 transaction으로 저장했습니다. 이렇게 transaction 경계를 나눠 DB 점유 시간을 줄이고, 파일 처리가 실패해도 추적할 run 이력은 보존했습니다.
 
-### Problem 03 - 반복 조회와 전체 로딩으로 검수 목록이 느려지는 문제
+### Problem 03 - 검수 목록이 데이터가 쌓일수록 느려짐
 
 운영자가 필요한 것은 '어느 작업에 누락이 몇 개 있는지'와 같은 요약 정보입니다. 하지만 목록을 열 때마다 원본 데이터 전체를 불러와 개수를 계산하면 데이터가 쌓일수록 화면 응답이 느려집니다.
 
@@ -110,7 +110,7 @@ React 업무 UI가 upload와 queue 요청을 보내고 TanStack Query가 활성 
 
 목록에 필요한 상태·누락 개수만 summary projection으로 모아 batch 조회했습니다. 원본 행 같은 상세 데이터는 사용자가 해당 run을 열었을 때만 불러오고, 누락 항목은 DB aggregate pagination으로 페이지 단위로 나눴습니다. 필요한 컬럼만 한번에 조회해 목록 비용을 줄였지만, 일부 이력·검수 경로에는 전체 로딩이 남아 있습니다.
 
-### Problem 04 - 파일 바이너리를 DB에 저장해 저장·다운로드 비용이 커지는 문제
+### Problem 04 - 파일을 DB에 쌓아 저장과 다운로드가 무거워짐
 
 Excel 원본과 결과물은 크기가 크고 계속 쌓입니다. 파일 자체를 DB에 저장하고 다운로드할 때 한 번에 메모리로 읽으면, 검색을 담당해야 할 DB와 서버 메모리 모두 부담이 커집니다.
 
@@ -118,7 +118,7 @@ Excel 원본과 결과물은 크기가 크고 계속 쌓입니다. 파일 자체
 
 실제 Excel·ZIP payload는 local/Object Storage에 저장하고, DB에는 storage key·size·SHA-256·업무 상태 같은 metadata만 남겼습니다. 개별 파일과 ZIP은 전체를 메모리에 올리지 않고 stream으로 응답했습니다. DB metadata 저장이 실패하면 방금 생성한 object를 보상 삭제해, 업무 기록 없이 파일만 남는 상태를 방지했습니다.
 
-### Problem 05 - 제한 없는 Excel 미리보기로 서버 자원이 고갈될 수 있는 문제
+### Problem 05 - 큰 Excel 파일 미리보기가 서버를 오래 점유함
 
 업로드 직후 파일 전체를 미리보기로 보여 주려면 서버가 모든 행과 열을 읽어야 합니다. 잘못 만든 파일에 수만 개의 행이나 지나치게 긴 문자열이 들어 있으면 서버 메모리와 화면 응답을 동시에 점유할 수 있었습니다.
 

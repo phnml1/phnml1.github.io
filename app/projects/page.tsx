@@ -19,24 +19,24 @@ export const metadata = {
 const PROJECT_ORDER = [
   'np-wms-picking',
   'np-ois',
-  'codemate',
   'np-cell-label-kiosk',
+  'codemate',
   'fly-on',
   'runners-high',
   'career-hub',
 ];
 
-const PRIMARY_PROJECTS = ['np-wms-picking', 'np-ois', 'codemate', 'np-cell-label-kiosk'];
-const MOBILE_PROJECTS = ['fly-on', 'runners-high'];
-
 const PROJECT_GROUPS = [
   {
     label: 'Main Projects',
-    slugs: PRIMARY_PROJECTS,
+    sections: [
+      { label: '회사 프로젝트', slugs: ['np-wms-picking', 'np-ois', 'np-cell-label-kiosk'] },
+      { label: '개인 프로젝트', slugs: ['codemate'] },
+    ],
   },
   {
     label: 'Mobile & Realtime Experience',
-    slugs: MOBILE_PROJECTS,
+    sections: [{ label: null, slugs: ['fly-on', 'runners-high'] }],
   },
 ];
 
@@ -66,27 +66,41 @@ export default function ProjectsPage() {
 
         <div className="mt-12 grid gap-14">
           {PROJECT_GROUPS.map((group) => {
-            const groupProjects = group.slugs
-              .map((slug) => projects.find((project) => project.slug === slug))
-              .filter((project): project is PortfolioProject => Boolean(project));
+            const sections = group.sections.map((section) => ({
+              ...section,
+              projects: section.slugs
+                .map((slug) => projects.find((project) => project.slug === slug))
+                .filter((project): project is PortfolioProject => Boolean(project)),
+            })).filter((section) => section.projects.length > 0);
 
-            if (groupProjects.length === 0) {
+            if (sections.length === 0) {
               return null;
             }
 
             return (
-              <section key={group.label} className="grid gap-6">
+              <section key={group.label} className="grid gap-8">
                 <div>
                   <h2 className="font-label text-sm font-bold uppercase tracking-[0.24em] text-primary">
                     {group.label}
                   </h2>
                 </div>
 
-                <div className="grid gap-5 lg:grid-cols-2">
-                  {groupProjects.map((project, index) => (
-                    <Reveal key={project.slug} delay={index * 0.06} className="h-full">
-                      <ProjectCard project={project} />
-                    </Reveal>
+                <div className="grid gap-10">
+                  {sections.map((section) => (
+                    <section key={section.label ?? group.label} aria-label={section.label ?? undefined} className="grid gap-5">
+                      {section.label ? (
+                        <p className="border-b border-outline/70 pb-3 text-lg font-bold text-white">
+                          {section.label}
+                        </p>
+                      ) : null}
+                      <div className="grid gap-5 lg:grid-cols-2">
+                        {section.projects.map((project, index) => (
+                          <Reveal key={project.slug} delay={index * 0.06} className="h-full">
+                            <ProjectCard project={project} />
+                          </Reveal>
+                        ))}
+                      </div>
+                    </section>
                   ))}
                 </div>
               </section>

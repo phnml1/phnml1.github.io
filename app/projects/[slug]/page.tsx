@@ -83,20 +83,20 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     : [];
   const featuredIndex = primaryProblemIndex[project.slug] ?? 0;
   const featuredProblem = technicalProblems[featuredIndex];
-  const collaborationProblem = project.slug === 'codemate' ? technicalProblems[1] : null;
-  const additionalProblems = technicalProblems.filter((_, index) =>
-    index !== featuredIndex && !(collaborationProblem && index === 1),
-  );
+  const orderedProblems = [
+    ...(featuredProblem ? [featuredProblem] : []),
+    ...technicalProblems.filter((_, index) => index !== featuredIndex),
+  ];
   const designSections = project.sections.filter((section) =>
     designSectionTitles.has(section.displayTitle),
   );
   const codeMateLatency = project.slug === 'codemate'
-    ? project.sections.find((section) => section.displayTitle === '협업방 채팅 지연 진단과 개선')
+    ? project.sections.find((section) => section.displayTitle === '채팅 저장 응답이 느린 문제')
     : null;
   const codeMateCi = project.slug === 'codemate'
     ? project.sections.find((section) => section.displayTitle === 'CI 검증')
     : null;
-  const [latencyIntro, latencyDetails] = codeMateLatency?.content.split('<!-- chat-request-flow -->') ?? [];
+  const [latencyIntro = '', latencyDetails = ''] = codeMateLatency?.content.split('<!-- chat-request-flow -->') ?? [];
 
   return (
     <section className="w-full px-5 pb-24 pt-28 md:px-12 md:pt-36">
@@ -120,6 +120,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <p className="mt-5 max-w-4xl break-keep text-xl leading-9 text-white md:text-2xl md:leading-10">
               {project.summary}
             </p>
+            {project.slug === 'codemate' && frontmatter.demo ? (
+              <ProjectLink href={frontmatter.demo} label="서비스 열기 ↗" primary />
+            ) : null}
             <p className="mt-5 text-sm text-text-secondary">
               {[frontmatter.period, frontmatter.role].filter(Boolean).join(' · ')}
             </p>
@@ -138,8 +141,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           <section className="mt-16" aria-labelledby="project-user-flow">
             <SectionTitle
               id="project-user-flow"
-              eyebrow={project.slug === 'codemate' ? 'Review flow' : 'User flow'}
-              title={project.slug === 'codemate' ? 'AI 리뷰는 이렇게 처리됩니다' : '사용자는 이렇게 사용합니다'}
+              eyebrow="User flow"
+              title="서비스 이용 흐름"
             />
             <ol className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {frontmatter.userFlow.map((step, index) => (
@@ -168,54 +171,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </section>
         ) : null}
 
-        {featuredProblem ? (
-          <section className="mt-20 max-w-5xl" aria-labelledby="featured-problem">
-            <SectionTitle id="featured-problem" eyebrow="Representative case" title="대표 문제 해결" />
-            <h3 className="mt-7 break-keep text-2xl font-bold text-white">
-              {cleanProblemTitle(featuredProblem.problemTitle)}
-            </h3>
-            <div className="mt-5 divide-y divide-outline/70 border-y border-outline/70">
-              <StoryRow label="상황"><MarkdownContent content={featuredProblem.problemContent} compact /></StoryRow>
-              <StoryRow label="판단"><p>{frontmatter.decision}</p></StoryRow>
-              <StoryRow label="구현"><MarkdownContent content={featuredProblem.solutionContent} compact /></StoryRow>
-            </div>
-          </section>
-        ) : null}
-
-        {collaborationProblem ? (
-          <section className="mt-20 max-w-5xl" aria-labelledby="codemate-collaboration">
-            <SectionTitle id="codemate-collaboration" eyebrow="Collaboration case" title="실시간 공동 리뷰" />
-            <TechnicalHighlights blocks={[collaborationProblem]} />
-          </section>
-        ) : null}
-
-        {codeMateLatency ? (
-          <section className="mt-20 max-w-5xl" aria-labelledby="codemate-chat-latency">
-            <SectionTitle id="codemate-chat-latency" eyebrow="Performance case" title={codeMateLatency.displayTitle} />
-            <div className="mt-7"><MarkdownContent content={latencyIntro} /></div>
-            <ol className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="채팅 요청과 계측 흐름">
-              {[
-                ['브라우저 Network', '채팅 POST 응답 시간'],
-                ['Next.js Server-Timing', '인증 · 방 조회 · DB 저장'],
-                ['Next.js Server-Timing', 'Socket 내부 HTTP 호출'],
-                ['Socket 서버 로그', '내부 호출 처리 시간'],
-              ].map(([source, measure], index) => (
-                <li key={`${source}-${measure}`} className="min-h-28 border-t-2 border-primary/60 bg-surface-low px-4 py-4">
-                  <span className="font-label text-xs font-bold text-primary">{String(index + 1).padStart(2, '0')}</span>
-                  <p className="mt-3 text-xs font-semibold leading-5 text-white">{source}</p>
-                  <p className="mt-1 break-keep text-sm leading-6 text-text-secondary">{measure}</p>
-                </li>
-              ))}
-            </ol>
-            {latencyDetails ? <div className="mt-9"><MarkdownContent content={latencyDetails} responsiveTables /></div> : null}
-          </section>
-        ) : null}
-
-        {additionalProblems.length ? (
-          <section className="mt-20 max-w-5xl" aria-labelledby="additional-problems">
-            <SectionTitle id="additional-problems" eyebrow="More cases" title="추가 문제 해결" />
-            <TechnicalHighlights blocks={additionalProblems} />
-          </section>
+        {orderedProblems.length || codeMateLatency ? (
+          <ProjectCases blocks={orderedProblems} latencyIntro={latencyIntro} latencyDetails={latencyDetails} />
         ) : null}
 
         {codeMateCi ? (
@@ -263,7 +220,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <span key={tech} className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary">{tech}</span>
           ))}
           {frontmatter.github ? <ProjectLink href={frontmatter.github} label="GitHub" /> : null}
-          {frontmatter.demo ? <ProjectLink href={frontmatter.demo} label="Live Demo" /> : null}
+          {frontmatter.demo && project.slug !== 'codemate' ? <ProjectLink href={frontmatter.demo} label="Live Demo" /> : null}
           {frontmatter.store ? <ProjectLink href={frontmatter.store} label="원스토어 앱" /> : null}
         </footer>
       </div>
@@ -271,23 +228,75 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   );
 }
 
-function TechnicalHighlights({ blocks }: { blocks: ProblemSolutionBlock[] }) {
+type CaseStudyBlock = {
+  title: string;
+  problem: string;
+  solution: string;
+  result?: string;
+  details?: string;
+};
+
+function ProjectCases({ blocks, latencyIntro, latencyDetails }: {
+  blocks: ProblemSolutionBlock[];
+  latencyIntro: string;
+  latencyDetails: string;
+}) {
+  const [latencyBeforeResult, latencyResult] = splitAtMarker(latencyIntro, '<!-- case-result -->');
+  const [latencyProblem, latencySolution] = splitAtMarker(latencyBeforeResult, '<!-- case-solution -->');
+  const cases: CaseStudyBlock[] = blocks.map((block) => {
+    const [solution, result] = splitAtMarker(block.solutionContent, '<!-- case-result -->');
+    return { title: cleanProblemTitle(block.problemTitle), problem: block.problemContent, solution, result };
+  });
+
+  if (latencyIntro) {
+    cases.splice(2, 0, {
+      title: '채팅 저장 응답이 느린 문제',
+      problem: latencyProblem,
+      solution: latencySolution,
+      result: latencyResult,
+      details: latencyDetails,
+    });
+  }
+
+  if (cases.length === 0) return null;
+
   return (
-    <div className="mt-7 divide-y divide-outline/70 border-y border-outline/70">
-      {blocks.map((block, index) => (
-        <details key={block.problemTitle} open className="group py-5">
-          <summary className="cursor-pointer break-keep text-base font-semibold leading-7 text-white group-open:text-primary">
-            <span className="mr-4 font-label text-xs text-primary">{String(index + 1).padStart(2, '0')}</span>
-            {cleanProblemTitle(block.problemTitle)}
-          </summary>
-          <div className="mt-5 grid gap-6 pl-7 text-sm leading-7 lg:grid-cols-2">
-            <div><span className="font-label text-xs font-bold text-primary">문제</span><MarkdownContent content={block.problemContent} compact /></div>
-            <div><span className="font-label text-xs font-bold text-primary">해결</span><MarkdownContent content={block.solutionContent} compact /></div>
-          </div>
-        </details>
-      ))}
-    </div>
+    <section className="mt-20 max-w-5xl" aria-labelledby="project-cases">
+      <SectionTitle id="project-cases" eyebrow="Case studies" title="문제 해결" />
+      <div className="mt-7 divide-y divide-outline/70 border-y border-outline/70">
+        {cases.map((caseStudy, index) => (
+          <article key={caseStudy.title} className="py-8">
+            <div className="flex items-start gap-4">
+              <span className="pt-1 font-label text-xs font-bold text-primary">{String(index + 1).padStart(2, '0')}</span>
+              <h3 className="break-keep text-xl font-bold leading-8 text-white md:text-2xl">{caseStudy.title}</h3>
+            </div>
+            <div className="mt-5 divide-y divide-outline/70 border-t border-outline/70">
+              <StoryRow label="문제"><MarkdownContent content={caseStudy.problem} compact /></StoryRow>
+              <StoryRow label="구현"><MarkdownContent content={caseStudy.solution} compact /></StoryRow>
+              {caseStudy.result ? (
+                <StoryRow label="확인"><MarkdownContent content={caseStudy.result} compact /></StoryRow>
+              ) : null}
+            </div>
+            {caseStudy.details ? (
+              <details className="group border-t border-outline/70">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-sm font-bold text-primary marker:content-none">
+                  측정 조건과 상세 수치
+                  <span aria-hidden="true" className="text-lg font-normal transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <div className="pb-3"><MarkdownContent content={caseStudy.details} responsiveTables /></div>
+              </details>
+            ) : null}
+          </article>
+        ))}
+      </div>
+    </section>
   );
+}
+
+function splitAtMarker(content: string, marker: string): [string, string] {
+  const markerIndex = content.indexOf(marker);
+  if (markerIndex === -1) return [content.trim(), ''];
+  return [content.slice(0, markerIndex).trim(), content.slice(markerIndex + marker.length).trim()];
 }
 
 function MarkdownContent({ content, compact, responsiveTables }: { content: string; compact?: boolean; responsiveTables?: boolean }) {
@@ -444,9 +453,16 @@ function StoryRow({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-function ProjectLink({ href, label }: { href: string; label: string }) {
+function ProjectLink({ href, label, primary = false }: { href: string; label: string; primary?: boolean }) {
   return (
-    <Link href={href} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-primary/50 px-4 py-2 text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-surface">
+    <Link
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={primary
+        ? 'mt-6 inline-flex rounded-lg bg-primary px-5 py-3 text-sm font-bold text-surface transition-colors hover:bg-primary/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary'
+        : 'rounded-lg border border-primary/50 px-4 py-2 text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-surface'}
+    >
       {label}
     </Link>
   );

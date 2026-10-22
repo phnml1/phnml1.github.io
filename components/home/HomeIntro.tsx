@@ -4,7 +4,7 @@ import Reveal from '@/components/motion/Reveal';
 const experience = [
   { title: 'NP WMS Picking', href: '/projects/np-wms-picking', detail: 'PDA 화면 · 스캐너 입력 · 오프라인 작업 보존' },
   { title: 'NP-OIS', href: '/projects/np-ois', detail: '주문 업로드 · 변환 상태 · 검수 화면' },
-  { title: 'Cell Label Kiosk', href: '/projects/np-cell-label-kiosk', detail: '셀 주문 라벨 · WCS/Agent 출력 흐름' },
+  { title: 'Cell Label Kiosk', href: '/projects/np-cell-label-kiosk', detail: '주문 QR 라벨 발행 · 출력 결과 확인' },
 ];
 
 export default function HomeIntro() {

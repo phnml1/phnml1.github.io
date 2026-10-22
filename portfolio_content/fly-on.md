@@ -55,7 +55,11 @@ stack:
 ### Solution 01 - 이동 중인 카드와 목록 렌더링 분리
 
 - `PanResponder`로 손가락 이동을 추적하고 각 카드의 layout을 측정해 어느 위치로 옮길지 계산했습니다. 이동 중인 카드는 floating layer에서 따로 그려 목록 전체가 제스처 좌표를 따라 갱신되지 않게 했습니다.
-- React DevTools Profiler로 같은 동작을 전후 비교한 뒤 `React.memo`와 Zustand selector를 적용했습니다. 그 결과 total commit duration은 `211.5ms → 72.9ms`, 평균 commit duration은 `17.6ms → 6.6ms`로 줄었습니다.
+- React DevTools Profiler로 같은 동작을 전후 비교한 뒤 `React.memo`와 Zustand selector를 적용했습니다.
+
+<!-- case-result -->
+
+같은 로컬 동작을 전후 비교한 결과, React DevTools Profiler의 total commit duration은 `211.5ms → 72.9ms`, 평균 commit duration은 `17.6ms → 6.6ms`로 줄었습니다.
 
 ### Problem 02 - 작성 중인 일정과 서버에서 받은 일정의 충돌
 
