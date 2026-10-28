@@ -25,12 +25,12 @@ export const metadata = {
 };
 
 const PROJECT_ORDER = [
+  'codemate',
   'np-wms-picking',
   'np-ois',
-  'np-cell-label-kiosk',
-  'codemate',
   'fly-on',
   'runners-high',
+  'np-cell-label-kiosk',
   'career-hub',
 ];
 
@@ -38,13 +38,17 @@ const PROJECT_GROUPS = [
   {
     label: 'Main Projects',
     sections: [
-      { label: '회사 프로젝트', slugs: ['np-wms-picking', 'np-ois', 'np-cell-label-kiosk'] },
       { label: '개인 프로젝트', slugs: ['codemate'] },
+      { label: '회사 프로젝트', slugs: ['np-wms-picking', 'np-ois'] },
     ],
   },
   {
     label: 'Mobile & Realtime Experience',
     sections: [{ label: null, slugs: ['fly-on', 'runners-high'] }],
+  },
+  {
+    label: 'Other Projects',
+    sections: [{ label: null, slugs: ['np-cell-label-kiosk'] }],
   },
 ];
 
