@@ -1,8 +1,8 @@
 1:"$Sreact.fragment"
-2:I[44464,["/_next/static/chunks/0-hwbwwlk0glk.js","/_next/static/chunks/0z2hzstlcchgl.js","/_next/static/chunks/0d3shmwh5_nmn.js","/_next/static/chunks/13619btn_xunv.js","/_next/static/chunks/0_oxony74r~v1.js"],"default"]
-21:I[97367,["/_next/static/chunks/0-hwbwwlk0glk.js","/_next/static/chunks/0z2hzstlcchgl.js","/_next/static/chunks/0d3shmwh5_nmn.js"],"OutletBoundary"]
+2:I[44464,["/_next/static/chunks/0674pv3jc.bvm.js","/_next/static/chunks/0z2hzstlcchgl.js","/_next/static/chunks/0d3shmwh5_nmn.js","/_next/static/chunks/13619btn_xunv.js","/_next/static/chunks/17hw5c17km3ew.js"],"default"]
+21:I[97367,["/_next/static/chunks/0674pv3jc.bvm.js","/_next/static/chunks/0z2hzstlcchgl.js","/_next/static/chunks/0d3shmwh5_nmn.js"],"OutletBoundary"]
 22:"$Sreact.suspense"
-3:T3860,
+3:T36dd,
 # AI 리뷰 비동기 상태와 알림 갱신 기록
 
 > **현재 구현 안내 (2026-10-13):** 아래 Socket 알림 설명은 2026년 5월 당시의 기록입니다. 현재 AI 리뷰는 진행 중에 3초 간격으로 상태를 다시 조회하고, 일반 알림은 10초 간격으로 다시 조회합니다. 완료·실패 알림을 Socket.io로 받는다는 설명은 현재 코드에 해당하지 않습니다.
@@ -38,23 +38,22 @@ await upsertReviewNotifications({
   prId: pullRequestId,
   prTitle: pr.title,
   prNumber: pr.number,
-  status: "PENDING",
+  status: 'PENDING',
 });
 
-analyzeReview(pullRequestId)
-  .then(async (result) => {
-    if (result.status === "SKIPPED_ACTIVE") return;
+analyzeReview(pullRequestId).then(async (result) => {
+  if (result.status === 'SKIPPED_ACTIVE') return;
 
-    await upsertReviewNotifications({
-      userIds: targetRecipients,
-      prId: pullRequestId,
-      prTitle: pr.title,
-      prNumber: pr.number,
-      status: result.status,
-    });
+  await upsertReviewNotifications({
+    userIds: targetRecipients,
+    prId: pullRequestId,
+    prTitle: pr.title,
+    prNumber: pr.number,
+    status: result.status,
   });
+});
 
-return NextResponse.json({ status: "PENDING" });
+return NextResponse.json({ status: 'PENDING' });
 ```
 
 두 번째는 GitHub Webhook에서 PR opened/synchronize 이벤트가 들어왔을 때다.
@@ -67,12 +66,12 @@ after(async () => {
     prId: pullRequest.id,
     prTitle: pr.title,
     prNumber: pr.number,
-    status: "PENDING",
+    status: 'PENDING',
   });
 
   const result = await analyzeReview(pullRequest.id);
 
-  if (result.status === "SKIPPED_ACTIVE") return;
+  if (result.status === 'SKIPPED_ACTIVE') return;
 
   await upsertReviewNotifications({
     userIds: targetRecipients,
@@ -83,7 +82,7 @@ after(async () => {
   });
 });
 
-return NextResponse.json({ message: "PR processed" });
+return NextResponse.json({ message: 'PR processed' });
 ```
 
 두 코드 모두 공통적으로 먼저 `PENDING` 알림을 만들고, 실제 분석은 백그라운드에서 진행한다. 즉, API 응답과 분석 완료 시점이 분리되어 있다.
@@ -111,14 +110,14 @@ return NextResponse.json({ message: "PR processed" });
 const activeReview = await prisma.review.findFirst({
   where: {
     pullRequestId,
-    status: { in: ["PENDING", "IN_PROGRESS"] },
+    status: { in: ['PENDING', 'IN_PROGRESS'] },
   },
   select: { id: true },
-  orderBy: { reviewedAt: "desc" },
+  orderBy: { reviewedAt: 'desc' },
 });
 
 if (activeReview) {
-  return { status: "SKIPPED_ACTIVE" };
+  return { status: 'SKIPPED_ACTIVE' };
 }
 ```
 
@@ -142,11 +141,11 @@ CREATE UNIQUE INDEX "review_active_unique"
 review = await prisma.review.create({
   data: {
     pullRequestId,
-    status: "PENDING",
-    stage: "QUEUED",
+    status: 'PENDING',
+    stage: 'QUEUED',
     aiSuggestions: {},
     qualityScore: 0,
-    severity: "LOW",
+    severity: 'LOW',
     issueCount: 0,
   },
   select: { id: true },
@@ -157,18 +156,18 @@ review = await prisma.review.create({
 
 ```ts
 await updateReviewStage(reviewId, {
-  status: "IN_PROGRESS",
-  stage: "FETCHING_FILES",
+  status: 'IN_PROGRESS',
+  stage: 'FETCHING_FILES',
 });
 
 await updateReviewStage(reviewId, {
-  status: "IN_PROGRESS",
-  stage: "ANALYZING",
+  status: 'IN_PROGRESS',
+  stage: 'ANALYZING',
 });
 
 await updateReviewStage(reviewId, {
-  status: "IN_PROGRESS",
-  stage: "FINALIZING",
+  status: 'IN_PROGRESS',
+  stage: 'FINALIZING',
 });
 ```
 
@@ -182,8 +181,8 @@ await prisma.review.update({
     qualityScore: score,
     severity: overallSeverity,
     issueCount,
-    status: "COMPLETED",
-    stage: "COMPLETED",
+    status: 'COMPLETED',
+    stage: 'COMPLETED',
   },
 });
 ```
@@ -194,17 +193,17 @@ await prisma.review.update({
 
 ```ts
 // hooks/pr-detail/usePRReviewActions.ts
-queryClient.setQueryData<Review | null>(["review", prId], (current) =>
+queryClient.setQueryData<Review | null>(['review', prId], (current) =>
   current
     ? {
         ...current,
-        status: "PENDING",
-        stage: "QUEUED",
+        status: 'PENDING',
+        stage: 'QUEUED',
       }
-    : createPendingReview(prId)
+    : createPendingReview(prId),
 );
 
-await queryClient.invalidateQueries({ queryKey: ["review", prId] });
+await queryClient.invalidateQueries({ queryKey: ['review', prId] });
 ```
 
 서버 응답을 기다린 뒤에야 화면이 바뀌는 것이 아니라, 요청이 시작됐다는 상태를 먼저 보여주기 위한 처리다.
@@ -215,11 +214,11 @@ await queryClient.invalidateQueries({ queryKey: ["review", prId] });
 
 ```tsx
 // components/review/ReviewPanel/index.tsx
-if (review.status === "FAILED") {
+if (review.status === 'FAILED') {
   return <ReviewFailedState review={review} />;
 }
 
-if (review.status === "PENDING" || review.status === "IN_PROGRESS") {
+if (review.status === 'PENDING' || review.status === 'IN_PROGRESS') {
   return <ReviewProgressState stage={review.stage} />;
 }
 
@@ -253,7 +252,7 @@ export function useReviewQuery(prId: string, options?: ReviewQueryOptions) {
     queryFn: () => fetchReview(prId),
     refetchInterval: (query) => {
       const status = query.state.data?.status;
-      if (status === "PENDING" || status === "IN_PROGRESS") return 3000;
+      if (status === 'PENDING' || status === 'IN_PROGRESS') return 3000;
       return false;
     },
     ...options,
@@ -266,8 +265,7 @@ export function useReviewQuery(prId: string, options?: ReviewQueryOptions) {
 ```ts
 // hooks/useReview.ts
 if (
-  (notification.type === "NEW_REVIEW" ||
-    notification.type === "REVIEW_FAILED") &&
+  (notification.type === 'NEW_REVIEW' || notification.type === 'REVIEW_FAILED') &&
   notification.prId === prId
 ) {
   queryClient.invalidateQueries({ queryKey: reviewQueryKey(prId) });
@@ -286,9 +284,9 @@ const existing = await prisma.notification.findFirst({
   where: {
     userId,
     prId: params.prId,
-    type: "NEW_REVIEW",
+    type: 'NEW_REVIEW',
   },
-  orderBy: { createdAt: "desc" },
+  orderBy: { createdAt: 'desc' },
   select: { id: true },
 });
 
@@ -305,7 +303,7 @@ const notification = existing
     })
   : await prisma.notification.create({
       data: {
-        type: "NEW_REVIEW",
+        type: 'NEW_REVIEW',
         reviewStatus: params.status,
         title: content.title,
         message: content.message,
@@ -323,9 +321,7 @@ const notification = existing
 ```tsx
 // components/notification/NotificationList.tsx
 const reviewStatusMeta =
-  notification.type === "NEW_REVIEW"
-    ? getReviewStatusMeta(notification)
-    : null;
+  notification.type === 'NEW_REVIEW' ? getReviewStatusMeta(notification) : null;
 ```
 
 ## 결과
@@ -389,7 +385,7 @@ Socket이 정상적으로 연결된 동안에는 create mutation의 local append
 과거의 synthetic 비교는 실제 Socket 네트워크·DB 왕복 시간이나 mutation 뒤 재조회까지 포함하지 않았습니다. 운영 환경에서 댓글 요청 수와 지연이 얼마나 달라졌는지는 이 글에서 주장하지 않습니다.
 
 직접 cache를 갱신하면 이벤트 순서와 동시성의 책임도 클라이언트에 생깁니다. 현재 이벤트에는 sequence/version 경계가 없어 늦게 도착한 payload가 최신 상태를 덮을 수 있고, reaction 동시 변경도 별도 검증이 필요합니다. 빠른 화면 반영과 서버 상태 재확인을 각각 어디서 할지 정하는 것이 이 작업의 핵심이었습니다.
-5:T28b4,
+5:T28bb,
 # 과거 PR 댓글 WebSocket 설계 기록
 
 > **현재 구현 안내 (2026-10-13):** 아래는 2026년 4월 당시의 설계 기록이며 현재 CodeMate의 일반 PR 댓글·알림 동작을 설명하지 않습니다. 현재 일반 댓글 패널과 알림은 각각 10초 간격으로 다시 조회합니다. PR 상세의 파일별 댓글 조회 훅 자체에는 주기 조회 설정이 없습니다. Socket.io는 별도 공동 리뷰방의 참여 상태, 파일·스크롤 위치, 코드 대화에 사용합니다. 현재 구현은 [CodeMate 프로젝트 상세](/projects/codemate)에서 확인할 수 있습니다.
@@ -449,11 +445,13 @@ typing 상태도 짧게 나타났다 사라져야 했다.
 설계의 중심은 세 레이어였다.
 
 1. `useSocket`
+
    - socket 인스턴스 생성
    - 연결 상태 관리
    - reconnect / error 상태 노출
 
 2. `useSocketRoom`
+
    - PR room join
    - PR room leave
    - 화면 생명주기에 맞춘 구독 제어
@@ -481,11 +479,7 @@ UI는 연결 상태를 읽고, room 구독만 요청한다.
 즉, socket처럼 컴포넌트 렌더링과 무관하게 살아 있는 객체를 React state처럼 다루되, 재렌더링은 구독한 값이 바뀔 때만 일으키게 할 수 있다.
 
 ```ts
-const currentSocket = useSyncExternalStore(
-  subscribe,
-  getSocketSnapshot,
-  getServerSocketSnapshot
-)
+const currentSocket = useSyncExternalStore(subscribe, getSocketSnapshot, getServerSocketSnapshot);
 ```
 
 이 선택을 한 이유는 단순하다.
@@ -509,19 +503,19 @@ room 구독은 `hooks/useSocketRoom.ts`로 뺐다.
 
 ```ts
 export function useSocketRoom(prId: string) {
-  const { socket } = useSocket()
+  const { socket } = useSocket();
 
   useEffect(() => {
-    if (!socket || !prId) return
+    if (!socket || !prId) return;
 
-    socket.emit("room:join", prId)
+    socket.emit('room:join', prId);
 
     return () => {
-      socket.emit("room:leave", prId)
-    }
-  }, [socket, prId])
+      socket.emit('room:leave', prId);
+    };
+  }, [socket, prId]);
 
-  return socket
+  return socket;
 }
 ```
 
@@ -540,13 +534,13 @@ export function useSocketRoom(prId: string) {
 
 ```ts
 function registerRoomHandlers(socket: TypedServerSocket) {
-  socket.on("room:join", (prId) => {
-    socket.join(`pr:${prId}`)
-  })
+  socket.on('room:join', (prId) => {
+    socket.join(`pr:${prId}`);
+  });
 
-  socket.on("room:leave", (prId) => {
-    socket.leave(`pr:${prId}`)
-  })
+  socket.on('room:leave', (prId) => {
+    socket.leave(`pr:${prId}`);
+  });
 }
 ```
 
@@ -562,7 +556,7 @@ function registerRoomHandlers(socket: TypedServerSocket) {
 클라이언트에서는 `components/comment/CommentList.tsx`가 연결 상태를 읽고, 연결이 불안정할 때 사용자에게 상태를 보여준다.
 
 ```tsx
-const { connectionStatus, connectionError } = useSocket()
+const { connectionStatus, connectionError } = useSocket();
 ```
 
 이렇게 하면 댓글 화면은 socket의 내부 구현을 몰라도 된다.  
@@ -6049,25 +6043,24 @@ function createFiberFromElement(element, mode, expirationTime) {
 ### 정리
 결국 가상 DOM과 리액트의 핵심은 **브라우저의 DOM을 더욱 빠르게 그리고 반영하는 것이 아니라 바로 값으로 UI를 표현하는 것**이다. 
 
-화면에 표시되는 UI를 자바스크립트의 문자열, 배열 등과 마찬가지로 값으로 관리하고 이러한 흐름을 효율적으로 관리하기 위한 메커니즘이 바로 리액트의 핵심이다.18:T1174,# [gold 3] 빌런 호석
+화면에 표시되는 UI를 자바스크립트의 문자열, 배열 등과 마찬가지로 값으로 관리하고 이러한 흐름을 효율적으로 관리하기 위한 메커니즘이 바로 리액트의 핵심이다.18:T11ea,
+# [gold 3] 빌런 호석
 
 ## 문제 설명
 
-치르보기 빌딩은 11층부터 NN층까지 이용이 가능한 엘리베이터가 있다. 엘리베이터의 층수를 보여주는 디스플레이에는 KK  자리의 수가 보인다. 수는 00으로 시작할 수도 있다. 00부터 99까지의 각 숫자가 디스플레이에 보이는 방식은 아래와 같다. 각 숫자는 7개의 표시등 중의 일부에 불이 들어오면서 표현된다.
+치르보기 빌딩은 11층부터 NN층까지 이용이 가능한 엘리베이터가 있다. 엘리베이터의 층수를 보여주는 디스플레이에는 KK 자리의 수가 보인다. 수는 00으로 시작할 수도 있다. 00부터 99까지의 각 숫자가 디스플레이에 보이는 방식은 아래와 같다. 각 숫자는 7개의 표시등 중의 일부에 불이 들어오면서 표현된다.
 
-![](1.png)
+![0부터 9까지 숫자를 7세그먼트 LED로 표시한 상태](1.png)
 
 예를 들어 K=4K=4인 경우에 16801680층과 501501층은 아래와 같이 보인다.
 
-![](2.png)
+![일부 세그먼트를 흰색으로 강조한 네 개의 7세그먼트 숫자 예시](2.png)
 
-
-
-빌런 호석은 치르보기 빌딩의 엘리베이터 디스플레이의 LED 중에서 최소 11개, 최대 PP개를 반전시킬 계획을 세우고 있다. 반전이란 켜진 부분은 끄고, 꺼진 부분은 켜는 것을 의미한다. 예를 들어 숫자 11을 22로 바꾸려면 총 5개의 LED를 반전시켜야 한다. 또한 반전 이후에 디스플레이에 올바른 수가 보여지면서 11  이상 NN  이하가 되도록 바꿔서 사람들을 헷갈리게 할 예정이다. 치르보기를 사랑하는 모임의 회원인 당신은 호석 빌런의 행동을 미리 파악해서 혼쭐을 내주고자 한다. 현재 엘리베이터가 실제로는 XX층에 멈춰있을 때, 호석이가 반전시킬 LED를 고를 수 있는 경우의 수를 계산해보자.
+빌런 호석은 치르보기 빌딩의 엘리베이터 디스플레이의 LED 중에서 최소 11개, 최대 PP개를 반전시킬 계획을 세우고 있다. 반전이란 켜진 부분은 끄고, 꺼진 부분은 켜는 것을 의미한다. 예를 들어 숫자 11을 22로 바꾸려면 총 5개의 LED를 반전시켜야 한다. 또한 반전 이후에 디스플레이에 올바른 수가 보여지면서 11 이상 NN 이하가 되도록 바꿔서 사람들을 헷갈리게 할 예정이다. 치르보기를 사랑하는 모임의 회원인 당신은 호석 빌런의 행동을 미리 파악해서 혼쭐을 내주고자 한다. 현재 엘리베이터가 실제로는 XX층에 멈춰있을 때, 호석이가 반전시킬 LED를 고를 수 있는 경우의 수를 계산해보자.
 
 ### 입력
 
- N,K,P,XN,K,P,X  가 공백으로 구분되어 첫째 줄에 주어진다.
+N,K,P,XN,K,P,X 가 공백으로 구분되어 첫째 줄에 주어진다.
 
 ### 출력
 
@@ -6075,25 +6068,35 @@ function createFiberFromElement(element, mode, expirationTime) {
 
 ## 접근 방법
 
-숫자에 따른 LED를 먼저 구현하기 위해, 
+숫자에 따른 LED를 먼저 구현하기 위해,
 
 그림과 같이, 각 LED의 위치에 번호를 매겨, 배열안에 그 번호가 있으면 불이 켜져있는 것으로, 없다면 불이 꺼져 있는 것으로 표현하였다.
-<img src="3.png" alt="이미지 설명" width="200" height="300" />
 
+<img
+  src="3.png"
+  alt="7세그먼트 각 위치를 0부터 6까지 번호로 표시한 그림"
+  width="200"
+  height="300"
+/>
 
 그림처럼 0을 표현하면 3번자리를 제외한 모든 번호가 켜져있으므로, `[0,1,2,4,5,6]`으로 표현 할 수 있다.
 
 각 번호를 이와 같이 바꾸어 numbers 배열에 저장하면, 이와 같다.
+
 ```python
 numbers  = [[0,1,2,4,5,6],[2,5],[0,2,3,4,6],[0,2,3,5,6],[1,2,3,5],[0,1,3,5,6],[0,1,3,4,5,6],[0,2,5],[0,1,2,3,4,5,6],[0,1,2,3,5,6]];
 ```
+
 이후 만일 현재 번호와 비교할 번호의 LED를 비교하기 위해 서로의 차집합을 더해서 두 번호가 서로를 비교했을 때, 가지고 있는 혹은 없는 번호의 개수를 구한다.
+
 ```python
 cur_count  =  len(list(cur.difference(compare))) +  len(list(compare.difference(cur)));
 ```
+
 이와 같은 방식으로 반전시킬 LED의 개수를 구하고, dfs를 활용하여 x의 모든 자릿수를 순회하여 p보다 작거나 같게 LED를 반전하면서, n보다 번호가 작거나 같다면 result를 1 증가 시킨다.
 
 전체코드는 다음과 같다.
+
 ```python
 import sys;
 input = sys.stdin.readline;
@@ -6107,7 +6110,7 @@ if len(x) != k:
 	# k 보다 자릿수 x가 자릿수가 작다면 작은 만큼 앞에 0을 채워주어야 한다.
     for _ in range(k-len(x)):
         x.insert(0,'0');
-        
+
 def dfs(index,count,st):
     global result;
     if count>p:
@@ -6127,9 +6130,11 @@ print(result);
 ```
 
 ## 느낀 점
+
 사실 이 문제와 관련하여 다른 풀이도 많이 찾아보았고, 더욱 시간이 적게 걸리는 풀이도 많았어서 시간 초과는 나지 않았지만 다소 비효율적인 풀이였다는 생각이 들었다.
 
-또한 제한 사항중 `또한 반전 이후에 디스플레이에 올바른 수가 보여지면서 1 이상 N 이하가 되도록 바꿔서 사람들을 헷갈리게 할 예정이다.`를 못봐서 계속 `0<=int(st)<=n`로 조건을 설정해놓고 헤맸었다.  문제의 조건을 유심히 보는 습관을 들여야 함을 다시한번 느낀다.19:T1f60,# [level 3] 아이템 줍기 (BFS/DFS)
+또한 제한 사항중 `또한 반전 이후에 디스플레이에 올바른 수가 보여지면서 1 이상 N 이하가 되도록 바꿔서 사람들을 헷갈리게 할 예정이다.`를 못봐서 계속 `0<=int(st)<=n`로 조건을 설정해놓고 헤맸었다. 문제의 조건을 유심히 보는 습관을 들여야 함을 다시한번 느낀다.
+19:T1f60,# [level 3] 아이템 줍기 (BFS/DFS)
 ## 문제 설명
 
 [](https://github.com/phnml1/CodingTest/blob/master/%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%A8%B8%EC%8A%A4/3/87694.%E2%80%85%EC%95%84%EC%9D%B4%ED%85%9C%E2%80%85%EC%A4%8D%EA%B8%B0/README.md#%EB%AC%B8%EC%A0%9C-%EC%84%A4%EB%AA%85)
@@ -7100,8 +7105,8 @@ var foo = null ?? "default string"; // "default string"
 
 	//  좌항의 피연산자가 Falsy값이라도 null 또는 undefined 가 아니면, 좌항의 피연산자를 그대로 반환한다.
 	var foo = "" ?? "default string"; // ''
-	```0:{"rsc":["$","$1","c",{"children":[["$","$L2",null,{"allPosts":[{"slug":"posts/React/AI 리뷰 비동기 상태 흐름과 실시간 알림 구조 정리","title":"AI 리뷰 비동기 상태와 알림 갱신 기록","date":"2026-05-03T20:43:16.000Z","image":"index.png","project":{"title":"CodeMate","slug":"codemate"},"summary":"AI 리뷰의 대기·진행·완료·실패 화면을 정리한 기록입니다. 현재 진행 중인 리뷰와 알림은 주기적 조회로 갱신합니다.","tags":["react","nextjs","typescript"],"isFeatured":false,"content":"$3"},{"slug":"posts/React/React Query 캐시 전략으로 PR 댓글 API 요청을 10회에서 0회로 줄인 과정","title":"PR 댓글 이벤트를 Query 캐시에 반영한 이유와 재조회 경계","date":"2026-04-18T20:49:07.000Z","image":"index.png","project":{"title":"CodeMate","slug":"codemate"},"summary":"과거 Socket 댓글 이벤트의 캐시 반영 기록입니다. 현재 일반 댓글 패널은 10초 간격으로 조회하고 변경 뒤 관련 Query를 다시 조회합니다.","tags":["react","react-query","cache","performance","codemate","setQueryData","invalidateQueries"],"isFeatured":false,"content":"$4"},{"slug":"posts/React/PR 댓글 실시간 시스템을 WebSocket으로 설계한 이유","title":"과거 PR 댓글 WebSocket 설계 기록","date":"2026-04-18T20:43:16.000Z","image":"index.png","project":{"title":"CodeMate","slug":"codemate"},"summary":"2026년 4월의 PR 댓글 WebSocket 설계 기록입니다. 현재 일반 댓글 패널·알림은 주기적으로 조회하고, Socket.io는 별도 공동 리뷰방에 사용합니다.","tags":["react","websocket","realtime","codemate","comments"],"isFeatured":false,"content":"$5"},{"slug":"posts/React/Next.js 서버 컴포넌트에서 Promise.all()로 대시보드 응답 시간 2배 단축하기","title":"과거 대시보드 병렬 조회 실험 기록","date":"2026-04-04T12:00:24.000Z","image":"index.png","project":{"title":"CodeMate","slug":"codemate"},"summary":"2026년 4월 당시 대시보드 병렬 조회 실험입니다. 현재 구현이나 성능 수치를 나타내지 않습니다.","tags":["nextjs","react","performance","server-components","promise-all","optimization"],"isFeatured":false,"content":"$6"},{"slug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 성능 최적화 (3) - Zustand Store와 React.memo로 리렌더링 최소화","title":"React Native 칸반보드 드래그 앤 드롭 성능 최적화 (3) - Zustand Store와 React.memo로 리렌더링 최소화","date":"2026-03-22T12:00:00.000Z","image":"index.png","project":{"title":"Fly:On","slug":"fly-on"},"summary":"2편의 개선에도 불구하고 남아있는 30-46ms짜리 큰 리렌더링의 원인은 props drilling이었습니다. Zustand store로 draggingItem 상태를 분리하고, React.memo와 세밀한 selector로 전체 트리 리렌더링을 차단합니다.","tags":["react native","드래그 앤 드롭","성능 최적화","Zustand","React.memo","selector","칸반보드","props drilling"],"isFeatured":false,"content":"$7"},{"slug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 성능 최적화 (2) - PanResponder 안정화와 Native 애니메이션","title":"React Native 칸반보드 드래그 앤 드롭 성능 최적화 (2) - PanResponder 안정화와 Native 애니메이션","date":"2026-03-08T22:00:00.000Z","image":"index.png","project":{"title":"Fly:On","slug":"fly-on"},"summary":"1편에서 측정한 문제들 중 즉각적인 효과가 있는 것부터 개선합니다. PanResponder를 useMemo로 안정화하고, 애니메이션을 Native 스레드로 전환합니다. 그리고 실제 측정 결과를 봅니다.","tags":["react native","드래그 앤 드롭","성능 최적화","PanResponder","useMemo","useRef","useNativeDriver","칸반보드"],"isFeatured":false,"content":"$8"},{"slug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 성능 최적화 (1) - 문제 인식과 측정","title":"React Native 칸반보드 드래그 앤 드롭 성능 최적화 (1) - 문제 인식과 측정","date":"2026-02-22T22:00:00.000Z","image":"index.png","project":{"title":"Fly:On","slug":"fly-on"},"summary":"칸반보드 드래그 앤 드롭에서 드래그 중에 불필요한 리렌더링 및 버벅임이 발생하는 문제를 수치로 측정하고 원인을 분석합니다.","tags":["react native","드래그 앤 드롭","성능 최적화","리렌더링","칸반보드","PanResponder","props drilling"],"isFeatured":false,"content":"$9"},{"slug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 구현기_4","title":"React Native 칸반보드 드래그 앤 드롭 구현기 (4)","date":"2026-02-08T22:00:00.000Z","image":"index.png","project":{"title":"Fly:On","slug":"fly-on"},"summary":"드래그 중 화면 경계에서 자동으로 스크롤되는 기능을 requestAnimationFrame 기반으로 구현합니다.","tags":["react native","드래그 앤 드롭","자동 스크롤","requestAnimationFrame","칸반보드"],"isFeatured":false,"content":"$a"},{"slug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 구현기_3","title":"React Native 칸반보드 드래그 앤 드롭 구현기 (3)","date":"2026-01-24T22:00:00.000Z","image":"index.png","project":{"title":"Fly:On","slug":"fly-on"},"summary":"Floating Card를 Portal 패턴으로 구현하여 드래그 앤 드롭의 시각적 완성도를 높이는 방법을 다룹니다.","tags":["react native","드래그 앤 드롭","Portal","Context API","Animated"],"isFeatured":false,"content":"$b"},{"slug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 구현기_2","title":"React Native 칸반보드 드래그 앤 드롭 구현기 (2)","date":"2026-01-11T21:50:00.000Z","image":"index.png","project":{"title":"Fly:On","slug":"fly-on"},"summary":"드래그 앤 드롭의 핵심 훅 구조와 절대 좌표 기반 레이아웃 측정, 드롭 타겟 계산 로직을 구현합니다.","tags":["react native","드래그 앤 드롭","PanResponder","칸반보드","hooks"],"isFeatured":false,"content":"$c"},{"slug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 구현기_1","title":"React Native 칸반보드 드래그 앤 드롭 구현기 (1)","date":"2025-12-28T22:16:00.000Z","image":"index.png","project":{"title":"Fly:On","slug":"fly-on"},"summary":"React Native에서 칸반보드 형태의 Drag & Drop을 구현하며 PanResponder 기반 절대 좌표 시스템을 선택한 이유와 구현 과정을 공유합니다.","tags":["react native","드래그 앤 드롭","PanResponder","칸반보드","트러블슈팅"],"isFeatured":false,"content":"$d"},{"slug":"posts/React Native/React Native에서 Google Maps 연동 및 위치 추적 기능 구현하기","title":"React Native에서 Google Maps 연동 및 위치 추적 기능 구현하기","date":"2025-03-25T13:40:00.000Z","image":"index.png","summary":"React Native에서 Google Maps 연동 및 위치 추적 기능 구현하고, 초기 위치 설정하는 과정에서 발생한 문제를 해결하는 과정입니다.","tags":["react native","트러블슈팅","google map","expo-location","졸업작품"],"isFeatured":false,"content":"$e"},{"slug":"posts/React/setState는 비동기일까","title":"setState는 비동기일까","date":"2025-03-11T13:00:24.000Z","image":"index.png","summary":"setState가 왜 동기 함수인지, 그리고 react서는 setState를 통해 상태 업데이트를 어떻게 하는지 알아보자.","tags":["react","JavaScript","deepdive","useState","hook"],"isFeatured":false,"content":"$f"},{"slug":"posts/React/React와 Nextjs의 Suspense","title":"React와 Next.js의 Suspense에 대해 알아보자","date":"2024-11-25T00:00:24.000Z","image":"index.png","summary":"React와 Next.js에서 Suspense를 어떤 방식으로 다르게 다루는지, 그리고 Next.js에서 이로인해 발생할 수 있는 에러와 해결방법에 대해 알아보자.","tags":["react","next.js","deepdive","SSR","Suspense","렌더링"],"isFeatured":false,"content":"$10"},{"slug":"posts/React/리액트 컴포넌트 테스트 코드 시작하기","title":"리액트 컴포넌트 테스트 코드 시작하기","date":"2024-11-18T17:00:24.000Z","image":"index.png","summary":"React Deepdive 서적의 React 컴포넌트의 테스트 코드를 정리하였다.","tags":["react","테스트","deepdive"],"isFeatured":false,"content":"$11"},{"slug":"posts/React/React 개발자 도구(React dev tools)로 불필요한 렌더링을 없애본 경험","title":"React 개발자 도구(React dev tools)로 불필요한 렌더링을 없애본 경험","date":"2024-11-11T17:00:24.000Z","image":"index.png","summary":"React 개발자 도구(React dev tools)의 기능들과 이를 활용해본 경험을 공유해보겠다.","tags":["react","next.js","렌더링","트러블슈팅","deepdive","dev tools"],"isFeatured":false,"content":"$12"},{"slug":"posts/React/서버사이드 렌더링에 대해 알아보자","title":"서버사이드 렌더링에 대해 알아보자(Feat: next.js, SSG)","date":"2024-11-03T22:00:24.000Z","image":"index.png","summary":"클라이언트 사이드 렌더링(CSR)과 서버 사이드 렌더링(SSR)에 대해서 그리고 SSR을 활용한 next.js 예제와 SSG의 개념과 예제까지 알아보자.","tags":["react","next.js","deepdive","SSR","SSG","렌더링"],"isFeatured":false,"content":"$13"},{"slug":"posts/Algorithm/[PCCP 기출문제]퍼즐게임 챌린지","title":"[PCCP 기출문제] 퍼즐게임 챌린지","date":"2024-10-31T12:05:24.000Z","image":"index.jpg","summary":"프로그래머스 [PCCP 기출문제] level 2 퍼즐게임 챌린지 문제 풀이 입니다.","tags":["Algorithm","프로그래머스","PCCP","lv2","이분탐색"],"isFeatured":false,"content":"$14"},{"slug":"posts/React/React useState 훅과 클로저","title":"React useState 훅과 클로저","date":"2024-10-26T18:00:24.000Z","image":"index.png","summary":"클로저를 이용한 React useState 훅의 작동 원리","tags":["react","JavaScript","deepdive","useState","hook","클로저"],"isFeatured":false,"content":"$15"},{"slug":"posts/Javascript/클로저에 대하여","title":"클로저에 대하여","date":"2024-10-25T20:00:24.000Z","image":"index.png","summary":"자바스크립트의 어렵지만 중요한 클로저의 개념과 활용을 함께 살펴보자","tags":["JavaScript","deepdive","클로저","생명주기"],"isFeatured":false,"content":"$16"},{"slug":"posts/React/[React DeepDive] React의 가상 DOM","title":"[React DeepDive] React의 가상 DOM","date":"2024-09-25T12:00:24.000Z","image":"React.svg","summary":"리액트 딥다이브 책 내용 중 '가상 DOM과 파이버'의 정리 내용입니다.","tags":["react","deepdive","Virtual DOM"],"isFeatured":false,"content":"$17"},{"slug":"posts/Algorithm/[백준 gold 5] 빌런 호석","title":"[백준 gold 5] 빌런 호석","date":"2024-08-09T17:05:24.000Z","image":"index.png","summary":"dfs을 활용한 프로그래머스 [level 3] 징검다리 건너기 문제 풀이 입니다.","tags":["Algorithm","백준","gold","dfs"],"isFeatured":false,"content":"$18"},{"slug":"posts/Algorithm/[프로그래머스lv3]아이템 줍기","title":"[프로그래머스 level 3] 아이템 줍기","date":"2024-07-12T16:34:24.000Z","image":"index.png","summary":"bfs를 활용한 프로그래머스 [level 3] 아이템 줍기 문제 풀이 입니다.","tags":["Algorithm","프로그래머스","lv3","bfs"],"isFeatured":false,"content":"$19"},{"slug":"posts/Algorithm/[프로그래머스lv3]징검다리건너기","title":"[프로그래머스 level 3] 징검다리 건너기","date":"2024-07-08T18:33:24.000Z","image":"index.png","summary":"이분탐색을 활용한 프로그래머스 [level 3] 징검다리 건너기 문제 풀이 입니다.","tags":["Algorithm","프로그래머스","lv3","이분탐색"],"isFeatured":false,"content":"$1a"},{"slug":"posts/Javascript/javascriptdeepdive10","title":"객체 리터럴","date":"2024-04-29T15:33:24.000Z","image":"javascript.png","summary":"자바스크립트 딥다이브 책 내용 중 '객체 리터럴'의 정리 내용입니다.","tags":["JavaScript"],"isFeatured":false,"content":"$1b"},{"slug":"posts/Javascript/javascriptdeepdive11","title":"원시 값과 객체의 비교","date":"2024-04-26T14:30:51.000Z","image":"javascript.png","summary":"자바스크립트 딥다이브 책 내용 중 '원시 값과 객체의 비교'의 정리 내용입니다.","tags":["JavaScript"],"isFeatured":false,"content":"$1c"},{"slug":"posts/Javascript/javascriptdeepdive09","title":"자바스크립트 딥다이브: 09.타입 변환과 단축평가","date":"2024-04-22T12:00:24.000Z","image":"javascript.png","summary":"자바스크립트 딥다이브 책 내용 중 '타입 변환과 단축평가'의 정리 내용입니다.","tags":["JavaScript"],"isFeatured":false,"content":"$1d"}]}],["$L1e","$L1f"],"$L20"]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"9jMKkK9lWdvYvmtV63o3a"}
+	```0:{"rsc":["$","$1","c",{"children":[["$","$L2",null,{"allPosts":[{"title":"AI 리뷰 비동기 상태와 알림 갱신 기록","date":"2026-05-03T20:43:16.000Z","image":"index.png","project":{"title":"CodeMate","slug":"codemate"},"summary":"AI 리뷰 요청과 완료 시점을 분리하기 위해 대기·진행·완료·실패 상태를 두었습니다. 진행 상태는 polling으로 갱신하고 중복 실행은 서버와 DB에서 막은 이유를 정리했습니다.","tags":["react","nextjs","typescript"],"slug":"posts/React/AI 리뷰 비동기 상태 흐름과 실시간 알림 구조 정리","aliases":[],"assetSlug":"posts/React/AI 리뷰 비동기 상태 흐름과 실시간 알림 구조 정리","isFeatured":false,"content":"$3"},{"title":"PR 댓글 이벤트를 Query 캐시에 반영한 이유와 재조회 경계","slug":"posts/React/PR 댓글 이벤트를 Query 캐시에 반영한 이유와 재조회 경계","aliases":["posts/React/React Query 캐시 전략으로 PR 댓글 API 요청을 10회에서 0회로 줄인 과정"],"date":"2026-04-18T20:49:07.000Z","image":"index.png","project":{"title":"CodeMate","slug":"codemate"},"summary":"과거 Socket 댓글 이벤트는 Query 캐시에 직접 반영하고, mutation 뒤에는 서버 상태를 다시 조회했습니다. 빠른 반영과 정합성 확인의 경계를 나눈 이유를 정리했습니다.","tags":["react","react-query","cache","performance","codemate","setQueryData","invalidateQueries"],"assetSlug":"posts/React/React Query 캐시 전략으로 PR 댓글 API 요청을 10회에서 0회로 줄인 과정","isFeatured":false,"content":"$4"},{"title":"과거 PR 댓글 WebSocket 설계 기록","slug":"posts/React/과거 PR 댓글 WebSocket 설계 기록","aliases":["posts/React/PR 댓글 실시간 시스템을 WebSocket으로 설계한 이유"],"date":"2026-04-18T20:43:16.000Z","image":"index.png","project":{"title":"CodeMate","slug":"codemate"},"summary":"처음에는 PR 댓글을 WebSocket으로 구현했습니다. 이후 일반 댓글은 10초 polling으로 바꾸고 Socket.IO는 공동 리뷰방에만 남긴 이유를 정리했습니다.","tags":["react","websocket","realtime","codemate","comments"],"assetSlug":"posts/React/PR 댓글 실시간 시스템을 WebSocket으로 설계한 이유","isFeatured":false,"content":"$5"},{"title":"과거 대시보드 병렬 조회 실험 기록","date":"2026-04-04T12:00:24.000Z","image":"index.png","project":{"title":"CodeMate","slug":"codemate"},"summary":"2026년 4월 당시 대시보드 병렬 조회 실험입니다. 현재 구현이나 성능 수치를 나타내지 않습니다.","tags":["nextjs","react","performance","server-components","promise-all","optimization"],"slug":"posts/React/Next.js 서버 컴포넌트에서 Promise.all()로 대시보드 응답 시간 2배 단축하기","aliases":[],"assetSlug":"posts/React/Next.js 서버 컴포넌트에서 Promise.all()로 대시보드 응답 시간 2배 단축하기","isFeatured":false,"content":"$6"},{"title":"React Native 칸반보드 드래그 앤 드롭 성능 최적화 (3) - Zustand Store와 React.memo로 리렌더링 최소화","date":"2026-03-22T12:00:00.000Z","image":"index.png","project":{"title":"Fly:On","slug":"fly-on"},"summary":"2편의 개선에도 불구하고 남아있는 30-46ms짜리 큰 리렌더링의 원인은 props drilling이었습니다. Zustand store로 draggingItem 상태를 분리하고, React.memo와 세밀한 selector로 전체 트리 리렌더링을 차단합니다.","tags":["react native","드래그 앤 드롭","성능 최적화","Zustand","React.memo","selector","칸반보드","props drilling"],"slug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 성능 최적화 (3) - Zustand Store와 React.memo로 리렌더링 최소화","aliases":[],"assetSlug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 성능 최적화 (3) - Zustand Store와 React.memo로 리렌더링 최소화","isFeatured":false,"content":"$7"},{"title":"React Native 칸반보드 드래그 앤 드롭 성능 최적화 (2) - PanResponder 안정화와 Native 애니메이션","date":"2026-03-08T22:00:00.000Z","image":"index.png","project":{"title":"Fly:On","slug":"fly-on"},"summary":"1편에서 측정한 문제들 중 즉각적인 효과가 있는 것부터 개선합니다. PanResponder를 useMemo로 안정화하고, 애니메이션을 Native 스레드로 전환합니다. 그리고 실제 측정 결과를 봅니다.","tags":["react native","드래그 앤 드롭","성능 최적화","PanResponder","useMemo","useRef","useNativeDriver","칸반보드"],"slug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 성능 최적화 (2) - PanResponder 안정화와 Native 애니메이션","aliases":[],"assetSlug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 성능 최적화 (2) - PanResponder 안정화와 Native 애니메이션","isFeatured":false,"content":"$8"},{"title":"React Native 칸반보드 드래그 앤 드롭 성능 최적화 (1) - 문제 인식과 측정","date":"2026-02-22T22:00:00.000Z","image":"index.png","project":{"title":"Fly:On","slug":"fly-on"},"summary":"칸반보드 드래그 앤 드롭에서 드래그 중에 불필요한 리렌더링 및 버벅임이 발생하는 문제를 수치로 측정하고 원인을 분석합니다.","tags":["react native","드래그 앤 드롭","성능 최적화","리렌더링","칸반보드","PanResponder","props drilling"],"slug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 성능 최적화 (1) - 문제 인식과 측정","aliases":[],"assetSlug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 성능 최적화 (1) - 문제 인식과 측정","isFeatured":false,"content":"$9"},{"title":"React Native 칸반보드 드래그 앤 드롭 구현기 (4)","date":"2026-02-08T22:00:00.000Z","image":"index.png","project":{"title":"Fly:On","slug":"fly-on"},"summary":"드래그 중 화면 경계에서 자동으로 스크롤되는 기능을 requestAnimationFrame 기반으로 구현합니다.","tags":["react native","드래그 앤 드롭","자동 스크롤","requestAnimationFrame","칸반보드"],"slug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 구현기_4","aliases":[],"assetSlug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 구현기_4","isFeatured":false,"content":"$a"},{"title":"React Native 칸반보드 드래그 앤 드롭 구현기 (3)","date":"2026-01-24T22:00:00.000Z","image":"index.png","project":{"title":"Fly:On","slug":"fly-on"},"summary":"Floating Card를 Portal 패턴으로 구현하여 드래그 앤 드롭의 시각적 완성도를 높이는 방법을 다룹니다.","tags":["react native","드래그 앤 드롭","Portal","Context API","Animated"],"slug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 구현기_3","aliases":[],"assetSlug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 구현기_3","isFeatured":false,"content":"$b"},{"title":"React Native 칸반보드 드래그 앤 드롭 구현기 (2)","date":"2026-01-11T21:50:00.000Z","image":"index.png","project":{"title":"Fly:On","slug":"fly-on"},"summary":"드래그 앤 드롭의 핵심 훅 구조와 절대 좌표 기반 레이아웃 측정, 드롭 타겟 계산 로직을 구현합니다.","tags":["react native","드래그 앤 드롭","PanResponder","칸반보드","hooks"],"slug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 구현기_2","aliases":[],"assetSlug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 구현기_2","isFeatured":false,"content":"$c"},{"title":"React Native 칸반보드 드래그 앤 드롭 구현기 (1)","date":"2025-12-28T22:16:00.000Z","image":"index.png","project":{"title":"Fly:On","slug":"fly-on"},"summary":"React Native에서 칸반보드 형태의 Drag & Drop을 구현하며 PanResponder 기반 절대 좌표 시스템을 선택한 이유와 구현 과정을 공유합니다.","tags":["react native","드래그 앤 드롭","PanResponder","칸반보드","트러블슈팅"],"slug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 구현기_1","aliases":[],"assetSlug":"posts/React Native/React Native 칸반보드 드래그 앤 드롭 구현기_1","isFeatured":false,"content":"$d"},{"title":"React Native에서 Google Maps 연동 및 위치 추적 기능 구현하기","date":"2025-03-25T13:40:00.000Z","image":"index.png","summary":"React Native에서 Google Maps 연동 및 위치 추적 기능 구현하고, 초기 위치 설정하는 과정에서 발생한 문제를 해결하는 과정입니다.","tags":["react native","트러블슈팅","google map","expo-location","졸업작품"],"slug":"posts/React Native/React Native에서 Google Maps 연동 및 위치 추적 기능 구현하기","aliases":[],"assetSlug":"posts/React Native/React Native에서 Google Maps 연동 및 위치 추적 기능 구현하기","isFeatured":false,"content":"$e"},{"title":"setState는 비동기일까","date":"2025-03-11T13:00:24.000Z","image":"index.png","summary":"setState가 왜 동기 함수인지, 그리고 react서는 setState를 통해 상태 업데이트를 어떻게 하는지 알아보자.","tags":["react","JavaScript","deepdive","useState","hook"],"slug":"posts/React/setState는 비동기일까","aliases":[],"assetSlug":"posts/React/setState는 비동기일까","isFeatured":false,"content":"$f"},{"title":"React와 Next.js의 Suspense에 대해 알아보자","date":"2024-11-25T00:00:24.000Z","image":"index.png","summary":"React와 Next.js에서 Suspense를 어떤 방식으로 다르게 다루는지, 그리고 Next.js에서 이로인해 발생할 수 있는 에러와 해결방법에 대해 알아보자.","tags":["react","next.js","deepdive","SSR","Suspense","렌더링"],"slug":"posts/React/React와 Nextjs의 Suspense","aliases":[],"assetSlug":"posts/React/React와 Nextjs의 Suspense","isFeatured":false,"content":"$10"},{"title":"리액트 컴포넌트 테스트 코드 시작하기","date":"2024-11-18T17:00:24.000Z","image":"index.png","summary":"React Deepdive 서적의 React 컴포넌트의 테스트 코드를 정리하였다.","tags":["react","테스트","deepdive"],"slug":"posts/React/리액트 컴포넌트 테스트 코드 시작하기","aliases":[],"assetSlug":"posts/React/리액트 컴포넌트 테스트 코드 시작하기","isFeatured":false,"content":"$11"},{"title":"React 개발자 도구(React dev tools)로 불필요한 렌더링을 없애본 경험","date":"2024-11-11T17:00:24.000Z","image":"index.png","summary":"React 개발자 도구(React dev tools)의 기능들과 이를 활용해본 경험을 공유해보겠다.","tags":["react","next.js","렌더링","트러블슈팅","deepdive","dev tools"],"slug":"posts/React/React 개발자 도구(React dev tools)로 불필요한 렌더링을 없애본 경험","aliases":[],"assetSlug":"posts/React/React 개발자 도구(React dev tools)로 불필요한 렌더링을 없애본 경험","isFeatured":false,"content":"$12"},{"title":"서버사이드 렌더링에 대해 알아보자(Feat: next.js, SSG)","date":"2024-11-03T22:00:24.000Z","image":"index.png","summary":"클라이언트 사이드 렌더링(CSR)과 서버 사이드 렌더링(SSR)에 대해서 그리고 SSR을 활용한 next.js 예제와 SSG의 개념과 예제까지 알아보자.","tags":["react","next.js","deepdive","SSR","SSG","렌더링"],"slug":"posts/React/서버사이드 렌더링에 대해 알아보자","aliases":[],"assetSlug":"posts/React/서버사이드 렌더링에 대해 알아보자","isFeatured":false,"content":"$13"},{"title":"[PCCP 기출문제] 퍼즐게임 챌린지","date":"2024-10-31T12:05:24.000Z","image":"index.jpg","summary":"프로그래머스 [PCCP 기출문제] level 2 퍼즐게임 챌린지 문제 풀이 입니다.","tags":["Algorithm","프로그래머스","PCCP","lv2","이분탐색"],"slug":"posts/Algorithm/[PCCP 기출문제]퍼즐게임 챌린지","aliases":[],"assetSlug":"posts/Algorithm/[PCCP 기출문제]퍼즐게임 챌린지","isFeatured":false,"content":"$14"},{"title":"React useState 훅과 클로저","date":"2024-10-26T18:00:24.000Z","image":"index.png","summary":"클로저를 이용한 React useState 훅의 작동 원리","tags":["react","JavaScript","deepdive","useState","hook","클로저"],"slug":"posts/React/React useState 훅과 클로저","aliases":[],"assetSlug":"posts/React/React useState 훅과 클로저","isFeatured":false,"content":"$15"},{"title":"클로저에 대하여","date":"2024-10-25T20:00:24.000Z","image":"index.png","summary":"자바스크립트의 어렵지만 중요한 클로저의 개념과 활용을 함께 살펴보자","tags":["JavaScript","deepdive","클로저","생명주기"],"slug":"posts/Javascript/클로저에 대하여","aliases":[],"assetSlug":"posts/Javascript/클로저에 대하여","isFeatured":false,"content":"$16"},{"title":"[React DeepDive] React의 가상 DOM","date":"2024-09-25T12:00:24.000Z","image":"React.svg","summary":"리액트 딥다이브 책 내용 중 '가상 DOM과 파이버'의 정리 내용입니다.","tags":["react","deepdive","Virtual DOM"],"slug":"posts/React/[React DeepDive] React의 가상 DOM","aliases":[],"assetSlug":"posts/React/[React DeepDive] React의 가상 DOM","isFeatured":false,"content":"$17"},{"title":"[백준 gold 5] 빌런 호석","date":"2024-08-09T17:05:24.000Z","image":"index.png","summary":"dfs을 활용한 프로그래머스 [level 3] 징검다리 건너기 문제 풀이 입니다.","tags":["Algorithm","백준","gold","dfs"],"slug":"posts/Algorithm/[백준 gold 5] 빌런 호석","aliases":[],"assetSlug":"posts/Algorithm/[백준 gold 5] 빌런 호석","isFeatured":false,"content":"$18"},{"title":"[프로그래머스 level 3] 아이템 줍기","date":"2024-07-12T16:34:24.000Z","image":"index.png","summary":"bfs를 활용한 프로그래머스 [level 3] 아이템 줍기 문제 풀이 입니다.","tags":["Algorithm","프로그래머스","lv3","bfs"],"slug":"posts/Algorithm/[프로그래머스lv3]아이템 줍기","aliases":[],"assetSlug":"posts/Algorithm/[프로그래머스lv3]아이템 줍기","isFeatured":false,"content":"$19"},{"title":"[프로그래머스 level 3] 징검다리 건너기","date":"2024-07-08T18:33:24.000Z","image":"index.png","summary":"이분탐색을 활용한 프로그래머스 [level 3] 징검다리 건너기 문제 풀이 입니다.","tags":["Algorithm","프로그래머스","lv3","이분탐색"],"slug":"posts/Algorithm/[프로그래머스lv3]징검다리건너기","aliases":[],"assetSlug":"posts/Algorithm/[프로그래머스lv3]징검다리건너기","isFeatured":false,"content":"$1a"},{"title":"객체 리터럴","date":"2024-04-29T15:33:24.000Z","image":"javascript.png","summary":"자바스크립트 딥다이브 책 내용 중 '객체 리터럴'의 정리 내용입니다.","tags":["JavaScript"],"slug":"posts/Javascript/javascriptdeepdive10","aliases":[],"assetSlug":"posts/Javascript/javascriptdeepdive10","isFeatured":false,"content":"$1b"},{"title":"원시 값과 객체의 비교","date":"2024-04-26T14:30:51.000Z","image":"javascript.png","summary":"자바스크립트 딥다이브 책 내용 중 '원시 값과 객체의 비교'의 정리 내용입니다.","tags":["JavaScript"],"slug":"posts/Javascript/javascriptdeepdive11","aliases":[],"assetSlug":"posts/Javascript/javascriptdeepdive11","isFeatured":false,"content":"$1c"},{"title":"자바스크립트 딥다이브: 09.타입 변환과 단축평가","date":"2024-04-22T12:00:24.000Z","image":"javascript.png","summary":"자바스크립트 딥다이브 책 내용 중 '타입 변환과 단축평가'의 정리 내용입니다.","tags":["JavaScript"],"slug":"posts/Javascript/javascriptdeepdive09","aliases":[],"assetSlug":"posts/Javascript/javascriptdeepdive09","isFeatured":false,"content":"$1d"}]}],["$L1e","$L1f"],"$L20"]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"_Icf5e3yCqYGsiNla_3bp"}
 1e:["$","script","script-0",{"src":"/_next/static/chunks/13619btn_xunv.js","async":true}]
-1f:["$","script","script-1",{"src":"/_next/static/chunks/0_oxony74r~v1.js","async":true}]
+1f:["$","script","script-1",{"src":"/_next/static/chunks/17hw5c17km3ew.js","async":true}]
 20:["$","$L21",null,{"children":["$","$22",null,{"name":"Next.MetadataOutlet","children":"$@23"}]}]
 23:null
