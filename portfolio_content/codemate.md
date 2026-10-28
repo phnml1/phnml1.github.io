@@ -9,6 +9,9 @@ description: 'GitHub PR의 변경 코드를 AI로 분석하고, 팀원이 같은
 audience: 'GitHub Pull Request(PR)를 검토하는 개발자와 소규모 팀'
 problem: '변경 파일이 많은 PR에서는 첫 코드를 보기까지 기다려야 하고, 원격 리뷰 중에는 서로 보고 있는 위치를 맞추기 어렵습니다.'
 contribution: 'GitHub 인증·PR 수집부터 AI 분석, 리뷰 저장·표시, Socket.IO 공동 리뷰방까지 구현하고 운영 지연을 계측했습니다.'
+decision: '보이지 않는 diff의 파싱·DOM 생성을 미루면서 스크롤 공간은 보존하기 위해 화면 밖 diff를 placeholder로 대체했습니다. 일반 댓글은 polling, 협업방은 Socket.IO로 나눈 이유는 [입력 필요]입니다.'
+result: '변경 파일이 많은 PR에서 화면 밖 diff를 렌더링하지 않도록 바꿔, 첫 코드 표시를 3.259초에서 2.334초로, DOM을 약 90% 줄였습니다(운영 PR 1건, 20회 측정 중앙값).'
+note: '[확인 필요] AI 코딩 도구를 활용해 개발했고, 설계·성능 측정·검증은 직접 수행했습니다.'
 userFlow:
   - 'GitHub 로그인 후 리뷰할 PR 선택'
   - 'GitHub에서 변경 코드를 가져와 AI로 분석'
@@ -82,10 +85,10 @@ PR 제목과 상태는 먼저 보여줄 수 있지만, 변경 파일과 코드 �
 
 처음에는 Vercel 함수가 미국 `iad1`, Supabase DB 연결 지점이 Singapore에 있었습니다. 인증·방 조회·메시지 저장처럼 DB를 오가는 구간이 길어 함수 리전을 DB와 같은 `sin1`로 옮겼습니다. DB 쿼리 자체는 바꾸지 않았습니다.
 
-| 측정 대상 · 중앙값 | 변경 전: 함수 `iad1` · 10회 | 변경 후: 함수 `sin1` · 20회 |
-| --- | ---: | ---: |
-| 브라우저 Resource Timing의 채팅 POST 응답 시간 | 3,522.5ms | 351.2ms |
-| Next.js `Server-Timing`의 `dbCreate` 구간 | 1,344.3ms | 20.1ms |
+| 측정 대상 · 중앙값                             | 변경 전: 함수 `iad1` · 10회 | 변경 후: 함수 `sin1` · 20회 |
+| ---------------------------------------------- | --------------------------: | --------------------------: |
+| 브라우저 Resource Timing의 채팅 POST 응답 시간 |                   3,522.5ms |                     351.2ms |
+| Next.js `Server-Timing`의 `dbCreate` 구간      |                   1,344.3ms |                      20.1ms |
 
 2026년 10월 13~14일, 같은 운영 PR의 기존 협업방과 같은 계정에서 순차 전송한 표본입니다. 변경 전후 날짜와 표본 수가 다릅니다. 변경 후에는 `socketEmit` 중앙값이 187.3ms(20회)로 측정된 서버 구간 중 가장 길어, 다음에는 Socket 호출 경로를 조사했습니다.
 
@@ -93,11 +96,11 @@ PR 제목과 상태는 먼저 보여줄 수 있지만, 변경 파일과 코드 �
 
 Next.js의 `socketEmit`은 저장한 메시지를 Socket 서버의 `/internal/emit`으로 보내고 응답을 기다립니다. Socket 서버 처리 로그와 비교하니 내부 처리 자체는 짧았습니다. Vercel 함수는 Singapore에 둔 채 Railway Socket 서버와 Redis를 US West에서 Singapore로 **함께** 옮겨 별도로 전후를 측정했습니다.
 
-| 측정 대상 · 중앙값 | 변경 전: Socket·Redis US West · 20회 | 변경 후: Socket·Redis Singapore · 20회 |
-| --- | ---: | ---: |
-| 브라우저 CDP의 채팅 POST 시작 → 응답 헤더 | 427.7ms | 177.1ms |
-| Next.js `Server-Timing`의 `socketEmit` 구간 | 182.5ms | 9.2ms |
-| Socket 구조화 로그의 `/internal/emit` 처리 | 0.8ms (20건) | 0.7ms (19건 대조) |
+| 측정 대상 · 중앙값                          | 변경 전: Socket·Redis US West · 20회 | 변경 후: Socket·Redis Singapore · 20회 |
+| ------------------------------------------- | -----------------------------------: | -------------------------------------: |
+| 브라우저 CDP의 채팅 POST 시작 → 응답 헤더   |                              427.7ms |                                177.1ms |
+| Next.js `Server-Timing`의 `socketEmit` 구간 |                              182.5ms |                                  9.2ms |
+| Socket 구조화 로그의 `/internal/emit` 처리  |                         0.8ms (20건) |                      0.7ms (19건 대조) |
 
 2026년 10월 14일, 같은 운영 방·계정에서 전후 각 20건을 순차 전송했고 POST 40건 모두 HTTP 201이었습니다. Socket 처리 로그는 변경 후 1건을 찾지 못해 19건만 메시지 ID로 대조했습니다. `socketEmit`에는 내부 HTTP 요청 전체가 포함되므로 Socket 처리 시간과의 차이를 순수 네트워크 왕복 시간으로 볼 수 없습니다.
 

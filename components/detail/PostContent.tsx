@@ -20,6 +20,7 @@ SyntaxHighlighter.registerLanguage('python', python);
 interface PostContentProps {
   content: string;
   slug: string;
+  assetSlug: string;
   title: string;
 }
 
@@ -27,7 +28,15 @@ const PostContent: React.FC<PostContentProps> = (props) => {
   const customRenderers = {
     a: ({ href, children }) => <Link href={href as string}>{children}</Link>,
     h1: ({ children }) => <h2>{children}</h2>,
-    code: ({ inline, className, children }: { inline?: boolean; className?: string; children?: React.ReactNode }) => {
+    code: ({
+      inline,
+      className,
+      children,
+    }: {
+      inline?: boolean;
+      className?: string;
+      children?: React.ReactNode;
+    }) => {
       if (!inline && className) {
         return <code className={className}>{children}</code>;
       }
@@ -57,15 +66,15 @@ const PostContent: React.FC<PostContentProps> = (props) => {
       }
       return null;
     },
-      img: (img) => {
-        const src = img.src.startsWith('/') ? img.src : `/${props.slug}/${img.src}`;
-        const isGif = img.src.endsWith('.gif');
-        const width = img.width ? Number(img.width) : isGif ? 1350 : 900;
-        const height = img.height ? Number(img.height) : isGif ? 760 : 520;
+    img: (img) => {
+      const src = img.src.startsWith('/') ? img.src : `/${props.assetSlug}/${img.src}`;
+      const isGif = img.src.endsWith('.gif');
+      const width = img.width ? Number(img.width) : isGif ? 1350 : 900;
+      const height = img.height ? Number(img.height) : isGif ? 760 : 520;
 
-        return (
-          <Image
-            src={src}
+      return (
+        <Image
+          src={src}
           alt={img.alt || img.src}
           width={width}
           height={height}

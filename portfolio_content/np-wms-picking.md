@@ -7,14 +7,15 @@ role: 'PDA Frontend 중심 / 초기 Backend·관리자 화면 기여'
 description: '창고 작업자가 PDA와 물리 스캐너로 위치·상품·수량을 확인하며 피킹을 진행하는 현장 작업 화면입니다.'
 audience: '창고 현장 작업자'
 problem: '스캔 입력이 흔들리거나 네트워크가 끊겨도 작업 기록을 잃거나 같은 수량을 중복 반영하지 않아야 했습니다.'
-contribution: 'PDA 단계 UI, Android 스캐너 입력 연결, IndexedDB 오프라인 명령 보존과 WMS 응답 표시를 구현했습니다. 초기 Backend·관리자 화면에도 일부 기여했습니다.'
+contribution: 'PDA 단계 UI, Android 스캐너 입력 연결, IndexedDB 오프라인 명령 보존과 WMS 응답 표시를 구현했습니다. 초기 Backend의 [구체적인 API]와 관리자 화면의 [구체적인 화면]을 구현했습니다.'
 userFlow:
   - '배정된 작업 확인'
   - '위치·상품 스캔'
   - '수량·분류 확인'
   - '연결 복구 후 전송'
 implementation: 'Android native layer에서 물리 스캐너 키 이벤트를 완성된 scan으로 변환해 WebView에 전달했습니다. 네트워크 요청 전에는 IndexedDB outbox에 clientEventId·expectedVersion·payload를 저장해 재연결 후에도 같은 명령을 복구했습니다.'
-decision: 'PDA에 작업을 저장한 것과 WMS 서버가 작업을 받아들인 것을 별도 상태로 표시했습니다. 응답이 사라져도 같은 작업 번호로 다시 보내고, 서버의 작업 버전이 달라졌다면 자동 처리하지 않고 멈추도록 했습니다.'
+decision: '로컬 저장과 서버 수락을 분리해 네트워크가 끊겨도 작업 사실을 잃지 않기 위해 IndexedDB에 작업을 보관했습니다. 응답 유실 시 재전송으로 같은 수량이 두 번 반영되는 것과 오래된 명령을 막기 위해 clientEventId·version을 검증했습니다.'
+result: '네트워크가 끊겨도 작업 명령이 기기에 보존되고 재연결 시 순서대로 전송되도록 구현했습니다. 운영 효과는 [입력 필요]입니다.'
 stack:
   [
     'React',

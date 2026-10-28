@@ -13,6 +13,14 @@ export const metadata = {
     description:
       '프로젝트 Case Study와 포트폴리오 플랫폼, 이전 프론트엔드 협업 경험을 구분해 정리한 목록',
     url: '/projects',
+    images: [
+      {
+        url: '/og.png',
+        width: 1200,
+        height: 630,
+        alt: '이주영 Frontend Developer 포트폴리오',
+      },
+    ],
   },
 };
 
@@ -40,6 +48,8 @@ const PROJECT_GROUPS = [
   },
 ];
 
+const COMPANY_PROJECTS = new Set(['np-wms-picking', 'np-ois', 'np-cell-label-kiosk']);
+
 export default function ProjectsPage() {
   const projects = getPortfolioProjects()
     .filter((project) => PROJECT_ORDER.includes(project.slug))
@@ -66,12 +76,14 @@ export default function ProjectsPage() {
 
         <div className="mt-12 grid gap-14">
           {PROJECT_GROUPS.map((group) => {
-            const sections = group.sections.map((section) => ({
-              ...section,
-              projects: section.slugs
-                .map((slug) => projects.find((project) => project.slug === slug))
-                .filter((project): project is PortfolioProject => Boolean(project)),
-            })).filter((section) => section.projects.length > 0);
+            const sections = group.sections
+              .map((section) => ({
+                ...section,
+                projects: section.slugs
+                  .map((slug) => projects.find((project) => project.slug === slug))
+                  .filter((project): project is PortfolioProject => Boolean(project)),
+              }))
+              .filter((section) => section.projects.length > 0);
 
             if (sections.length === 0) {
               return null;
@@ -87,7 +99,11 @@ export default function ProjectsPage() {
 
                 <div className="grid gap-10">
                   {sections.map((section) => (
-                    <section key={section.label ?? group.label} aria-label={section.label ?? undefined} className="grid gap-5">
+                    <section
+                      key={section.label ?? group.label}
+                      aria-label={section.label ?? undefined}
+                      className="grid gap-5"
+                    >
                       {section.label ? (
                         <p className="border-b border-outline/70 pb-3 text-lg font-bold text-white">
                           {section.label}
@@ -128,15 +144,13 @@ function ProjectCard({ project }: { project: PortfolioProject }) {
       <article className="flex h-full min-h-[320px] flex-col">
         <div>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className="font-label text-xs font-bold text-primary">
-              {frontmatter.team}
-            </span>
+            <span className="font-label text-xs font-bold text-primary">{frontmatter.team}</span>
             <span className="text-xs text-text-secondary">{frontmatter.period}</span>
           </div>
 
-          <h2 className="mt-4 text-2xl font-black leading-tight text-white transition-colors group-hover:text-primary md:text-3xl">
+          <h3 className="mt-4 text-2xl font-black leading-tight text-white transition-colors group-hover:text-primary md:text-3xl">
             {frontmatter.title}
-          </h2>
+          </h3>
           <p className="mt-3 line-clamp-3 break-keep text-base leading-7 text-white">
             {project.summary}
           </p>
@@ -145,10 +159,29 @@ function ProjectCard({ project }: { project: PortfolioProject }) {
         <div className="mt-6 grid gap-3 border-t border-outline/70 pt-5">
           <CardFact label="핵심 문제" value={frontmatter.problem} />
           <CardFact label="내 역할" value={frontmatter.contribution} />
+          <CardFact label="기술 선택 이유" value={frontmatter.decision} />
+          <CardFact label="결과" value={frontmatter.result} />
         </div>
 
+        {COMPANY_PROJECTS.has(project.slug) ? (
+          <p className="mt-4 text-xs font-semibold text-text-secondary">
+            사내 코드는 비공개입니다.
+          </p>
+        ) : null}
+
+        {frontmatter.note ? (
+          <p className="mt-4 border-l-2 border-primary/60 pl-3 text-xs leading-5 text-text-secondary">
+            {frontmatter.note}
+          </p>
+        ) : null}
+
         <div className="mt-auto flex items-center justify-end border-t border-outline/70 pt-4">
-          <span aria-hidden="true" className="text-2xl text-primary transition-transform group-hover:translate-x-1">→</span>
+          <span
+            aria-hidden="true"
+            className="text-2xl text-primary transition-transform group-hover:translate-x-1"
+          >
+            →
+          </span>
         </div>
       </article>
     </Link>
@@ -159,11 +192,9 @@ function CardFact({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
 
   return (
-    <div className="grid gap-1 text-sm leading-6 sm:grid-cols-[80px_minmax(0,1fr)] sm:gap-3">
-      <span className="font-label text-xs font-bold text-primary">
-        {label}
-      </span>
-      <span className="line-clamp-2 break-keep text-text-secondary">{value}</span>
+    <div className="grid gap-1 text-sm leading-6 sm:grid-cols-[104px_minmax(0,1fr)] sm:gap-3">
+      <span className="font-label text-xs font-bold text-primary">{label}</span>
+      <span className="min-w-0 break-words text-text-secondary">{value}</span>
     </div>
   );
 }

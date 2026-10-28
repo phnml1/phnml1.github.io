@@ -122,7 +122,7 @@ const SideBar: React.FC<SidebarProps> = ({ setSideBar }) => {
             <Link
               href="mailto:juyung0903@naver.com"
               onClick={() => setSideBar(false)}
-              className="hover:text-white"
+              className="break-all hover:text-white"
             >
               juyung0903@naver.com
             </Link>

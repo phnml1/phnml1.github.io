@@ -1,130 +1,151 @@
 import path from 'path';
 import fs from 'fs';
-import {Post, PrevNextDataInfo} from '@/types';
+import { Post, PrevNextDataInfo } from '@/types';
 const matter = require('gray-matter');
 
-const dir:string = 'posts';
+const dir: string = 'posts';
 
-const postsDirectory = (category:string):string => path.join(process.cwd(), `posts/${category}`);
+const postsDirectory = (category: string): string => path.join(process.cwd(), `posts/${category}`);
 
-const getAllFilePaths = (dir: string): string[] => 
+const getAllFilePaths = (dir: string): string[] =>
   fs.readdirSync(dir).reduce<string[]>((files, file) => {
     const name = path.join(dir, file);
     const isDirectory = fs.statSync(name).isDirectory();
     return isDirectory ? [...files, ...getAllFilePaths(name)] : [...files, name];
   }, []);
 
-const getFilePaths = (category:string) : string[] => {
-  const postsDir:string  = postsDirectory(category);
-  const postFiles:string[] = fs.readdirSync(postsDir);
+const getFilePaths = (category: string): string[] => {
+  const postsDir: string = postsDirectory(category);
+  const postFiles: string[] = fs.readdirSync(postsDir);
   const filePaths = postFiles.map((postFile) => `${dir}/${category}/${postFile}`);
   return filePaths;
-}
+};
 
-function convertFilePaths(filePath:string):string {
-  const relativePath:string = path.relative('posts', filePath);
-  const urlPath:string = relativePath.replace(/\.mdx?$/, '').replace(/\\/g, '/');
+function convertFilePaths(filePath: string): string {
+  const relativePath: string = path.relative('posts', filePath);
+  const urlPath: string = relativePath.replace(/\.mdx?$/, '').replace(/\\/g, '/');
   return urlPath;
 }
 
-export function getPostData(filePath:string):Post {
-  const postSlugs:string[] = convertFilePaths(filePath).split('/');
-  const fileContent:string = fs.readFileSync(filePath, 'utf-8');
-  const {data,content} = matter(fileContent);
+export function getPostData(filePath: string): Post {
+  const postSlugs: string[] = convertFilePaths(filePath).split('/');
+  const fileContent: string = fs.readFileSync(filePath, 'utf-8');
+  const { data, content } = matter(fileContent);
+  const canonicalLeaf =
+    typeof data.slug === 'string' && data.slug.trim() ? data.slug.trim() : postSlugs[1];
+  const aliases = Array.isArray(data.aliases)
+    ? data.aliases
+        .filter((alias): alias is string => typeof alias === 'string' && Boolean(alias.trim()))
+        .map((alias) => `${dir}/${postSlugs[0]}/${alias.trim()}`)
+    : [];
   const postData = {
-      slug: `${dir}/${postSlugs[0]}/${postSlugs[1]}`,
-      ...data,
-      tags: Array.isArray(data.tags) ? data.tags : [],
-      isFeatured: data.isFeatured ?? false,
-      content,
+    ...data,
+    slug: `${dir}/${postSlugs[0]}/${canonicalLeaf}`,
+    aliases,
+    assetSlug: `${dir}/${postSlugs[0]}/${postSlugs[1]}`,
+    tags: Array.isArray(data.tags) ? data.tags : [],
+    isFeatured: data.isFeatured ?? false,
+    content,
   };
   return postData;
 }
 
-export function getAllPosts():Post[] {
-  const allFilePaths:string[] = getAllFilePaths(dir);
-  const PostData:Post[] = allFilePaths.map((postFile:string) => getPostData(postFile));
-  const sortedPosts:Post[] = PostData.sort((postA, postB) => postA.date > postB.date ? -1: 1);
-  return sortedPosts;
- 
+export function getPostRoutes() {
+  return getAllPosts().flatMap((post) => [post.slug, ...(post.aliases ?? [])]);
 }
 
-export function getPostsByCategory(category:string):Post[] {
-  if (category != 'all'){
-  const postFiles:string[] = getFilePaths(category);
-  const PostData:Post[] = postFiles.map((postFile) => getPostData(postFile));
-  const sortedPosts:Post[] = PostData.sort((postA, postB) => postA.date > postB.date ? -1: 1);
+export function getPostByRoute(category: string, slug: string) {
+  const route = `${dir}/${category}/${slug}`;
+  const post = getAllPosts().find((item) => item.slug === route || item.aliases?.includes(route));
+
+  if (!post) {
+    return null;
+  }
+
+  return {
+    post,
+    isAlias: post.slug !== route,
+  };
+}
+
+export function getAllPosts(): Post[] {
+  const allFilePaths: string[] = getAllFilePaths(dir);
+  const PostData: Post[] = allFilePaths.map((postFile: string) => getPostData(postFile));
+  const sortedPosts: Post[] = PostData.sort((postA, postB) => (postA.date > postB.date ? -1 : 1));
   return sortedPosts;
+}
+
+export function getPostsByCategory(category: string): Post[] {
+  if (category != 'all') {
+    const postFiles: string[] = getFilePaths(category);
+    const PostData: Post[] = postFiles.map((postFile) => getPostData(postFile));
+    const sortedPosts: Post[] = PostData.sort((postA, postB) => (postA.date > postB.date ? -1 : 1));
+    return sortedPosts;
   }
   return getAllPosts();
 }
 
-
-export const getPrevData = (filePath:string):PrevNextDataInfo => {
+export const getPrevData = (postSlug: string): PrevNextDataInfo => {
   const blogposts = getAllPosts();
-  const index =  blogposts.findIndex((file) => file.slug+'.mdx'===filePath)+1;
-  if (index<blogposts.length) {
+  const index = blogposts.findIndex((file) => file.slug === postSlug) + 1;
+  if (index < blogposts.length) {
     return {
       title: blogposts[index].title,
       slug: blogposts[index].slug,
       summary: blogposts[index].summary,
-    }
-  }
-  else {
-    return { 
+    };
+  } else {
+    return {
       title: blogposts[0].title,
       slug: blogposts[0].slug,
       summary: blogposts[0].summary,
-    }
+    };
   }
-}
+};
 
-export const getNextData = (filePath:string):PrevNextDataInfo => {
+export const getNextData = (postSlug: string): PrevNextDataInfo => {
   const blogposts = getAllPosts();
-  const index =  blogposts.findIndex((file) => file.slug+'.mdx'==filePath)-1;
-  if (index>=0) {
-    return { 
+  const index = blogposts.findIndex((file) => file.slug == postSlug) - 1;
+  if (index >= 0) {
+    return {
       title: blogposts[index].title,
       slug: blogposts[index].slug,
       summary: blogposts[index].summary,
-    }
+    };
+  } else {
+    return {
+      title: blogposts[blogposts.length - 1].title,
+      slug: blogposts[blogposts.length - 1].slug,
+      summary: blogposts[blogposts.length - 1].summary,
+    };
   }
-  else {
-    return { 
-      title: blogposts[blogposts.length-1].title,
-      slug: blogposts[blogposts.length-1].slug,
-      summary: blogposts[blogposts.length-1].summary,
-    }
-  }
-}
+};
 
-export const allTags:string[] = Array.from(
+export const allTags: string[] = Array.from(
   getAllPosts().reduce((ac, v) => {
     (v.tags ?? []).forEach((tag) => ac.add(tag));
     return ac;
   }, new Set<string>([])),
 ).filter(Boolean);
 
-export const getPostsByTags = (tag:string):Post[] => {
-  const posts:Post[] = getAllPosts();
+export const getPostsByTags = (tag: string): Post[] => {
+  const posts: Post[] = getAllPosts();
   if (tag === 'all') {
     return posts;
   } else {
-  return posts.filter(post => (post.tags ?? []).includes(tag));
-}
-}
+    return posts.filter((post) => (post.tags ?? []).includes(tag));
+  }
+};
 
-export function getCategorys():string[] {
-  const categorys:string[] = fs.readdirSync(dir);
+export function getCategorys(): string[] {
+  const categorys: string[] = fs.readdirSync(dir);
   return categorys;
 }
 
-export const recentPosts:Post[] = getAllPosts().slice(0,3);
+export const recentPosts: Post[] = getAllPosts().slice(0, 3);
 // export const posts = allPosts.sort((a, b) => compareDesc(new Date(a.date), new Date(b.date)))
 
 // export const allCategorys = Array.from(new Set(posts.map((post) => (post.category)))).sort();
-
-
 
 // export const getPostsByCategory = (category:string) => {
 //   if (category === 'all') {
@@ -134,15 +155,9 @@ export const recentPosts:Post[] = getAllPosts().slice(0,3);
 //   }
 // };
 
-
 // export const getPostData = (filePath:string) => (
 //   posts.filter((file:Post) => file._raw.sourceFilePath==filePath)[0]
 // )
-
-
-
-
-
 
 // export function getFeaturedPosts() {
 //   const allPosts = getAllPosts();
@@ -155,8 +170,6 @@ export const recentPosts:Post[] = getAllPosts().slice(0,3);
 
 // export const allCategorys = Array.from(new Set(posts.map((post) => (post.category)))).sort();
 
-
-
 // export const getPostsByCategory = (category:string) => {
 //   if (category === 'all') {
 //     return posts;
@@ -165,15 +178,9 @@ export const recentPosts:Post[] = getAllPosts().slice(0,3);
 //   }
 // };
 
-
 // export const getPostData = (filePath:string) => (
 //   posts.filter((file:Post) => file._raw.sourceFilePath==filePath)[0]
 // )
-
-
-
-
-
 
 // export function getFeaturedPosts() {
 //   const allPosts = getAllPosts();

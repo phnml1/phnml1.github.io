@@ -10,6 +10,7 @@ interface FeaturedPostsProps {
     date: Date;
     summary: string;
     image: string;
+    assetSlug?: string;
     tags?: string[];
   };
 }
@@ -22,7 +23,7 @@ const FeaturedPosts: React.FC<FeaturedPostsProps> = ({ post }) => {
       <article className="overflow-hidden rounded-xl bg-surface-container transition-all duration-300 hover:scale-[1.015] hover:bg-surface-high">
         <div className="relative aspect-[16/10] overflow-hidden bg-surface-lowest">
           <Image
-            src={`/${post.slug}/${post.image}`}
+            src={`/${post.assetSlug ?? post.slug}/${post.image}`}
             alt={post.title}
             fill
             sizes="(min-width: 1024px) 45vw, 90vw"

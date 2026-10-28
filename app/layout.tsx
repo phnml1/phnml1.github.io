@@ -9,7 +9,8 @@ export const metadata: Metadata = {
     default: '이주영 | Frontend Developer',
     template: '%s | 이주영',
   },
-  description: 'React와 TypeScript 기반 프로젝트의 문제, 기여 범위, 기술 판단, 검증 결과를 정리한 이주영의 프론트엔드 포트폴리오',
+  description:
+    'React와 TypeScript 기반 프로젝트의 문제, 기여 범위, 기술 판단, 검증 결과를 정리한 이주영의 프론트엔드 포트폴리오',
   authors: [{ name: '이주영', url: 'https://github.com/phnml1' }],
   creator: '이주영',
   icons: {
@@ -21,11 +22,20 @@ export const metadata: Metadata = {
     siteName: '이주영 프론트엔드 포트폴리오',
     locale: 'ko_KR',
     type: 'website',
+    images: [
+      {
+        url: '/og.png',
+        width: 1200,
+        height: 630,
+        alt: '이주영 Frontend Developer 포트폴리오',
+      },
+    ],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: '이주영 | Frontend Developer',
     description: '프로젝트의 문제, 기여 범위, 기술 판단, 검증 결과를 정리한 프론트엔드 포트폴리오',
+    images: ['/og.png'],
   },
 };
 

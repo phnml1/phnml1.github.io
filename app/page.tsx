@@ -8,15 +8,26 @@ import { recentPosts } from '@/utils/Post-Util';
 import { getPortfolioProjects } from '@/utils/PortfolioProject-Util';
 
 export const metadata: Metadata = {
-  title: '이주영 | Frontend Engineer',
+  title: '이주영 | Frontend Developer',
   description:
     'Next.js, React, TypeScript로 업무 화면, API 연동, 실시간 이벤트, 모바일 인터랙션을 구현해 온 이주영의 프론트엔드 포트폴리오',
   alternates: { canonical: '/' },
   openGraph: {
-    title: '이주영 | Frontend Engineer',
-    description: 'React와 TypeScript 기반 업무 화면, 데이터 흐름, 모바일 프로젝트 경험을 정리한 포트폴리오',
+    title: '이주영 | Frontend Developer',
+    description:
+      'React와 TypeScript 기반 업무 화면, 데이터 흐름, 모바일 프로젝트 경험을 정리한 포트폴리오',
     url: '/',
     type: 'website',
+    images: [
+      { url: '/og.png', width: 1200, height: 630, alt: '이주영 Frontend Developer 포트폴리오' },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '이주영 | Frontend Developer',
+    description:
+      'React와 TypeScript 기반 업무 화면, 데이터 흐름, 모바일 프로젝트 경험을 정리한 포트폴리오',
+    images: ['/og.png'],
   },
 };
 
@@ -28,9 +39,17 @@ type HomeProject = {
   summary: string;
   problem: string;
   contribution: string;
+  decision: string;
+  result: string;
+  note?: string;
+  isCompanyProject: boolean;
 };
 
 const featuredProjects = [
+  {
+    slug: 'codemate',
+    type: '개인 프로젝트',
+  },
   {
     slug: 'np-wms-picking',
     type: '회사 프로젝트 · MJ Corporation',
@@ -40,8 +59,8 @@ const featuredProjects = [
     type: '회사 프로젝트 · MJ Corporation',
   },
   {
-    slug: 'codemate',
-    type: '개인 프로젝트',
+    slug: 'fly-on',
+    type: '팀 프로젝트',
   },
 ];
 
@@ -61,8 +80,22 @@ const selectedProjects: HomeProject[] = featuredProjects.map((item) => {
     summary: project.summary,
     problem: project.frontmatter.problem ?? '',
     contribution: project.frontmatter.contribution ?? '',
+    decision: project.frontmatter.decision ?? '[입력 필요]',
+    result: project.frontmatter.result ?? '[입력 필요]',
+    note: project.frontmatter.note,
+    isCompanyProject: item.type.startsWith('회사 프로젝트'),
   };
 });
+
+const runnersHigh = (() => {
+  const project = projectBySlug.get('runners-high');
+
+  if (!project) {
+    throw new Error('Project not found: runners-high');
+  }
+
+  return project;
+})();
 
 export default function HomePage() {
   const posts = JSON.parse(JSON.stringify(recentPosts));
@@ -76,6 +109,8 @@ export default function HomePage() {
         title="대표 프로젝트"
         projects={selectedProjects}
       />
+
+      <OtherProject project={runnersHigh} />
 
       <HomeCapabilities />
 
@@ -119,7 +154,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
     </>
   );
 }
@@ -152,7 +186,7 @@ function ProjectSection({
           </header>
         </Reveal>
 
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 lg:grid-cols-2">
           {projects.map((project, index) => (
             <Reveal key={project.href} delay={index * 0.07} className="h-full">
               <HomeProjectCard project={project} />
@@ -164,11 +198,7 @@ function ProjectSection({
   );
 }
 
-function HomeProjectCard({
-  project,
-}: {
-  project: HomeProject;
-}) {
+function HomeProjectCard({ project }: { project: HomeProject }) {
   return (
     <Link
       href={project.href}
@@ -186,13 +216,23 @@ function HomeProjectCard({
           <h3 className="mt-5 break-words text-2xl font-black leading-tight text-white transition-colors group-hover:text-primary md:text-3xl">
             {project.title}
           </h3>
-          <p className="mt-3 break-keep text-base leading-7 text-white">
-            {project.summary}
-          </p>
+          <p className="mt-3 break-keep text-base leading-7 text-white">{project.summary}</p>
           <div className="mt-5 grid gap-2 border-t border-outline/70 pt-4 text-sm leading-6">
-            <p className="text-text-secondary"><span className="mr-2 font-bold text-primary">핵심 문제</span>{project.problem}</p>
-            <p className="text-text-secondary"><span className="mr-2 font-bold text-primary">내 역할</span>{project.contribution}</p>
+            <CardFact label="핵심 문제" value={project.problem} />
+            <CardFact label="내 역할" value={project.contribution} />
+            <CardFact label="기술 선택 이유" value={project.decision} />
+            <CardFact label="결과" value={project.result} />
           </div>
+          {project.isCompanyProject ? (
+            <p className="mt-4 text-xs font-semibold text-text-secondary">
+              사내 코드는 비공개입니다.
+            </p>
+          ) : null}
+          {project.note ? (
+            <p className="mt-4 border-l-2 border-primary/60 pl-3 text-xs leading-5 text-text-secondary">
+              {project.note}
+            </p>
+          ) : null}
         </div>
         <div className="mt-auto flex min-w-0 items-end justify-end pt-5">
           <span
@@ -204,5 +244,50 @@ function HomeProjectCard({
         </div>
       </article>
     </Link>
+  );
+}
+
+function CardFact({ label, value }: { label: string; value: string }) {
+  return (
+    <p className="grid gap-1 text-text-secondary sm:grid-cols-[104px_minmax(0,1fr)] sm:gap-3">
+      <span className="font-bold text-primary">{label}</span>
+      <span className="min-w-0 break-words">{value}</span>
+    </p>
+  );
+}
+
+function OtherProject({ project }: { project: NonNullable<typeof runnersHigh> }) {
+  return (
+    <section className="w-full px-5 py-16 md:px-12" aria-labelledby="other-project-title">
+      <div className="mx-auto w-full max-w-[1440px]">
+        <Reveal>
+          <div className="grid gap-6 border-y border-outline/70 py-8 md:grid-cols-[220px_minmax(0,1fr)_auto] md:items-center">
+            <div>
+              <span className="font-label text-xs font-bold uppercase tracking-[0.22em] text-primary">
+                Other Project
+              </span>
+              <h2 id="other-project-title" className="mt-2 text-2xl font-black text-white">
+                Runner&apos;s High
+              </h2>
+            </div>
+            <div>
+              <p className="break-keep text-sm leading-7 text-white">
+                실시간 경쟁 러닝에서 STOMP 연결이 끊겨도 위치 전송이 이어지도록
+                heartbeat·reconnectDelay·재구독을 적용했습니다. 프론트엔드를 전담했습니다.
+              </p>
+              <p className="mt-2 text-xs text-text-secondary">
+                팀 프로젝트 FE 1 · BE 2 · 2025.02 - 2025.07 · React Native · Expo · STOMP · Zustand
+              </p>
+            </div>
+            <Link
+              href={`/projects/${project.slug}`}
+              className="w-fit rounded-lg border border-primary/60 px-4 py-2 text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+            >
+              상세 보기 <span aria-hidden="true">↗</span>
+            </Link>
+          </div>
+        </Reveal>
+      </div>
+    </section>
   );
 }

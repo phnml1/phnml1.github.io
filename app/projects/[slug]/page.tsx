@@ -11,11 +11,23 @@ import Reveal from '@/components/motion/Reveal';
 
 const projectMedia: Record<string, { src: string; alt: string; caption: string }[]> = {
   codemate: [
-    { src: '/projects/codemate/codemate-comment.gif', alt: 'CodeMate의 일반 PR 댓글 화면에서 댓글을 작성하고 확인하는 과정', caption: '일반 PR 댓글 작성·확인 화면' },
-    { src: '/projects/codemate/codemate-ai-review.gif', alt: 'CodeMate에서 AI 코드 리뷰를 요청하고 결과를 확인하는 화면', caption: 'AI 리뷰 요청·결과 확인 화면' },
+    {
+      src: '/projects/codemate/codemate-comment.gif',
+      alt: 'CodeMate의 일반 PR 댓글 화면에서 댓글을 작성하고 확인하는 과정',
+      caption: '일반 PR 댓글 작성·확인 화면',
+    },
+    {
+      src: '/projects/codemate/codemate-ai-review.gif',
+      alt: 'CodeMate에서 AI 코드 리뷰를 요청하고 결과를 확인하는 화면',
+      caption: 'AI 리뷰 요청·결과 확인 화면',
+    },
   ],
   'fly-on': [
-    { src: '/projects/fly-on/dragdrop.gif', alt: 'Fly:On 모바일 일정 카드 Drag & Drop 편집 화면', caption: '모바일 일정 편집' },
+    {
+      src: '/projects/fly-on/dragdrop.gif',
+      alt: 'Fly:On 모바일 일정 카드 Drag & Drop 편집 화면',
+      caption: '모바일 일정 편집',
+    },
   ],
 };
 
@@ -23,6 +35,8 @@ const primaryProblemIndex: Record<string, number> = {
   'np-wms-picking': 1,
   'runners-high': 1,
 };
+
+const companyProjects = new Set(['np-wms-picking', 'np-ois', 'np-cell-label-kiosk']);
 
 const designSectionTitles = new Set([
   '시스템 또는 데이터 흐름',
@@ -66,6 +80,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: project.summary,
       url: `/projects/${project.slug}`,
       type: 'article',
+      images: [
+        {
+          url: '/og.png',
+          width: 1200,
+          height: 630,
+          alt: '이주영 Frontend Developer 포트폴리오',
+        },
+      ],
     },
   };
 }
@@ -90,13 +112,16 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const designSections = project.sections.filter((section) =>
     designSectionTitles.has(section.displayTitle),
   );
-  const codeMateLatency = project.slug === 'codemate'
-    ? project.sections.find((section) => section.displayTitle === '채팅 저장 응답이 느린 문제')
-    : null;
-  const codeMateCi = project.slug === 'codemate'
-    ? project.sections.find((section) => section.displayTitle === 'CI 검증')
-    : null;
-  const [latencyIntro = '', latencyDetails = ''] = codeMateLatency?.content.split('<!-- chat-request-flow -->') ?? [];
+  const codeMateLatency =
+    project.slug === 'codemate'
+      ? project.sections.find((section) => section.displayTitle === '채팅 저장 응답이 느린 문제')
+      : null;
+  const codeMateCi =
+    project.slug === 'codemate'
+      ? project.sections.find((section) => section.displayTitle === 'CI 검증')
+      : null;
+  const [latencyIntro = '', latencyDetails = ''] =
+    codeMateLatency?.content.split('<!-- chat-request-flow -->') ?? [];
 
   return (
     <section className="w-full px-5 pb-24 pt-28 md:px-12 md:pt-36">
@@ -134,21 +159,36 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <ProjectFact label="사용자" value={frontmatter.audience} />
             <ProjectFact label="해결 과제" value={frontmatter.problem} />
             <ProjectFact label="내 기여" value={frontmatter.contribution} />
+            <ProjectFact label="기술 선택 이유" value={frontmatter.decision} />
+            <ProjectFact label="결과" value={frontmatter.result} />
           </dl>
+          {companyProjects.has(project.slug) ? (
+            <p className="mt-4 text-sm font-semibold text-text-secondary">
+              사내 코드는 비공개입니다.
+            </p>
+          ) : null}
+          {frontmatter.note ? (
+            <p className="mt-4 border-l-2 border-primary/60 pl-4 text-sm leading-7 text-text-secondary">
+              {frontmatter.note}
+            </p>
+          ) : null}
         </section>
 
         {frontmatter.userFlow?.length ? (
           <section className="mt-16" aria-labelledby="project-user-flow">
-            <SectionTitle
-              id="project-user-flow"
-              eyebrow="User flow"
-              title="서비스 이용 흐름"
-            />
+            <SectionTitle id="project-user-flow" eyebrow="User flow" title="서비스 이용 흐름" />
             <ol className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {frontmatter.userFlow.map((step, index) => (
-                <li key={step} className="min-h-24 border-t-2 border-primary/60 bg-surface-low px-4 py-4">
-                  <span className="font-label text-xs font-bold text-primary">{String(index + 1).padStart(2, '0')}</span>
-                  <p className="mt-3 break-keep text-sm font-semibold leading-6 text-white">{step}</p>
+                <li
+                  key={step}
+                  className="min-h-24 border-t-2 border-primary/60 bg-surface-low px-4 py-4"
+                >
+                  <span className="font-label text-xs font-bold text-primary">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <p className="mt-3 break-keep text-sm font-semibold leading-6 text-white">
+                    {step}
+                  </p>
                 </li>
               ))}
             </ol>
@@ -163,8 +203,15 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 <figure key={media.src} className="min-w-0">
                   {/* Existing project GIFs preserve the original interaction and aspect ratio. */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={media.src} alt={media.alt} loading="lazy" className="h-auto w-full rounded-lg border border-outline/70" />
-                  <figcaption className="mt-2 text-sm text-text-secondary">{media.caption}</figcaption>
+                  <img
+                    src={media.src}
+                    alt={media.alt}
+                    loading="lazy"
+                    className="h-auto w-full rounded-lg border border-outline/70"
+                  />
+                  <figcaption className="mt-2 text-sm text-text-secondary">
+                    {media.caption}
+                  </figcaption>
                 </figure>
               ))}
             </div>
@@ -172,20 +219,28 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         ) : null}
 
         {orderedProblems.length || codeMateLatency ? (
-          <ProjectCases blocks={orderedProblems} latencyIntro={latencyIntro} latencyDetails={latencyDetails} />
+          <ProjectCases
+            blocks={orderedProblems}
+            latencyIntro={latencyIntro}
+            latencyDetails={latencyDetails}
+          />
         ) : null}
 
         {codeMateCi ? (
           <section className="mt-16 max-w-5xl" aria-labelledby="codemate-ci">
             <SectionTitle id="codemate-ci" eyebrow="Verification" title={codeMateCi.displayTitle} />
-            <div className="mt-5"><MarkdownContent content={codeMateCi.content} /></div>
+            <div className="mt-5">
+              <MarkdownContent content={codeMateCi.content} />
+            </div>
           </section>
         ) : null}
 
         {designSections.length ? (
           <details className="group mt-16 max-w-5xl border-y border-outline/70">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-5 py-5 marker:content-none">
-              <span className="text-base font-bold text-white group-open:text-primary">기술 설계 더 보기</span>
+              <span className="text-base font-bold text-white group-open:text-primary">
+                기술 설계 더 보기
+              </span>
               <span className="flex items-center gap-3 text-right text-xs font-semibold leading-5 text-text-secondary">
                 <span>처리 흐름 · 기술 선택 · 대안</span>
                 <span
@@ -207,7 +262,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                       {designSectionLabels[section.displayTitle] ?? section.displayTitle}
                     </h2>
                   </div>
-                  <div className="mt-4"><MarkdownContent content={section.content} /></div>
+                  <div className="mt-4">
+                    <MarkdownContent content={section.content} />
+                  </div>
                 </section>
               ))}
             </article>
@@ -217,10 +274,17 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
         <footer className="mt-20 flex flex-wrap items-center gap-3 border-t border-outline/70 pt-6">
           {frontmatter.stack.slice(0, 8).map((tech) => (
-            <span key={tech} className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary">{tech}</span>
+            <span
+              key={tech}
+              className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary"
+            >
+              {tech}
+            </span>
           ))}
           {frontmatter.github ? <ProjectLink href={frontmatter.github} label="GitHub" /> : null}
-          {frontmatter.demo && project.slug !== 'codemate' ? <ProjectLink href={frontmatter.demo} label="Live Demo" /> : null}
+          {frontmatter.demo && project.slug !== 'codemate' ? (
+            <ProjectLink href={frontmatter.demo} label="Live Demo" />
+          ) : null}
           {frontmatter.store ? <ProjectLink href={frontmatter.store} label="원스토어 앱" /> : null}
         </footer>
       </div>
@@ -236,16 +300,28 @@ type CaseStudyBlock = {
   details?: string;
 };
 
-function ProjectCases({ blocks, latencyIntro, latencyDetails }: {
+function ProjectCases({
+  blocks,
+  latencyIntro,
+  latencyDetails,
+}: {
   blocks: ProblemSolutionBlock[];
   latencyIntro: string;
   latencyDetails: string;
 }) {
   const [latencyBeforeResult, latencyResult] = splitAtMarker(latencyIntro, '<!-- case-result -->');
-  const [latencyProblem, latencySolution] = splitAtMarker(latencyBeforeResult, '<!-- case-solution -->');
+  const [latencyProblem, latencySolution] = splitAtMarker(
+    latencyBeforeResult,
+    '<!-- case-solution -->',
+  );
   const cases: CaseStudyBlock[] = blocks.map((block) => {
     const [solution, result] = splitAtMarker(block.solutionContent, '<!-- case-result -->');
-    return { title: cleanProblemTitle(block.problemTitle), problem: block.problemContent, solution, result };
+    return {
+      title: cleanProblemTitle(block.problemTitle),
+      problem: block.problemContent,
+      solution,
+      result,
+    };
   });
 
   if (latencyIntro) {
@@ -267,23 +343,40 @@ function ProjectCases({ blocks, latencyIntro, latencyDetails }: {
         {cases.map((caseStudy, index) => (
           <article key={caseStudy.title} className="py-8">
             <div className="flex items-baseline gap-4">
-              <span className="font-label text-xs font-bold text-primary">{String(index + 1).padStart(2, '0')}</span>
-              <h3 className="break-keep text-xl font-bold leading-8 text-white md:text-2xl">{caseStudy.title}</h3>
+              <span className="font-label text-xs font-bold text-primary">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <h3 className="break-keep text-xl font-bold leading-8 text-white md:text-2xl">
+                {caseStudy.title}
+              </h3>
             </div>
             <div className="mt-5 divide-y divide-outline/70 border-t border-outline/70">
-              <StoryRow label="문제"><MarkdownContent content={caseStudy.problem} compact /></StoryRow>
-              <StoryRow label="구현"><MarkdownContent content={caseStudy.solution} compact /></StoryRow>
+              <StoryRow label="문제">
+                <MarkdownContent content={caseStudy.problem} compact />
+              </StoryRow>
+              <StoryRow label="구현">
+                <MarkdownContent content={caseStudy.solution} compact />
+              </StoryRow>
               {caseStudy.result ? (
-                <StoryRow label="확인"><MarkdownContent content={caseStudy.result} compact /></StoryRow>
+                <StoryRow label="확인">
+                  <MarkdownContent content={caseStudy.result} compact />
+                </StoryRow>
               ) : null}
             </div>
             {caseStudy.details ? (
               <details className="group border-t border-outline/70">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-sm font-bold text-primary marker:content-none">
                   측정 조건과 상세 수치
-                  <span aria-hidden="true" className="text-lg font-normal transition-transform group-open:rotate-45">+</span>
+                  <span
+                    aria-hidden="true"
+                    className="text-lg font-normal transition-transform group-open:rotate-45"
+                  >
+                    +
+                  </span>
                 </summary>
-                <div className="pb-3"><MarkdownContent content={caseStudy.details} responsiveTables /></div>
+                <div className="pb-3">
+                  <MarkdownContent content={caseStudy.details} responsiveTables />
+                </div>
               </details>
             ) : null}
           </article>
@@ -299,7 +392,15 @@ function splitAtMarker(content: string, marker: string): [string, string] {
   return [content.slice(0, markerIndex).trim(), content.slice(markerIndex + marker.length).trim()];
 }
 
-function MarkdownContent({ content, compact, responsiveTables }: { content: string; compact?: boolean; responsiveTables?: boolean }) {
+function MarkdownContent({
+  content,
+  compact,
+  responsiveTables,
+}: {
+  content: string;
+  compact?: boolean;
+  responsiveTables?: boolean;
+}) {
   return (
     <div
       className={`portfolio-prose prose prose-invert max-w-none prose-headings:font-black prose-p:text-text-secondary prose-li:text-text-secondary prose-img:rounded-xl ${
@@ -310,19 +411,25 @@ function MarkdownContent({ content, compact, responsiveTables }: { content: stri
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[raw, rehypeSlug] as PluggableList}
         components={{
-          ...(responsiveTables ? {
-            table: ({ children }: { children?: ReactNode }) => (
-              <div className="my-6 overflow-x-auto rounded-lg border border-outline/70">
-                <table className="my-0 w-full min-w-[680px] text-sm">{children}</table>
-              </div>
-            ),
-            th: ({ children }: { children?: ReactNode }) => (
-              <th className="border-b border-outline/70 bg-surface-low px-4 py-3 text-left font-semibold text-white">{children}</th>
-            ),
-            td: ({ children }: { children?: ReactNode }) => (
-              <td className="border-b border-outline/50 px-4 py-3 text-text-secondary">{children}</td>
-            ),
-          } : {}),
+          ...(responsiveTables
+            ? {
+                table: ({ children }: { children?: ReactNode }) => (
+                  <div className="my-6 overflow-x-auto rounded-lg border border-outline/70">
+                    <table className="my-0 w-full min-w-[680px] text-sm">{children}</table>
+                  </div>
+                ),
+                th: ({ children }: { children?: ReactNode }) => (
+                  <th className="border-b border-outline/70 bg-surface-low px-4 py-3 text-left font-semibold text-white">
+                    {children}
+                  </th>
+                ),
+                td: ({ children }: { children?: ReactNode }) => (
+                  <td className="border-b border-outline/50 px-4 py-3 text-text-secondary">
+                    {children}
+                  </td>
+                ),
+              }
+            : {}),
           img: ({ alt, src }) => (
             // Markdown assets have mixed intrinsic ratios, so the browser preserves their own dimensions.
             // eslint-disable-next-line @next/next/no-img-element
@@ -430,7 +537,9 @@ function ProjectFact({ label, value }: { label: string; value?: string }) {
   return (
     <div className="grid gap-2 py-4 sm:grid-cols-[120px_minmax(0,1fr)] sm:gap-6">
       <dt className="font-label text-xs font-bold text-primary">{label}</dt>
-      <dd className="m-0 max-w-4xl break-keep text-sm leading-7 text-white md:text-base">{value}</dd>
+      <dd className="m-0 max-w-4xl break-keep text-sm leading-7 text-white md:text-base">
+        {value}
+      </dd>
     </div>
   );
 }
@@ -438,8 +547,15 @@ function ProjectFact({ label, value }: { label: string; value?: string }) {
 function SectionTitle({ id, eyebrow, title }: { id?: string; eyebrow: string; title: string }) {
   return (
     <div>
-      <span className="font-label text-xs font-bold uppercase tracking-[0.18em] text-primary">{eyebrow}</span>
-      <h2 id={id} className="mt-3 break-keep font-headline text-2xl font-bold text-white md:text-3xl">{title}</h2>
+      <span className="font-label text-xs font-bold uppercase tracking-[0.18em] text-primary">
+        {eyebrow}
+      </span>
+      <h2
+        id={id}
+        className="mt-3 break-keep font-headline text-2xl font-bold text-white md:text-3xl"
+      >
+        {title}
+      </h2>
     </div>
   );
 }
@@ -448,20 +564,32 @@ function StoryRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="grid items-baseline gap-2 py-5 sm:grid-cols-[100px_minmax(0,1fr)] sm:gap-6">
       <span className="font-label text-xs font-bold text-primary">{label}</span>
-      <div className="min-w-0 break-keep text-sm leading-7 text-text-secondary md:text-base">{children}</div>
+      <div className="min-w-0 break-keep text-sm leading-7 text-text-secondary md:text-base">
+        {children}
+      </div>
     </div>
   );
 }
 
-function ProjectLink({ href, label, primary = false }: { href: string; label: string; primary?: boolean }) {
+function ProjectLink({
+  href,
+  label,
+  primary = false,
+}: {
+  href: string;
+  label: string;
+  primary?: boolean;
+}) {
   return (
     <Link
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={primary
-        ? 'mt-6 inline-flex rounded-lg bg-primary px-5 py-3 text-sm font-bold text-surface transition-colors hover:bg-primary/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary'
-        : 'rounded-lg border border-primary/50 px-4 py-2 text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-surface'}
+      className={
+        primary
+          ? 'mt-6 inline-flex rounded-lg bg-primary px-5 py-3 text-sm font-bold text-surface transition-colors hover:bg-primary/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary'
+          : 'rounded-lg border border-primary/50 px-4 py-2 text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-surface'
+      }
     >
       {label}
     </Link>

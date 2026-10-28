@@ -16,7 +16,8 @@ userFlow:
   - '카드 이동·순서 편집'
   - '저장된 일정 확인'
 implementation: 'PanResponder로 제스처를 추적하고 카드 위치를 측정해 이동 중인 카드만 별도 레이어에 표시했습니다. React.memo와 Zustand selector로 드래그 중 다시 그리는 컴포넌트 범위를 줄였습니다.'
-decision: '제스처 좌표와 일정 데이터의 변경 책임을 분리하고, 감으로 최적화하지 않도록 React DevTools Profiler의 전후 측정값을 기준으로 병목을 좁혔습니다.'
+decision: '드래그 중 상태 변경이 전체 트리로 퍼지는 것을 줄이기 위해 React.memo와 컴포넌트 분리를 적용했습니다.'
+result: '드래그 중 상태 변경이 전체 컴포넌트에 퍼지는 문제를 React.memo와 컴포넌트 분리로 줄여, total commit duration을 211.5ms에서 72.9ms로(-65%) 낮췄습니다.'
 stack:
   [
     'TypeScript',

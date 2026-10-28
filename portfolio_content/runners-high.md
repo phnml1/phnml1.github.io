@@ -16,6 +16,7 @@ userFlow:
   - '종료 후 기록 확인'
 implementation: '위치·코스·러닝 상태를 Zustand store와 모드별 훅으로 나누고, STOMP heartbeat와 자동 재연결을 적용해 연결 복구 뒤 필요한 위치 topic을 다시 구독하도록 구성했습니다.'
 decision: '네트워크 연결 복구와 러닝 화면의 구독 복구를 별개로 다뤘습니다. 연결은 STOMP client가 복구하고, 활성 러닝 모드가 자신에게 필요한 위치 전송·구독 경로를 다시 설정하게 했습니다.'
+result: '실시간 경쟁 러닝에서 STOMP 연결이 끊겨도 위치 전송이 이어지도록 heartbeat·reconnectDelay·재구독을 적용했습니다. 프론트엔드를 전담했습니다.'
 stack:
   [
     'TypeScript',

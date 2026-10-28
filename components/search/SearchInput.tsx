@@ -11,7 +11,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ keyword, setKeyword }) => {
       value={keyword}
       onChange={(event) => setKeyword(event.target.value)}
       placeholder="Search posts by title, summary, or tag"
-      className="h-14 w-full rounded-xl bg-surface-container px-5 font-label text-sm text-white outline-none transition-colors placeholder:text-text-secondary focus:bg-surface-high"
+      className="h-14 w-full rounded-xl bg-surface-container px-5 font-label text-sm text-white transition-colors placeholder:text-text-secondary focus:bg-surface-high focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
     />
   );
 };

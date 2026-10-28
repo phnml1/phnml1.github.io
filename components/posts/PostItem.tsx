@@ -18,7 +18,7 @@ const PostItem: React.FC<PostItemProps> = ({ content, offset = false }) => {
       <Link href={postHref(content.slug)} className="group block flex-1">
         <div className="relative mb-8 aspect-[16/10] overflow-hidden rounded-xl bg-surface-container">
           <Image
-            src={`/${content.slug}/${content.image}`}
+            src={`/${content.assetSlug ?? content.slug}/${content.image}`}
             alt={content.title}
             fill
             sizes="(min-width: 768px) 45vw, 90vw"

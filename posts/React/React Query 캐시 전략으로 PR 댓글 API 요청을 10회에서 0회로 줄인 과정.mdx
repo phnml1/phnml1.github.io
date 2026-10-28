@@ -1,12 +1,16 @@
 ---
 title: 'PR 댓글 이벤트를 Query 캐시에 반영한 이유와 재조회 경계'
+slug: 'PR 댓글 이벤트를 Query 캐시에 반영한 이유와 재조회 경계'
+aliases:
+  - 'React Query 캐시 전략으로 PR 댓글 API 요청을 10회에서 0회로 줄인 과정'
 date: 2026-04-18 20:49:07
 image: index.png
 project:
   title: 'CodeMate'
   slug: 'codemate'
-summary: 과거 Socket 댓글 이벤트의 캐시 반영 기록입니다. 현재 일반 댓글 패널은 10초 간격으로 조회하고 변경 뒤 관련 Query를 다시 조회합니다.
-tags: ['react','react-query','cache','performance','codemate','setQueryData','invalidateQueries']
+summary: 과거 Socket 댓글 이벤트는 Query 캐시에 직접 반영하고, mutation 뒤에는 서버 상태를 다시 조회했습니다. 빠른 반영과 정합성 확인의 경계를 나눈 이유를 정리했습니다.
+tags:
+  ['react', 'react-query', 'cache', 'performance', 'codemate', 'setQueryData', 'invalidateQueries']
 ---
 
 # PR 댓글 이벤트를 Query 캐시에 반영한 이유와 재조회 경계

@@ -17,7 +17,12 @@ export default function PostDetailLayout(props) {
             readingTime={props.post.readingMinutes}
             project={props.post.project}
           />
-          <PostContent title={props.post.title} content={props.post.content} slug={props.post.slug} />
+          <PostContent
+            title={props.post.title}
+            content={props.post.content}
+            slug={props.post.slug}
+            assetSlug={props.post.assetSlug ?? props.post.slug}
+          />
           <PostFooter prevData={props.prevData} nextData={props.nextData} />
         </div>
       </article>

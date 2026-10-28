@@ -3,10 +3,10 @@ title: AI 리뷰 비동기 상태와 알림 갱신 기록
 date: 2026-05-03 20:43:16
 image: index.png
 project:
-  title: "CodeMate"
-  slug: "codemate"
-summary: AI 리뷰의 대기·진행·완료·실패 화면을 정리한 기록입니다. 현재 진행 중인 리뷰와 알림은 주기적 조회로 갱신합니다.
-tags: ["react", "nextjs", "typescript"]
+  title: 'CodeMate'
+  slug: 'codemate'
+summary: AI 리뷰 요청과 완료 시점을 분리하기 위해 대기·진행·완료·실패 상태를 두었습니다. 진행 상태는 polling으로 갱신하고 중복 실행은 서버와 DB에서 막은 이유를 정리했습니다.
+tags: ['react', 'nextjs', 'typescript']
 ---
 
 # AI 리뷰 비동기 상태와 알림 갱신 기록
@@ -44,23 +44,22 @@ await upsertReviewNotifications({
   prId: pullRequestId,
   prTitle: pr.title,
   prNumber: pr.number,
-  status: "PENDING",
+  status: 'PENDING',
 });
 
-analyzeReview(pullRequestId)
-  .then(async (result) => {
-    if (result.status === "SKIPPED_ACTIVE") return;
+analyzeReview(pullRequestId).then(async (result) => {
+  if (result.status === 'SKIPPED_ACTIVE') return;
 
-    await upsertReviewNotifications({
-      userIds: targetRecipients,
-      prId: pullRequestId,
-      prTitle: pr.title,
-      prNumber: pr.number,
-      status: result.status,
-    });
+  await upsertReviewNotifications({
+    userIds: targetRecipients,
+    prId: pullRequestId,
+    prTitle: pr.title,
+    prNumber: pr.number,
+    status: result.status,
   });
+});
 
-return NextResponse.json({ status: "PENDING" });
+return NextResponse.json({ status: 'PENDING' });
 ```
 
 두 번째는 GitHub Webhook에서 PR opened/synchronize 이벤트가 들어왔을 때다.
@@ -73,12 +72,12 @@ after(async () => {
     prId: pullRequest.id,
     prTitle: pr.title,
     prNumber: pr.number,
-    status: "PENDING",
+    status: 'PENDING',
   });
 
   const result = await analyzeReview(pullRequest.id);
 
-  if (result.status === "SKIPPED_ACTIVE") return;
+  if (result.status === 'SKIPPED_ACTIVE') return;
 
   await upsertReviewNotifications({
     userIds: targetRecipients,
@@ -89,7 +88,7 @@ after(async () => {
   });
 });
 
-return NextResponse.json({ message: "PR processed" });
+return NextResponse.json({ message: 'PR processed' });
 ```
 
 두 코드 모두 공통적으로 먼저 `PENDING` 알림을 만들고, 실제 분석은 백그라운드에서 진행한다. 즉, API 응답과 분석 완료 시점이 분리되어 있다.
@@ -117,14 +116,14 @@ return NextResponse.json({ message: "PR processed" });
 const activeReview = await prisma.review.findFirst({
   where: {
     pullRequestId,
-    status: { in: ["PENDING", "IN_PROGRESS"] },
+    status: { in: ['PENDING', 'IN_PROGRESS'] },
   },
   select: { id: true },
-  orderBy: { reviewedAt: "desc" },
+  orderBy: { reviewedAt: 'desc' },
 });
 
 if (activeReview) {
-  return { status: "SKIPPED_ACTIVE" };
+  return { status: 'SKIPPED_ACTIVE' };
 }
 ```
 
@@ -148,11 +147,11 @@ CREATE UNIQUE INDEX "review_active_unique"
 review = await prisma.review.create({
   data: {
     pullRequestId,
-    status: "PENDING",
-    stage: "QUEUED",
+    status: 'PENDING',
+    stage: 'QUEUED',
     aiSuggestions: {},
     qualityScore: 0,
-    severity: "LOW",
+    severity: 'LOW',
     issueCount: 0,
   },
   select: { id: true },
@@ -163,18 +162,18 @@ review = await prisma.review.create({
 
 ```ts
 await updateReviewStage(reviewId, {
-  status: "IN_PROGRESS",
-  stage: "FETCHING_FILES",
+  status: 'IN_PROGRESS',
+  stage: 'FETCHING_FILES',
 });
 
 await updateReviewStage(reviewId, {
-  status: "IN_PROGRESS",
-  stage: "ANALYZING",
+  status: 'IN_PROGRESS',
+  stage: 'ANALYZING',
 });
 
 await updateReviewStage(reviewId, {
-  status: "IN_PROGRESS",
-  stage: "FINALIZING",
+  status: 'IN_PROGRESS',
+  stage: 'FINALIZING',
 });
 ```
 
@@ -188,8 +187,8 @@ await prisma.review.update({
     qualityScore: score,
     severity: overallSeverity,
     issueCount,
-    status: "COMPLETED",
-    stage: "COMPLETED",
+    status: 'COMPLETED',
+    stage: 'COMPLETED',
   },
 });
 ```
@@ -200,17 +199,17 @@ await prisma.review.update({
 
 ```ts
 // hooks/pr-detail/usePRReviewActions.ts
-queryClient.setQueryData<Review | null>(["review", prId], (current) =>
+queryClient.setQueryData<Review | null>(['review', prId], (current) =>
   current
     ? {
         ...current,
-        status: "PENDING",
-        stage: "QUEUED",
+        status: 'PENDING',
+        stage: 'QUEUED',
       }
-    : createPendingReview(prId)
+    : createPendingReview(prId),
 );
 
-await queryClient.invalidateQueries({ queryKey: ["review", prId] });
+await queryClient.invalidateQueries({ queryKey: ['review', prId] });
 ```
 
 서버 응답을 기다린 뒤에야 화면이 바뀌는 것이 아니라, 요청이 시작됐다는 상태를 먼저 보여주기 위한 처리다.
@@ -221,11 +220,11 @@ await queryClient.invalidateQueries({ queryKey: ["review", prId] });
 
 ```tsx
 // components/review/ReviewPanel/index.tsx
-if (review.status === "FAILED") {
+if (review.status === 'FAILED') {
   return <ReviewFailedState review={review} />;
 }
 
-if (review.status === "PENDING" || review.status === "IN_PROGRESS") {
+if (review.status === 'PENDING' || review.status === 'IN_PROGRESS') {
   return <ReviewProgressState stage={review.stage} />;
 }
 
@@ -259,7 +258,7 @@ export function useReviewQuery(prId: string, options?: ReviewQueryOptions) {
     queryFn: () => fetchReview(prId),
     refetchInterval: (query) => {
       const status = query.state.data?.status;
-      if (status === "PENDING" || status === "IN_PROGRESS") return 3000;
+      if (status === 'PENDING' || status === 'IN_PROGRESS') return 3000;
       return false;
     },
     ...options,
@@ -272,8 +271,7 @@ export function useReviewQuery(prId: string, options?: ReviewQueryOptions) {
 ```ts
 // hooks/useReview.ts
 if (
-  (notification.type === "NEW_REVIEW" ||
-    notification.type === "REVIEW_FAILED") &&
+  (notification.type === 'NEW_REVIEW' || notification.type === 'REVIEW_FAILED') &&
   notification.prId === prId
 ) {
   queryClient.invalidateQueries({ queryKey: reviewQueryKey(prId) });
@@ -292,9 +290,9 @@ const existing = await prisma.notification.findFirst({
   where: {
     userId,
     prId: params.prId,
-    type: "NEW_REVIEW",
+    type: 'NEW_REVIEW',
   },
-  orderBy: { createdAt: "desc" },
+  orderBy: { createdAt: 'desc' },
   select: { id: true },
 });
 
@@ -311,7 +309,7 @@ const notification = existing
     })
   : await prisma.notification.create({
       data: {
-        type: "NEW_REVIEW",
+        type: 'NEW_REVIEW',
         reviewStatus: params.status,
         title: content.title,
         message: content.message,
@@ -329,9 +327,7 @@ const notification = existing
 ```tsx
 // components/notification/NotificationList.tsx
 const reviewStatusMeta =
-  notification.type === "NEW_REVIEW"
-    ? getReviewStatusMeta(notification)
-    : null;
+  notification.type === 'NEW_REVIEW' ? getReviewStatusMeta(notification) : null;
 ```
 
 ## 결과

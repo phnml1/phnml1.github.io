@@ -1,12 +1,15 @@
 ---
 title: '과거 PR 댓글 WebSocket 설계 기록'
+slug: '과거 PR 댓글 WebSocket 설계 기록'
+aliases:
+  - 'PR 댓글 실시간 시스템을 WebSocket으로 설계한 이유'
 date: 2026-04-18 20:43:16
 image: index.png
 project:
-  title: "CodeMate"
-  slug: "codemate"
-summary: 2026년 4월의 PR 댓글 WebSocket 설계 기록입니다. 현재 일반 댓글 패널·알림은 주기적으로 조회하고, Socket.io는 별도 공동 리뷰방에 사용합니다.
-tags: ['react','websocket','realtime','codemate','comments']
+  title: 'CodeMate'
+  slug: 'codemate'
+summary: 처음에는 PR 댓글을 WebSocket으로 구현했습니다. 이후 일반 댓글은 10초 polling으로 바꾸고 Socket.IO는 공동 리뷰방에만 남긴 이유를 정리했습니다.
+tags: ['react', 'websocket', 'realtime', 'codemate', 'comments']
 ---
 
 # 과거 PR 댓글 WebSocket 설계 기록
@@ -68,11 +71,13 @@ typing 상태도 짧게 나타났다 사라져야 했다.
 설계의 중심은 세 레이어였다.
 
 1. `useSocket`
+
    - socket 인스턴스 생성
    - 연결 상태 관리
    - reconnect / error 상태 노출
 
 2. `useSocketRoom`
+
    - PR room join
    - PR room leave
    - 화면 생명주기에 맞춘 구독 제어
@@ -100,11 +105,7 @@ UI는 연결 상태를 읽고, room 구독만 요청한다.
 즉, socket처럼 컴포넌트 렌더링과 무관하게 살아 있는 객체를 React state처럼 다루되, 재렌더링은 구독한 값이 바뀔 때만 일으키게 할 수 있다.
 
 ```ts
-const currentSocket = useSyncExternalStore(
-  subscribe,
-  getSocketSnapshot,
-  getServerSocketSnapshot
-)
+const currentSocket = useSyncExternalStore(subscribe, getSocketSnapshot, getServerSocketSnapshot);
 ```
 
 이 선택을 한 이유는 단순하다.
@@ -128,19 +129,19 @@ room 구독은 `hooks/useSocketRoom.ts`로 뺐다.
 
 ```ts
 export function useSocketRoom(prId: string) {
-  const { socket } = useSocket()
+  const { socket } = useSocket();
 
   useEffect(() => {
-    if (!socket || !prId) return
+    if (!socket || !prId) return;
 
-    socket.emit("room:join", prId)
+    socket.emit('room:join', prId);
 
     return () => {
-      socket.emit("room:leave", prId)
-    }
-  }, [socket, prId])
+      socket.emit('room:leave', prId);
+    };
+  }, [socket, prId]);
 
-  return socket
+  return socket;
 }
 ```
 
@@ -159,13 +160,13 @@ export function useSocketRoom(prId: string) {
 
 ```ts
 function registerRoomHandlers(socket: TypedServerSocket) {
-  socket.on("room:join", (prId) => {
-    socket.join(`pr:${prId}`)
-  })
+  socket.on('room:join', (prId) => {
+    socket.join(`pr:${prId}`);
+  });
 
-  socket.on("room:leave", (prId) => {
-    socket.leave(`pr:${prId}`)
-  })
+  socket.on('room:leave', (prId) => {
+    socket.leave(`pr:${prId}`);
+  });
 }
 ```
 
@@ -181,7 +182,7 @@ function registerRoomHandlers(socket: TypedServerSocket) {
 클라이언트에서는 `components/comment/CommentList.tsx`가 연결 상태를 읽고, 연결이 불안정할 때 사용자에게 상태를 보여준다.
 
 ```tsx
-const { connectionStatus, connectionError } = useSocket()
+const { connectionStatus, connectionError } = useSocket();
 ```
 
 이렇게 하면 댓글 화면은 socket의 내부 구현을 몰라도 된다.  

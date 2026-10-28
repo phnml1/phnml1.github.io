@@ -14,7 +14,8 @@ userFlow:
   - '오류 검수·보정'
   - '산출물 생성·보관'
 implementation: 'Frontend는 활성 queue·run에만 조건부 polling을 적용하고, 상태가 바뀌면 관련 Query cache를 갱신했습니다. Backend는 transform run 시작 시 snapshot id·version·hash를 고정하고, 시간이 오래 걸리는 Storage I/O·POI parsing을 DB transaction에서 분리했습니다.'
-decision: '한 번 시작한 변환 작업의 모든 행은 동일한 기준을 사용해야 했습니다. 따라서 매번 최신값을 조회하는 대신, 변환 작업(run) 시작 시점의 기준정보 id·version·hash를 snapshot으로 고정했습니다. 이로써 같은 원본의 결과를 재현하고, 결과가 다를 때 사용한 기준을 추적할 수 있게 했습니다.'
+decision: '변환 도중 기준정보가 바뀌어도 결과의 근거를 추적하기 위해 변환 시작 시점의 기준정보 snapshot을 고정했습니다. 진행 중에만 polling한 이유는 [입력 필요]입니다.'
+result: '업로드 → 변환 → 검수 → 다운로드를 한 화면 흐름으로 연결했습니다. 운영 효과는 [입력 필요]입니다.'
 stack:
   [
     'React',
@@ -75,12 +76,12 @@ React 업무 UI가 upload와 queue 요청을 보내고 TanStack Query가 활성 
 
 ## Frontend 상태 동기화와 검수 UX
 
-| 화면 상태 | 동기화 조건 | 완료·실패 이후 처리 |
-|---|---|---|
-| Queue | 활성 queue가 있을 때 1초 polling | terminal 상태에서 polling 중단, queue·job query 갱신 |
-| Transform run | 생성 중이거나 활성 run이 있을 때 1초 polling | 성공 run을 cache에 반영하고 review 문맥으로 연결 |
-| Detailed progress | 실제 처리 중에만 350ms polling | stage·처리 행 수의 마지막 상태를 유지하고 polling 중단 |
-| Output | review 완료와 산출물 mutation 이후 갱신 | pending/completed 목록을 invalidate하고 최근 run 문맥 유지 |
+| 화면 상태         | 동기화 조건                                  | 완료·실패 이후 처리                                        |
+| ----------------- | -------------------------------------------- | ---------------------------------------------------------- |
+| Queue             | 활성 queue가 있을 때 1초 polling             | terminal 상태에서 polling 중단, queue·job query 갱신       |
+| Transform run     | 생성 중이거나 활성 run이 있을 때 1초 polling | 성공 run을 cache에 반영하고 review 문맥으로 연결           |
+| Detailed progress | 실제 처리 중에만 350ms polling               | stage·처리 행 수의 마지막 상태를 유지하고 polling 중단     |
+| Output            | review 완료와 산출물 mutation 이후 갱신      | pending/completed 목록을 invalidate하고 최근 run 문맥 유지 |
 
 검수 화면에서는 원본 `source row`와 변환된 `standard line`을 같은 run 문맥에서 비교하고, 누락 기준정보 수정·manual mapping·재검증·review reopen을 이어서 수행할 수 있게 했습니다. 요청별 loading state와 마지막 성공 run을 분리해 긴 작업이 진행 중이어도 사용자가 현재 단계와 다음 행동을 판단하도록 구성했습니다.
 

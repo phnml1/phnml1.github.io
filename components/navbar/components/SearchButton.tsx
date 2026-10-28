@@ -9,7 +9,7 @@ const SearchButton: React.FC<SearchButtonProps> = () => {
   return (
     <Link
       href="/posts/search"
-      aria-label="Search posts"
+      aria-label="기술 글 검색"
       className="grid h-10 w-10 place-items-center rounded-lg bg-surface-container text-primary transition-colors hover:bg-surface-high"
     >
       <span className="relative -top-1 text-lg leading-none">⌕</span>
