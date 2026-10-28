@@ -12,14 +12,14 @@ import Reveal from '@/components/motion/Reveal';
 const projectMedia: Record<string, { src: string; alt: string; caption: string }[]> = {
   codemate: [
     {
-      src: '/projects/codemate/codemate-comment.gif',
-      alt: 'CodeMate의 일반 PR 댓글 화면에서 댓글을 작성하고 확인하는 과정',
-      caption: '일반 PR 댓글 작성·확인 화면',
+      src: '/projects/codemate/codemate-pr-diff.png',
+      alt: 'CodeMate PR 상세 화면의 변경 파일 목록과 선택한 파일의 코드 차이 및 댓글',
+      caption: 'PR 변경 파일과 코드 차이 검토 화면',
     },
     {
-      src: '/projects/codemate/codemate-ai-review.gif',
-      alt: 'CodeMate에서 AI 코드 리뷰를 요청하고 결과를 확인하는 화면',
-      caption: 'AI 리뷰 요청·결과 확인 화면',
+      src: '/projects/codemate/codemate-ai-review-result.png',
+      alt: 'CodeMate AI 코드 리뷰 완료 화면의 품질 점수, 요약과 코드 이슈 상세',
+      caption: 'AI 리뷰 결과와 코드 이슈 상세 화면',
     },
   ],
   'fly-on': [
@@ -201,7 +201,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <div className="mt-7 grid gap-6 lg:grid-cols-2">
               {projectMedia[project.slug].map((media) => (
                 <figure key={media.src} className="min-w-0">
-                  {/* Existing project GIFs preserve the original interaction and aspect ratio. */}
+                  {/* Project screenshots and GIFs preserve their original aspect ratios. */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={media.src}
