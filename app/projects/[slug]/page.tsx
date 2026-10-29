@@ -32,7 +32,6 @@ const projectMedia: Record<string, { src: string; alt: string; caption: string }
 };
 
 const primaryProblemIndex: Record<string, number> = {
-  'np-wms-picking': 1,
   'runners-high': 1,
 };
 
@@ -109,8 +108,25 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     ...(featuredProblem ? [featuredProblem] : []),
     ...technicalProblems.filter((_, index) => index !== featuredIndex),
   ];
+  const isNpOis = project.slug === 'np-ois';
+  const isNpWmsPicking = project.slug === 'np-wms-picking';
+  const hasAdditionalProblems = isNpOis || isNpWmsPicking;
+  const mainProblems = hasAdditionalProblems ? orderedProblems.slice(0, 2) : orderedProblems;
+  const additionalProblems = hasAdditionalProblems ? orderedProblems.slice(2) : [];
+  const contributionTitle = isNpOis
+    ? '기여 범위와 협업 경계'
+    : project.slug === 'np-wms-picking'
+      ? '기여 범위와 반영 상태'
+      : null;
+  const contributionSection = contributionTitle
+    ? project.sections.find((section) => section.displayTitle === contributionTitle)
+    : null;
+  const contributionId = isNpOis ? 'np-ois-contribution' : 'np-wms-picking-contribution';
+  const wmsSystemFlow = isNpWmsPicking
+    ? project.sections.find((section) => section.displayTitle === '시스템 또는 데이터 흐름')
+    : null;
   const designSections = project.sections.filter((section) =>
-    designSectionTitles.has(section.displayTitle),
+    designSectionTitles.has(section.displayTitle) && section !== wmsSystemFlow,
   );
   const codeMateLatency =
     project.slug === 'codemate'
@@ -122,6 +138,30 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       : null;
   const [latencyIntro = '', latencyDetails = ''] =
     codeMateLatency?.content.split('<!-- chat-request-flow -->') ?? [];
+  const userFlowList = frontmatter.userFlow?.length ? (
+    <ol className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {frontmatter.userFlow.map((step, index) => (
+        <li key={step} className="min-h-24 border-t-2 border-primary/60 bg-surface-low px-4 py-4">
+          <span className="font-label text-xs font-bold text-primary">
+            {String(index + 1).padStart(2, '0')}
+          </span>
+          <p className="mt-3 break-keep text-sm font-semibold leading-6 text-white">{step}</p>
+        </li>
+      ))}
+    </ol>
+  ) : null;
+  const contributionContent = contributionSection ? (
+    <section className="mt-12 max-w-5xl" aria-labelledby={contributionId}>
+      <SectionTitle
+        id={contributionId}
+        eyebrow="Contribution"
+        title={contributionSection.displayTitle}
+      />
+      <div className="mt-5">
+        <MarkdownContent content={contributionSection.content} />
+      </div>
+    </section>
+  ) : null;
 
   return (
     <section className="w-full px-5 pb-24 pt-28 md:px-12 md:pt-36">
@@ -151,11 +191,30 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <p className="mt-5 text-sm text-text-secondary">
               {[frontmatter.period, frontmatter.role].filter(Boolean).join(' · ')}
             </p>
+            {isNpOis ? (
+              <div className="mt-5 flex flex-wrap gap-2" aria-label="핵심 기술">
+                {frontmatter.stack.slice(0, 4).map((tech) => (
+                  <span
+                    key={tech}
+                    className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            ) : null}
           </header>
         </Reveal>
 
-        <section className="mt-8 max-w-5xl" aria-label="프로젝트 핵심 정보">
-          <dl className="divide-y divide-outline/70 border-y border-outline/70">
+        <section
+          className="mt-8 max-w-5xl"
+          aria-label={isNpOis ? undefined : '프로젝트 핵심 정보'}
+          aria-labelledby={isNpOis ? 'np-ois-snapshot' : undefined}
+        >
+          {isNpOis ? (
+            <SectionTitle id="np-ois-snapshot" eyebrow="Snapshot" title="프로젝트 요약" />
+          ) : null}
+          <dl className={`divide-y divide-outline/70 border-y border-outline/70 ${isNpOis ? 'mt-6' : ''}`}>
             <ProjectFact label="사용자" value={frontmatter.audience} />
             <ProjectFact label="해결 과제" value={frontmatter.problem} />
             <ProjectFact label="내 기여" value={frontmatter.contribution} />
@@ -174,24 +233,48 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           ) : null}
         </section>
 
-        {frontmatter.userFlow?.length ? (
+        {!isNpWmsPicking ? contributionContent : null}
+
+        {userFlowList ? (
           <section className="mt-16" aria-labelledby="project-user-flow">
             <SectionTitle id="project-user-flow" eyebrow="User flow" title="서비스 이용 흐름" />
-            <ol className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {frontmatter.userFlow.map((step, index) => (
-                <li
-                  key={step}
-                  className="min-h-24 border-t-2 border-primary/60 bg-surface-low px-4 py-4"
-                >
-                  <span className="font-label text-xs font-bold text-primary">
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                  <p className="mt-3 break-keep text-sm font-semibold leading-6 text-white">
-                    {step}
-                  </p>
-                </li>
-              ))}
-            </ol>
+            {isNpOis ? (
+              <figure>
+                {userFlowList}
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="border-l-2 border-primary/60 bg-surface-low px-4 py-4">
+                    <span className="text-xs font-bold text-primary">변환 시작</span>
+                    <p className="mt-2 break-keep text-sm leading-6 text-text-secondary">
+                      해당 작업에 사용할 상품·주문 기준 버전을 기록합니다.
+                    </p>
+                  </div>
+                  <div className="border-l-2 border-primary/60 bg-surface-low px-4 py-4">
+                    <span className="text-xs font-bold text-primary">변환 실패</span>
+                    <p className="mt-2 break-keep text-sm leading-6 text-text-secondary">
+                      작업의 실패 상태와 원인을 별도 기록으로 남깁니다.
+                    </p>
+                  </div>
+                </div>
+                <figcaption className="mt-3 text-sm leading-6 text-text-secondary">
+                  운영자는 변환 상태를 확인하고, 완료된 작업의 오류를 검수한 뒤 산출물을 받습니다.
+                </figcaption>
+              </figure>
+            ) : (
+              userFlowList
+            )}
+          </section>
+        ) : null}
+
+        {wmsSystemFlow ? (
+          <section className="mt-16 max-w-5xl" aria-labelledby="np-wms-picking-system-flow">
+            <SectionTitle
+              id="np-wms-picking-system-flow"
+              eyebrow="System flow"
+              title="스캔부터 서버 확인까지"
+            />
+            <div className="mt-5">
+              <MarkdownContent content={wmsSystemFlow.content} />
+            </div>
           </section>
         ) : null}
 
@@ -218,13 +301,40 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </section>
         ) : null}
 
-        {orderedProblems.length || codeMateLatency ? (
+        {mainProblems.length || codeMateLatency ? (
           <ProjectCases
-            blocks={orderedProblems}
+            blocks={mainProblems}
             latencyIntro={latencyIntro}
             latencyDetails={latencyDetails}
+            title={hasAdditionalProblems ? '대표 기술 문제' : undefined}
           />
         ) : null}
+
+        {additionalProblems.length ? (
+          <details className="group mt-12 max-w-5xl border-y border-outline/70">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-5 py-5 marker:content-none">
+              <span className="text-base font-bold text-white group-open:text-primary">
+                {isNpWmsPicking
+                  ? '추가 구현 · 서버 응답을 다음 행동으로 연결'
+                  : `추가 기술 문제 ${additionalProblems.length}개`}
+              </span>
+              <span aria-hidden="true" className="text-lg font-normal text-primary group-open:rotate-45">
+                +
+              </span>
+            </summary>
+            <ProjectCases
+              blocks={additionalProblems}
+              latencyIntro=""
+              latencyDetails=""
+              id={isNpWmsPicking ? 'np-wms-picking-additional-case' : 'np-ois-additional-cases'}
+              title={isNpWmsPicking ? '서버 상태 표시' : '추가 기술 문제'}
+              compact
+            />
+            <div className="h-8" aria-hidden="true" />
+          </details>
+        ) : null}
+
+        {isNpWmsPicking ? contributionContent : null}
 
         {codeMateCi ? (
           <section className="mt-16 max-w-5xl" aria-labelledby="codemate-ci">
@@ -242,7 +352,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 기술 설계 더 보기
               </span>
               <span className="flex items-center gap-3 text-right text-xs font-semibold leading-5 text-text-secondary">
-                <span>처리 흐름 · 기술 선택 · 대안</span>
+                <span>{isNpOis ? '처리 흐름 · 화면 상태' : '처리 흐름 · 기술 선택 · 대안'}</span>
                 <span
                   aria-hidden="true"
                   className="text-lg font-normal text-primary transition-transform group-open:rotate-45"
@@ -304,10 +414,16 @@ function ProjectCases({
   blocks,
   latencyIntro,
   latencyDetails,
+  id = 'project-cases',
+  title = '문제 해결',
+  compact = false,
 }: {
   blocks: ProblemSolutionBlock[];
   latencyIntro: string;
   latencyDetails: string;
+  id?: string;
+  title?: string;
+  compact?: boolean;
 }) {
   const [latencyBeforeResult, latencyResult] = splitAtMarker(latencyIntro, '<!-- case-result -->');
   const [latencyProblem, latencySolution] = splitAtMarker(
@@ -337,8 +453,8 @@ function ProjectCases({
   if (cases.length === 0) return null;
 
   return (
-    <section className="mt-20" aria-labelledby="project-cases">
-      <SectionTitle id="project-cases" eyebrow="Case studies" title="문제 해결" />
+    <section className={compact ? 'mt-5' : 'mt-20'} aria-labelledby={id}>
+      <SectionTitle id={id} eyebrow="Case studies" title={title} />
       <div className="mt-7 divide-y divide-outline/70 border-y border-outline/70">
         {cases.map((caseStudy, index) => (
           <article key={caseStudy.title} className="py-8">
