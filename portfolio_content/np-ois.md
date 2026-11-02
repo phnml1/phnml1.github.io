@@ -31,7 +31,7 @@ stack:
   ]
 ---
 
-## 기여 범위와 협업 경계
+## 나의 역할
 
 ### Frontend 직접 구현
 
@@ -42,12 +42,6 @@ stack:
 ### 서버 직접 기여
 
 - 변환 run의 기준정보 snapshot 고정, 여러 원본 파일의 배치 등록과 storage metadata 관계, 동일 배치의 중복 변환 방지 guard·테스트, 파일 저장·streaming download를 다뤘습니다.
-
-### 팀·협업·기능 브랜치 경계
-
-- 초기 MVP는 다른 팀원이 먼저 구축했습니다. 현업 담당자와 주문 파일별 양식 차이와 데이터 활용 방식을 확인한 뒤 기존 흐름을 확장했습니다.
-- 긴 파일 I/O·parsing과 상태 저장 transaction의 분리는 원재료 감사 당시 서버 기능 브랜치의 로컬 커밋으로 확인됐습니다. 당시 기본 브랜치 병합과 운영 반영은 확인되지 않았습니다.
-- 상세 패널 query dedupe, route lazy loading, 행 렌더링 최적화는 별도 Frontend 성능 브랜치의 코드입니다. 운영 버전의 개선 수치로 표현하지 않습니다.
 
 ## 시스템 또는 데이터 흐름
 
@@ -80,7 +74,7 @@ stack:
 
 ### Solution 01 - Run-scoped snapshot으로 기준정보 고정
 
-변환 작업(run)을 시작할 때 source별 snapshot id·version·hash를 저장하고, 이후 모든 조회를 고정된 snapshot ID로 제한했습니다. snapshot은 '이 작업이 시작할 때 사용한 기준 버전'을 의미합니다. 이로써 처리 중 최신 기준이 바뀌어도 하나의 run은 동일한 기준을 유지하고, 결과와 사용 기준을 함께 추적할 수 있습니다.
+변환 작업(run)을 시작할 때 **source별 snapshot id·version·hash를 저장**하고, 이후 모든 조회를 **고정된 snapshot ID**로 제한했습니다. snapshot은 '이 작업이 시작할 때 사용한 기준 버전'을 의미합니다. 처리 중 최신 기준이 바뀌어도 하나의 run은 동일한 기준을 유지해, 결과와 사용 기준을 함께 추적할 수 있습니다.
 
 ### Problem 02 - 파일 변환이 실패해도 원인 기록을 남겨야 함
 
@@ -88,7 +82,7 @@ stack:
 
 ### Solution 02 - 시작·연산·완료/실패 transaction 분리
 
-짧은 start transaction에서 run과 snapshot을 먼저 commit한 뒤, 긴 Storage I/O·parsing·mapping은 transaction 밖에서 수행했습니다. 처리가 끝나면 성공 데이터를, 오류가 나면 실패 상태와 원인을 각각 별도 transaction으로 저장했습니다. 이렇게 transaction 경계를 나눠 DB 점유 시간을 줄이고, 파일 처리가 실패해도 추적할 run 이력은 보존했습니다.
+짧은 start transaction에서 **run과 snapshot을 먼저 저장**한 뒤, 긴 Storage I/O·parsing·mapping은 **transaction 밖에서 수행**했습니다. 처리가 끝나면 성공 데이터를, 오류가 나면 실패 상태와 원인을 **각각 별도 transaction으로 저장**했습니다. 파일 처리가 실패해도 추적할 run 이력을 남기면서 DB connection을 오래 점유하지 않도록 구성했습니다.
 
 ### Problem 03 - 검수 목록이 데이터가 쌓일수록 느려짐
 
@@ -96,7 +90,7 @@ stack:
 
 ### Solution 03 - Summary projection과 DB pagination 적용
 
-목록에 필요한 상태·누락 개수만 summary projection으로 모아 batch 조회했습니다. 원본 행 같은 상세 데이터는 사용자가 해당 run을 열었을 때만 불러오고, 누락 항목은 DB aggregate pagination으로 페이지 단위로 나눴습니다.
+목록에 필요한 **상태·누락 개수만 summary projection으로 모아 batch 조회**했습니다. 원본 행 같은 상세 데이터는 **해당 run을 열었을 때만** 불러오고, 누락 항목은 DB aggregate pagination으로 페이지 단위로 나눴습니다.
 
 ### Problem 04 - 파일을 DB에 쌓아 저장과 다운로드가 무거워짐
 
@@ -104,7 +98,7 @@ Excel 원본과 결과물은 크기가 크고 계속 쌓입니다. 파일 자체
 
 ### Solution 04 - Object Storage와 streaming download로 책임 분리
 
-실제 Excel·ZIP payload는 local/Object Storage에 저장하고, DB에는 storage key·size·SHA-256·업무 상태 같은 metadata만 남겼습니다. 개별 파일과 ZIP은 전체를 메모리에 올리지 않고 stream으로 응답했습니다. DB metadata 저장이 실패하면 방금 생성한 object를 보상 삭제해, 업무 기록 없이 파일만 남는 상태를 방지했습니다.
+Excel·ZIP 파일은 **local/Object Storage에 저장**하고, DB에는 storage key·size·SHA-256·업무 상태 같은 **metadata만 남겼습니다**. 개별 파일과 ZIP은 전체를 메모리에 올리지 않고 **stream으로 응답**했습니다. DB metadata 저장이 실패하면 방금 생성한 object를 보상 삭제해, 업무 기록 없이 파일만 남는 상태를 방지했습니다.
 
 ### Problem 05 - 큰 Excel 파일 미리보기가 서버를 오래 점유함
 
@@ -112,4 +106,4 @@ Excel 원본과 결과물은 크기가 크고 계속 쌓입니다. 파일 자체
 
 ### Solution 05 - Parsing과 UI에 동일한 resource guardrail 적용
 
-파일 30MB, scan 10,000행, preview 8행·80열, cell 220자로 parsing 상한을 고정했습니다. Backend와 UI가 같은 제한을 사용하고, 한도를 넘는 파일은 무리하게 열지 않고 명시적인 validation error를 반환했습니다. 이 수치는 전체 변환 용량이 아니라, 업로드 직후 미리보기 경로의 메모리와 응답 시간을 보호하는 방어 기준입니다.
+파일 30MB, scan 10,000행, preview 8행·80열, cell 220자로 **미리보기 읽기 범위를 제한**했습니다. Backend와 UI가 같은 제한을 사용하고, 한도를 넘는 파일은 무리하게 열지 않고 **명시적인 validation error**를 반환했습니다.

@@ -119,7 +119,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const mainProblems = hasAdditionalProblems ? orderedProblems.slice(0, 2) : orderedProblems;
   const additionalProblems = hasAdditionalProblems ? orderedProblems.slice(2) : [];
   const contributionTitle = isNpOis
-    ? '기여 범위와 협업 경계'
+    ? '나의 역할'
     : project.slug === 'np-wms-picking'
       ? '나의 역할'
       : null;
