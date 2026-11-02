@@ -121,7 +121,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const contributionTitle = isNpOis
     ? '기여 범위와 협업 경계'
     : project.slug === 'np-wms-picking'
-      ? '기여 범위와 반영 상태'
+      ? '나의 역할'
       : null;
   const contributionSection = contributionTitle
     ? project.sections.find((section) => section.displayTitle === contributionTitle)
@@ -320,7 +320,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <summary className="flex cursor-pointer list-none items-center justify-between gap-5 py-5 marker:content-none">
               <span className="text-base font-bold text-white group-open:text-primary">
                 {isNpWmsPicking
-                  ? '추가 구현 · 서버 응답을 다음 행동으로 연결'
+                  ? '추가 문제 해결 · 서버 응답을 다음 행동으로 연결'
                   : `추가 기술 문제 ${additionalProblems.length}개`}
               </span>
               <span aria-hidden="true" className="text-lg font-normal text-primary group-open:rotate-45">
@@ -560,7 +560,7 @@ function ProjectCases({
               <StoryRow label="문제">
                 <MarkdownContent content={caseStudy.problem} compact />
               </StoryRow>
-              <StoryRow label="구현">
+              <StoryRow label="해결">
                 <MarkdownContent content={caseStudy.solution} compact />
               </StoryRow>
               {caseStudy.result ? (
