@@ -1,4 +1,5 @@
 import { getPortfolioProject, getPortfolioProjectSlugs } from '@/utils/PortfolioProject-Util';
+import type { PortfolioProject } from '@/utils/PortfolioProject-Util';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -35,7 +36,7 @@ const primaryProblemIndex: Record<string, number> = {
   'runners-high': 1,
 };
 
-const companyProjects = new Set(['np-wms-picking', 'np-ois', 'np-cell-label-kiosk']);
+const companyProjects = new Set(['np-wms-picking', 'np-ois', 'windows-kiosk-label-agent']);
 
 const designSectionTitles = new Set([
   '시스템 또는 데이터 흐름',
@@ -96,6 +97,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const project = getPortfolioProject(slug);
 
   if (!project) notFound();
+
+  if (project.slug === 'windows-kiosk-label-agent') {
+    return <WindowsKioskAgentDetail project={project} />;
+  }
 
   const { frontmatter } = project;
   const technicalSection = project.sections.find((section) => section.kind === 'technical');
@@ -396,6 +401,91 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <ProjectLink href={frontmatter.demo} label="Live Demo" />
           ) : null}
           {frontmatter.store ? <ProjectLink href={frontmatter.store} label="원스토어 앱" /> : null}
+        </footer>
+      </div>
+    </section>
+  );
+}
+
+function WindowsKioskAgentDetail({ project }: { project: PortfolioProject }) {
+  const { frontmatter } = project;
+  const sectionTitles = [
+    '현장 문제',
+    '내가 구현한 처리 흐름',
+    '프린터별 분기가 필요했던 이유',
+    '검증',
+  ];
+
+  return (
+    <section className="w-full px-5 pb-24 pt-28 md:px-12 md:pt-36">
+      <div className="mx-auto w-full max-w-[1440px]">
+        <Link
+          href="/projects"
+          aria-label="프로젝트 목록으로 돌아가기"
+          className="mb-10 inline-flex rounded-lg border border-primary/50 px-4 py-2 font-label text-xs font-bold uppercase tracking-[0.16em] text-primary transition-colors hover:bg-primary hover:text-surface"
+        >
+          Back to Projects
+        </Link>
+
+        <header className="max-w-5xl border-b border-outline/70 pb-10">
+          <span className="font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">
+            {frontmatter.team}
+          </span>
+          <h1 className="mt-5 break-keep font-headline text-4xl font-black leading-tight text-white sm:text-5xl lg:text-6xl">
+            {frontmatter.title}
+          </h1>
+          <p className="mt-5 max-w-4xl break-keep text-xl leading-9 text-white md:text-2xl md:leading-10">
+            {project.summary}
+          </p>
+          <p className="mt-5 text-sm text-text-secondary">
+            {[frontmatter.period, frontmatter.role].filter(Boolean).join(' · ')}
+          </p>
+        </header>
+
+        <section className="mt-10 max-w-5xl" aria-label="라벨 요청부터 프린터 경로까지">
+          <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {frontmatter.userFlow?.map((step, index) => (
+              <li key={step} className="min-h-28 border-t-2 border-primary/60 bg-surface-low px-4 py-4">
+                <span className="font-label text-xs font-bold text-primary">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <p className="mt-3 break-keep text-sm font-semibold leading-6 text-white">
+                  {step}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <p className="mt-6 max-w-5xl text-sm leading-7 text-text-secondary">
+          라벨 내용은 PMS 템플릿 또는 WMS가 전달한 ZPL에서 오고, Agent는 이를 Windows PC의 프린터에 맞는 출력 경로로 연결합니다.
+        </p>
+
+        <div className="mt-16 max-w-5xl space-y-16">
+          {sectionTitles.map((title, index) => {
+            const section = project.sections.find((item) => item.displayTitle === title);
+            if (!section) return null;
+
+            return (
+              <section key={title} className="border-t border-outline/70 pt-8">
+                <SectionTitle eyebrow={String(index + 1).padStart(2, '0')} title={title} />
+                <div className="mt-6">
+                  <MarkdownContent content={section.content} />
+                </div>
+              </section>
+            );
+          })}
+        </div>
+
+        <footer className="mt-20 flex flex-wrap gap-3 border-t border-outline/70 pt-6">
+          {frontmatter.stack.map((tech) => (
+            <span
+              key={tech}
+              className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary"
+            >
+              {tech}
+            </span>
+          ))}
         </footer>
       </div>
     </section>

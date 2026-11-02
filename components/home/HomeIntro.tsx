@@ -9,9 +9,9 @@ const experience = [
   },
   { title: 'NP-OIS', href: '/projects/np-ois', detail: '주문 업로드 · 변환 상태 · 검수 화면' },
   {
-    title: 'Cell Label Kiosk',
-    href: '/projects/np-cell-label-kiosk',
-    detail: '주문 QR 라벨 발행 · 출력 결과 확인',
+    title: 'Windows 키오스크 라벨 Agent',
+    href: '/projects/windows-kiosk-label-agent',
+    detail: '로컬 API · 프린터별 라벨 출력 경로',
   },
 ];
 
@@ -65,8 +65,8 @@ export default function HomeIntro() {
               </p>
               <h2 className="mt-3 text-xl font-bold text-white">MJ Corporation · 계약직</h2>
               <p className="mt-2 max-w-lg text-sm leading-7 text-text-secondary">
-                주문 변환 웹과 PDA 피킹 화면을 개발했습니다. 스캐너 입력이 흔들리거나 네트워크가
-                끊겨도 작업 기록이 유지되도록 화면과 서버 상태를 맞췄습니다.
+                주문 변환 웹과 PDA 피킹 화면, Windows 키오스크 라벨 Agent를 개발했습니다.
+                스캐너 입력과 연결 상태를 다루고, 웹의 라벨 요청을 현장 프린터에 연결했습니다.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-3">

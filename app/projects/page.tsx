@@ -28,9 +28,9 @@ const PROJECT_ORDER = [
   'codemate',
   'np-wms-picking',
   'np-ois',
+  'windows-kiosk-label-agent',
   'fly-on',
   'runners-high',
-  'np-cell-label-kiosk',
   'career-hub',
 ];
 
@@ -39,20 +39,16 @@ const PROJECT_GROUPS = [
     label: 'Main Projects',
     sections: [
       { label: '개인 프로젝트', slugs: ['codemate'] },
-      { label: '회사 프로젝트', slugs: ['np-wms-picking', 'np-ois'] },
+      { label: '회사 프로젝트', slugs: ['np-wms-picking', 'np-ois', 'windows-kiosk-label-agent'] },
     ],
   },
   {
     label: 'Mobile & Realtime Experience',
     sections: [{ label: null, slugs: ['fly-on', 'runners-high'] }],
   },
-  {
-    label: 'Other Projects',
-    sections: [{ label: null, slugs: ['np-cell-label-kiosk'] }],
-  },
 ];
 
-const COMPANY_PROJECTS = new Set(['np-wms-picking', 'np-ois', 'np-cell-label-kiosk']);
+const COMPANY_PROJECTS = new Set(['np-wms-picking', 'np-ois', 'windows-kiosk-label-agent']);
 
 export default function ProjectsPage() {
   const projects = getPortfolioProjects()
