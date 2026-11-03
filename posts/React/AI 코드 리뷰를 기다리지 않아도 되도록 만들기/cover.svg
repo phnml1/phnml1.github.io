@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">AI 코드 리뷰를 기다리지 않아도 되도록 만들기</title>
+  <desc id="desc">요청 접수 후 응답을 먼저 보내고, 서버에서 AI 분석과 결과 알림을 이어가는 흐름을 소개하는 표지 이미지.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220" />
+      <stop offset="1" stop-color="#172554" />
+    </linearGradient>
+    <linearGradient id="line" gradientUnits="userSpaceOnUse" x1="177" y1="506" x2="1018" y2="506">
+      <stop offset="0" stop-color="#60a5fa" />
+      <stop offset="1" stop-color="#34d399" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)" />
+  <circle cx="1125" cy="30" r="260" fill="#2563eb" opacity="0.12" />
+  <circle cx="40" cy="650" r="260" fill="#10b981" opacity="0.08" />
+  <rect x="60" y="61" width="235" height="41" rx="20" fill="#1e3a8a" stroke="#60a5fa" />
+  <text x="91" y="89" fill="#bfdbfe" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="19" font-weight="700">CodeMate · AI 리뷰</text>
+  <text x="60" y="191" fill="#f8fafc" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="61" font-weight="800">AI 코드 리뷰를</text>
+  <text x="60" y="260" fill="#f8fafc" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="61" font-weight="800">기다리지 않아도 되도록</text>
+  <text x="60" y="329" fill="#f8fafc" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="61" font-weight="800">만들기</text>
+  <text x="64" y="385" fill="#cbd5e1" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="25">요청은 먼저 응답하고, 분석과 알림은 서버에서 이어간다</text>
+  <rect x="60" y="429" width="1080" height="160" rx="22" fill="#172338" stroke="#334155" />
+  <path d="M 177 506 H 1018" stroke="url(#line)" stroke-width="5" stroke-linecap="round" />
+  <circle cx="195" cy="506" r="15" fill="#60a5fa" />
+  <circle cx="600" cy="506" r="15" fill="#a78bfa" />
+  <circle cx="1005" cy="506" r="15" fill="#34d399" />
+  <text x="115" y="476" fill="#bfdbfe" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="23" font-weight="700">요청 접수</text>
+  <text x="530" y="476" fill="#ddd6fe" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="23" font-weight="700">응답 후 분석</text>
+  <text x="936" y="476" fill="#a7f3d0" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="23" font-weight="700">결과 알림</text>
+  <text x="111" y="557" fill="#94a3b8" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="18">PENDING 응답</text>
+  <text x="546" y="557" fill="#94a3b8" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="18">after() 실행</text>
+  <text x="934" y="557" fill="#94a3b8" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="18">저장·알림 갱신</text>
+  <text x="60" y="641" fill="#94a3b8" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="18">GitHub PR 코드 리뷰 · Next.js · 비동기 처리</text>
+</svg>
