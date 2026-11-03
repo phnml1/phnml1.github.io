@@ -18,6 +18,10 @@ export interface PortfolioProjectFrontmatter {
   implementation?: string;
   decision?: string;
   result?: string;
+  projectProblem?: string;
+  projectContribution?: string;
+  projectDecision?: string;
+  projectResult?: string;
   note?: string;
   description?: string;
   audience?: string;
@@ -149,6 +153,11 @@ function normalizeFrontmatter(data: Record<string, unknown>): PortfolioProjectFr
     implementation: typeof data.implementation === 'string' ? data.implementation : undefined,
     decision: typeof data.decision === 'string' ? data.decision : undefined,
     result: typeof data.result === 'string' ? data.result : undefined,
+    projectProblem: typeof data.projectProblem === 'string' ? data.projectProblem : undefined,
+    projectContribution:
+      typeof data.projectContribution === 'string' ? data.projectContribution : undefined,
+    projectDecision: typeof data.projectDecision === 'string' ? data.projectDecision : undefined,
+    projectResult: typeof data.projectResult === 'string' ? data.projectResult : undefined,
     note: typeof data.note === 'string' ? data.note : undefined,
     description: typeof data.description === 'string' ? data.description : undefined,
     audience: typeof data.audience === 'string' ? data.audience : undefined,

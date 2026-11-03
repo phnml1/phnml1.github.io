@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">AI 코드 리뷰는 어디까지 진행됐을까? 알림에 진행 단계 표시하기</title>
+  <desc id="desc">알림에서 AI 코드 리뷰의 파일 조회, 분석, 결과 정리 단계를 확인하는 글의 표지 이미지.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220" />
+      <stop offset="1" stop-color="#1e1b4b" />
+    </linearGradient>
+    <linearGradient id="line" gradientUnits="userSpaceOnUse" x1="193" y1="510" x2="1005" y2="510">
+      <stop offset="0" stop-color="#60a5fa" />
+      <stop offset="0.55" stop-color="#a78bfa" />
+      <stop offset="1" stop-color="#34d399" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)" />
+  <circle cx="1130" cy="25" r="260" fill="#7c3aed" opacity="0.13" />
+  <circle cx="30" cy="660" r="260" fill="#2563eb" opacity="0.09" />
+  <rect x="60" y="61" width="255" height="41" rx="20" fill="#312e81" stroke="#a78bfa" />
+  <text x="90" y="89" fill="#ddd6fe" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="19" font-weight="700">CodeMate · AI 리뷰 알림</text>
+  <text x="60" y="185" fill="#f8fafc" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="58" font-weight="800">AI 코드 리뷰는</text>
+  <text x="60" y="252" fill="#f8fafc" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="58" font-weight="800">어디까지 진행됐을까?</text>
+  <text x="60" y="319" fill="#f8fafc" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="54" font-weight="800">알림에 진행 단계 표시하기</text>
+  <text x="64" y="377" fill="#cbd5e1" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="25">알림의 내용과 리뷰의 단계를 함께 보여주기</text>
+  <rect x="60" y="429" width="1080" height="160" rx="22" fill="#172338" stroke="#334155" />
+  <path d="M 193 510 H 1005" stroke="url(#line)" stroke-width="5" stroke-linecap="round" />
+  <circle cx="195" cy="510" r="15" fill="#60a5fa" />
+  <circle cx="600" cy="510" r="15" fill="#a78bfa" />
+  <circle cx="1005" cy="510" r="15" fill="#34d399" />
+  <text x="140" y="478" fill="#bfdbfe" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="23" font-weight="700">파일 조회</text>
+  <text x="553" y="478" fill="#ddd6fe" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="23" font-weight="700">AI 분석</text>
+  <text x="960" y="478" fill="#a7f3d0" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="23" font-weight="700">결과 정리</text>
+  <text x="135" y="559" fill="#94a3b8" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="18">FETCHING_FILES</text>
+  <text x="554" y="559" fill="#94a3b8" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="18">ANALYZING</text>
+  <text x="953" y="559" fill="#94a3b8" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="18">FINALIZING</text>
+  <text x="60" y="641" fill="#94a3b8" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="18">Notification + Review.stage · 주기적 조회</text>
+</svg>

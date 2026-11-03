@@ -221,10 +221,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           ) : null}
           <dl className={`divide-y divide-outline/70 border-y border-outline/70 ${isNpOis ? 'mt-6' : ''}`}>
             <ProjectFact label="사용자" value={frontmatter.audience} />
-            <ProjectFact label="해결 과제" value={frontmatter.problem} />
-            <ProjectFact label="내 기여" value={frontmatter.contribution} />
-            <ProjectFact label="기술 선택 이유" value={frontmatter.decision} />
-            <ProjectFact label="결과" value={frontmatter.result} />
+            <ProjectFact label="해결 과제" value={frontmatter.projectProblem ?? frontmatter.problem} />
+            <ProjectFact label="내 기여" value={frontmatter.projectContribution ?? frontmatter.contribution} />
+            <ProjectFact label="기술 선택 이유" value={frontmatter.projectDecision ?? frontmatter.decision} />
+            <ProjectFact label="결과" value={frontmatter.projectResult ?? frontmatter.result} />
           </dl>
           {companyProjects.has(project.slug) ? (
             <p className="mt-4 text-sm font-semibold text-text-secondary">

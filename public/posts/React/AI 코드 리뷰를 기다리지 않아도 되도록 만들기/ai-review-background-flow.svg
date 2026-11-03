@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">AI 리뷰 요청과 응답 후 분석 흐름</title>
+  <desc id="desc">사용자가 리뷰를 요청하면 API가 접수 상태를 먼저 응답한다. 응답 후 서버의 after 콜백에서 분석을 실행하고 결과를 저장한 뒤 알림을 갱신한다.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8" />
+    </marker>
+  </defs>
+  <rect width="1200" height="360" rx="24" fill="#0f172a" />
+  <text x="48" y="61" fill="#f8fafc" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="27" font-weight="700">AI 리뷰 요청은 먼저 끝나고, 분석은 서버에서 이어진다</text>
+  <text x="48" y="93" fill="#94a3b8" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="17">브라우저의 요청 수명과 AI 분석 완료 시점을 분리한 흐름</text>
+
+  <rect x="48" y="140" width="240" height="130" rx="18" fill="#1e293b" stroke="#475569" />
+  <text x="72" y="179" fill="#93c5fd" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="16" font-weight="700">01 · 사용자</text>
+  <text x="72" y="215" fill="#f8fafc" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="23" font-weight="700">AI 리뷰 요청</text>
+  <text x="72" y="244" fill="#cbd5e1" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="16">PR에서 버튼 클릭</text>
+
+  <path d="M 300 205 H 334" fill="none" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)" />
+
+  <rect x="346" y="140" width="240" height="130" rx="18" fill="#1e293b" stroke="#60a5fa" />
+  <text x="370" y="179" fill="#93c5fd" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="16" font-weight="700">02 · API 응답</text>
+  <text x="370" y="215" fill="#f8fafc" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="23" font-weight="700">요청 접수</text>
+  <text x="370" y="244" fill="#cbd5e1" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="16">PENDING을 먼저 반환</text>
+
+  <path d="M 598 205 H 632" fill="none" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)" />
+
+  <rect x="644" y="140" width="240" height="130" rx="18" fill="#1e293b" stroke="#a78bfa" />
+  <text x="668" y="179" fill="#c4b5fd" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="16" font-weight="700">03 · 서버</text>
+  <text x="668" y="215" fill="#f8fafc" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="23" font-weight="700">after()에서 분석</text>
+  <text x="668" y="244" fill="#cbd5e1" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="16">GitHub 조회 → AI 호출</text>
+
+  <path d="M 896 205 H 930" fill="none" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)" />
+
+  <rect x="942" y="140" width="210" height="130" rx="18" fill="#1e293b" stroke="#34d399" />
+  <text x="966" y="179" fill="#6ee7b7" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="16" font-weight="700">04 · 결과</text>
+  <text x="966" y="215" fill="#f8fafc" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="22" font-weight="700">저장·알림 갱신</text>
+  <text x="966" y="244" fill="#cbd5e1" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="16">완료 또는 실패</text>
+
+  <text x="48" y="316" fill="#cbd5e1" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="17">②에서 브라우저 요청이 끝나도 ③과 ④는 서버의 실행 시간 안에서 계속 처리된다.</text>
+</svg>
