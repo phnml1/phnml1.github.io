@@ -13,7 +13,7 @@ decision: '파일 제목은 먼저 보여주고, 화면 밖 diff의 파싱·DOM 
 result: '운영 PR 1건에서 변경 전후 각 20회 측정한 PR 복귀 후 첫 코드 행 확인 시간 중앙값은 3.259초에서 2.334초로, 확인 시점의 DOM 요소 수는 18,163개에서 1,766개로 줄었습니다.'
 projectProblem: 'GitHub PR을 리뷰할 때 변경 코드의 맥락을 파악하고, 원격 팀원과 같은 파일·줄을 보며 의견을 나눈 뒤 그 결론을 PR에 남기는 과정이 번거롭습니다.'
 projectContribution: 'GitHub PR 동기화·diff 화면·AI 코드 리뷰를 구현하고, 코드 위치를 공유하는 공동 리뷰방에 실시간 채팅과 음성 대화를 연결했습니다. 선택한 의견을 GitHub PR 리뷰로 등록하는 흐름도 만들었습니다.'
-projectDecision: 'GitHub 파일 조회와 외부 AI 호출로 분석이 길어질 수 있어 after()로 요청 응답 뒤에 실행했습니다. 코드 위치·채팅은 방 참여자에게 이벤트를 전파하고 재연결을 처리해야 해 Socket.IO를 선택했습니다. 음성은 참여자 간 실시간 미디어 연결이 필요해 WebRTC를 사용하고, 연결 신호만 Socket.IO로 전달했습니다.'
+projectDecision: 'PR 화면과 GitHub·AI 연동 API를 한 애플리케이션에서 구성할 수 있어 Next.js App Router를 선택했습니다. 서버에서 바뀌는 리뷰·알림은 캐시와 상태별 재조회가 필요해 TanStack Query로 관리하고, 참여자에게 즉시 전달해야 하는 코드 위치·채팅은 Socket.IO로 연결했습니다. 브라우저 간 음성 스트림을 전송하기 위해 WebRTC를 사용하고, 동시 요청에서도 진행 중인 AI 리뷰를 한 건으로 제한하기 위해 PostgreSQL의 부분 고유 인덱스를 적용했습니다.'
 projectResult: '한곳에서 PR 변경 코드와 AI 리뷰를 확인하고, 같은 코드 위치를 보며 채팅으로 논의할 수 있습니다. 음성 기능이 활성화된 경우 함께 대화하고, 선택한 의견을 GitHub PR 리뷰로 등록해 상태를 확인할 수 있습니다.'
 note: 'AI 코딩 도구를 활용해 개발했고, 설계·성능 측정·검증은 직접 수행했습니다.'
 userFlow:
@@ -27,6 +27,7 @@ stack:
   - 'Next.js App Router'
   - 'TanStack Query'
   - 'Socket.io'
+  - 'WebRTC'
   - 'Prisma'
   - 'PostgreSQL'
   - 'Anthropic API'

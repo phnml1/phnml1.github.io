@@ -9,6 +9,7 @@ import raw from 'rehype-raw';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
 import Reveal from '@/components/motion/Reveal';
+import ZoomableImage from '@/components/projects/ZoomableImage';
 
 const projectMedia: Record<string, { src: string; alt: string; caption: string }[]> = {
   codemate: [
@@ -289,12 +290,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <div className="mt-7 grid gap-6 lg:grid-cols-2">
               {projectMedia[project.slug].map((media) => (
                 <figure key={media.src} className="min-w-0">
-                  {/* Project screenshots and GIFs preserve their original aspect ratios. */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <ZoomableImage
                     src={media.src}
                     alt={media.alt}
-                    loading="lazy"
                     className="h-auto w-full rounded-lg border border-outline/70"
                   />
                   <figcaption className="mt-2 text-sm text-text-secondary">
@@ -637,15 +635,7 @@ function MarkdownContent({
               }
             : {}),
           img: ({ alt, src }) => (
-            // Markdown assets have mixed intrinsic ratios, so the browser preserves their own dimensions.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={src}
-              alt={alt ?? ''}
-              loading="lazy"
-              decoding="async"
-              className="h-auto w-full rounded-xl"
-            />
+            <ZoomableImage src={src ?? ''} alt={alt ?? ''} className="h-auto w-full rounded-xl" />
           ),
         }}
       >
