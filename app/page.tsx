@@ -39,7 +39,7 @@ type HomeProject = {
   summary: string;
   problem: string;
   contribution: string;
-  decision: string;
+  decision?: string;
   result: string;
   note?: string;
   isCompanyProject: boolean;
@@ -80,7 +80,7 @@ const selectedProjects: HomeProject[] = featuredProjects.map((item) => {
     summary: project.summary,
     problem: project.frontmatter.problem ?? '',
     contribution: project.frontmatter.contribution ?? '',
-    decision: project.frontmatter.decision ?? '[입력 필요]',
+    decision: project.frontmatter.decision,
     result: project.frontmatter.result ?? '[입력 필요]',
     note: project.frontmatter.note,
     isCompanyProject: item.type.startsWith('회사 프로젝트'),
@@ -220,7 +220,7 @@ function HomeProjectCard({ project }: { project: HomeProject }) {
           <div className="mt-5 grid gap-2 border-t border-outline/70 pt-4 text-sm leading-6">
             <CardFact label="핵심 문제" value={project.problem} />
             <CardFact label="내 역할" value={project.contribution} />
-            <CardFact label="기술 선택 이유" value={project.decision} />
+            {project.decision ? <CardFact label="기술 선택 이유" value={project.decision} /> : null}
             <CardFact label="결과" value={project.result} />
           </div>
           {project.isCompanyProject ? (
