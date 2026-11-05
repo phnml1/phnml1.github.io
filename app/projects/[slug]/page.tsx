@@ -11,8 +11,18 @@ import remarkGfm from 'remark-gfm';
 import Reveal from '@/components/motion/Reveal';
 import ZoomableImage from '@/components/projects/ZoomableImage';
 
-const projectMedia: Record<string, { src: string; alt: string; caption: string }[]> = {
+const projectMedia: Record<
+  string,
+  { src: string; alt: string; caption: string; featured?: boolean }[]
+> = {
   codemate: [
+    {
+      src: '/projects/codemate/codemate-collaboration-demo.gif',
+      alt: '두 개의 브라우저에서 같은 CodeMate PR 협업방에 참여해 코드와 GitHub 리뷰 게시 상태를 확인하는 시연',
+      caption:
+        '두 사용자가 같은 PR을 검토하며 코드 위치와 GitHub 리뷰 게시 상태를 동기화하는 공동 리뷰방',
+      featured: true,
+    },
     {
       src: '/projects/codemate/codemate-pr-diff.png',
       alt: 'CodeMate PR 상세 화면의 변경 파일 목록과 선택한 파일의 코드 차이 및 댓글',
@@ -197,18 +207,16 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <p className="mt-5 text-sm text-text-secondary">
               {[frontmatter.period, frontmatter.role].filter(Boolean).join(' · ')}
             </p>
-            {isNpOis ? (
-              <div className="mt-5 flex flex-wrap gap-2" aria-label="핵심 기술">
-                {frontmatter.stack.slice(0, 4).map((tech) => (
-                  <span
-                    key={tech}
-                    className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary"
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
-            ) : null}
+            <div className="mt-5 flex flex-wrap gap-2" aria-label="핵심 기술">
+              {frontmatter.stack.slice(0, 4).map((tech) => (
+                <span
+                  key={tech}
+                  className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary"
+                >
+                  {tech}
+                </span>
+              ))}
+            </div>
           </header>
         </Reveal>
 
@@ -224,7 +232,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <ProjectFact label="사용자" value={frontmatter.audience} />
             <ProjectFact label="해결 과제" value={frontmatter.projectProblem ?? frontmatter.problem} />
             <ProjectFact label="내 기여" value={frontmatter.projectContribution ?? frontmatter.contribution} />
-            <ProjectFact label="기술 선택 이유" value={frontmatter.projectDecision ?? frontmatter.decision} />
+            {!isNpOis && !isNpWmsPicking ? (
+              <ProjectFact
+                label="기술 선택 이유"
+                value={frontmatter.projectDecision ?? frontmatter.decision}
+              />
+            ) : null}
             <ProjectFact label="결과" value={frontmatter.projectResult ?? frontmatter.result} />
           </dl>
           {companyProjects.has(project.slug) ? (
@@ -238,8 +251,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             </p>
           ) : null}
         </section>
-
-        {!isNpWmsPicking ? contributionContent : null}
 
         {userFlowList ? (
           <section className="mt-16" aria-labelledby="project-user-flow">
@@ -271,6 +282,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </section>
         ) : null}
 
+        {contributionContent}
+
         {wmsSystemFlow ? (
           <section className="mt-16 max-w-5xl" aria-labelledby="np-wms-picking-system-flow">
             <SectionTitle
@@ -289,7 +302,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <SectionTitle eyebrow="Product screens" title="실제 사용 화면" />
             <div className="mt-7 grid gap-6 lg:grid-cols-2">
               {projectMedia[project.slug].map((media) => (
-                <figure key={media.src} className="min-w-0">
+                <figure
+                  key={media.src}
+                  className={`min-w-0 ${media.featured ? 'lg:col-span-2' : ''}`}
+                >
                   <ZoomableImage
                     src={media.src}
                     alt={media.alt}
@@ -314,30 +330,39 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         ) : null}
 
         {additionalProblems.length ? (
-          <details className="group mt-12 max-w-5xl border-y border-outline/70">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-5 py-5 marker:content-none">
-              <span className="text-base font-bold text-white group-open:text-primary">
-                {isNpWmsPicking
-                  ? '추가 문제 해결 · 서버 응답을 다음 행동으로 연결'
-                  : `추가 기술 문제 ${additionalProblems.length}개`}
-              </span>
-              <span aria-hidden="true" className="text-lg font-normal text-primary group-open:rotate-45">
-                +
-              </span>
-            </summary>
+          isNpOis ? (
             <ProjectCases
               blocks={additionalProblems}
               latencyIntro=""
               latencyDetails=""
-              id={isNpWmsPicking ? 'np-wms-picking-additional-case' : 'np-ois-additional-cases'}
-              title={isNpWmsPicking ? '서버 상태 표시' : '추가 기술 문제'}
-              compact
+              id="np-ois-optimization-cases"
+              title="성능·리소스 최적화"
             />
-            <div className="h-8" aria-hidden="true" />
-          </details>
+          ) : (
+            <details className="group mt-12 max-w-5xl border-y border-outline/70">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-5 py-5 marker:content-none">
+                <span className="text-base font-bold text-white group-open:text-primary">
+                  추가 문제 해결 · 서버 응답을 다음 행동으로 연결
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="text-lg font-normal text-primary group-open:rotate-45"
+                >
+                  +
+                </span>
+              </summary>
+              <ProjectCases
+                blocks={additionalProblems}
+                latencyIntro=""
+                latencyDetails=""
+                id="np-wms-picking-additional-case"
+                title="서버 상태 표시"
+                compact
+              />
+              <div className="h-8" aria-hidden="true" />
+            </details>
+          )
         ) : null}
-
-        {isNpWmsPicking ? contributionContent : null}
 
         {codeMateCi ? (
           <section className="mt-16 max-w-5xl" aria-labelledby="codemate-ci">
@@ -348,7 +373,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </section>
         ) : null}
 
-        {designSections.length ? (
+        {designSections.length && !isNpWmsPicking && !isNpOis ? (
           <details className="group mt-16 max-w-5xl border-y border-outline/70">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-5 py-5 marker:content-none">
               <span className="text-base font-bold text-white group-open:text-primary">
@@ -385,21 +410,15 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </details>
         ) : null}
 
-        <footer className="mt-20 flex flex-wrap items-center gap-3 border-t border-outline/70 pt-6">
-          {frontmatter.stack.slice(0, 8).map((tech) => (
-            <span
-              key={tech}
-              className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary"
-            >
-              {tech}
-            </span>
-          ))}
-          {frontmatter.github ? <ProjectLink href={frontmatter.github} label="GitHub" /> : null}
-          {frontmatter.demo && project.slug !== 'codemate' ? (
-            <ProjectLink href={frontmatter.demo} label="Live Demo" />
-          ) : null}
-          {frontmatter.store ? <ProjectLink href={frontmatter.store} label="원스토어 앱" /> : null}
-        </footer>
+        {frontmatter.github || (frontmatter.demo && project.slug !== 'codemate') || frontmatter.store ? (
+          <footer className="mt-20 flex flex-wrap items-center gap-3 border-t border-outline/70 pt-6">
+            {frontmatter.github ? <ProjectLink href={frontmatter.github} label="GitHub" /> : null}
+            {frontmatter.demo && project.slug !== 'codemate' ? (
+              <ProjectLink href={frontmatter.demo} label="Live Demo" />
+            ) : null}
+            {frontmatter.store ? <ProjectLink href={frontmatter.store} label="원스토어 앱" /> : null}
+          </footer>
+        ) : null}
       </div>
     </section>
   );
@@ -438,6 +457,16 @@ function WindowsKioskAgentDetail({ project }: { project: PortfolioProject }) {
           <p className="mt-5 text-sm text-text-secondary">
             {[frontmatter.period, frontmatter.role].filter(Boolean).join(' · ')}
           </p>
+          <div className="mt-5 flex flex-wrap gap-2" aria-label="핵심 기술">
+            {frontmatter.stack.slice(0, 4).map((tech) => (
+              <span
+                key={tech}
+                className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary"
+              >
+                {tech}
+              </span>
+            ))}
+          </div>
         </header>
 
         <section className="mt-10 max-w-5xl" aria-label="라벨 요청부터 프린터 경로까지">
@@ -475,16 +504,6 @@ function WindowsKioskAgentDetail({ project }: { project: PortfolioProject }) {
           })}
         </div>
 
-        <footer className="mt-20 flex flex-wrap gap-3 border-t border-outline/70 pt-6">
-          {frontmatter.stack.map((tech) => (
-            <span
-              key={tech}
-              className="rounded-full bg-surface-high px-3 py-1.5 text-xs font-semibold text-text-secondary"
-            >
-              {tech}
-            </span>
-          ))}
-        </footer>
       </div>
     </section>
   );
