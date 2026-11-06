@@ -24,6 +24,12 @@ const projectMedia: Record<
       featured: true,
     },
     {
+      src: '/projects/codemate/codemate-ai-review-demo.gif',
+      alt: 'CodeMate PR 상세 화면에서 AI 코드 리뷰를 요청하고 분석 결과를 확인하는 시연',
+      caption: 'PR 변경 파일을 대상으로 AI 리뷰를 요청하고 분석 결과를 확인하는 흐름',
+      featured: true,
+    },
+    {
       src: '/projects/codemate/codemate-pr-diff.png',
       alt: 'CodeMate PR 상세 화면의 변경 파일 목록과 선택한 파일의 코드 차이 및 댓글',
       caption: 'PR 변경 파일과 코드 차이 검토 화면',
