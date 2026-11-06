@@ -6,10 +6,14 @@ team: '팀 프로젝트 (FE 2 / BE 2 / Design 1)'
 role: 'Frontend / Mobile'
 github: 'https://github.com/SQUAD-FLY-ON/FLY-ON'
 store: 'https://m.onestore.co.kr/v2/ko-kr/app/0001002231'
-description: '패러글라이딩 비행과 관광 일정을 모바일에서 만들고 순서를 바꿔 편집하는 여행 계획 앱입니다.'
+description: '패러글라이딩 비행·관광 일정을 만들고 카드 순서를 편집하는 모바일 앱입니다.'
 audience: '비행·관광 일정을 계획하는 모바일 사용자'
-problem: '일정 카드를 끌어 순서를 바꿀 때 목록 전체가 반복해서 다시 그려지면 손가락 움직임보다 화면이 늦게 따라오는 문제가 있었습니다.'
-contribution: '팀의 모바일 프론트엔드에서 일정 Drag & Drop과 편집 상태 관리를 구현하고, Profiler로 렌더링 병목을 측정·개선했습니다.'
+problem: '일정 카드를 드래그할 때 목록 전체가 다시 렌더링돼 카드 이동이 늦어지는 문제가 있었습니다.'
+contribution: 'FE 2명·BE 2명·디자이너 1명 팀에서 모바일 일정 편집과 인증 상태 복원을 구현하고 EAS 배포·원스토어 출시를 진행했습니다.'
+projectProblem: '비행·관광지를 고른 뒤 일정을 만들고 순서를 바꾸는 작업을 모바일에서 이어서 할 수 있어야 했습니다.'
+projectContribution: '팀의 모바일 프론트엔드에서 일정 카드 이동·순서 편집, 작성 상태 관리, 앱 시작 시 인증 상태 복원을 구현했습니다. EAS 배포와 원스토어 출시를 진행했습니다.'
+projectDecision: '작성 중인 선택값은 Zustand로, 서버에서 조회한 일정·장소 데이터는 TanStack Query로 분리해 편집 상태와 조회 결과가 섞이지 않게 했습니다.'
+projectResult: '비행·관광지를 선택해 일정을 만들고 카드 순서를 편집한 뒤 저장된 일정을 확인할 수 있는 앱을 원스토어에 출시했습니다.'
 userFlow:
   - '비행·관광지 선택'
   - '일정 생성'
@@ -17,7 +21,7 @@ userFlow:
   - '저장된 일정 확인'
 implementation: 'PanResponder로 제스처를 추적하고 카드 위치를 측정해 이동 중인 카드만 별도 레이어에 표시했습니다. React.memo와 Zustand selector로 드래그 중 다시 그리는 컴포넌트 범위를 줄였습니다.'
 decision: '드래그 중 상태 변경이 전체 트리로 퍼지는 것을 줄이기 위해 React.memo와 컴포넌트 분리를 적용했습니다.'
-result: '드래그 중 상태 변경이 전체 컴포넌트에 퍼지는 문제를 React.memo와 컴포넌트 분리로 줄여, total commit duration을 211.5ms에서 72.9ms로(-65%) 낮췄습니다.'
+result: '같은 로컬 일정 Drag & Drop 동작의 React Profiler total commit duration이 211.5ms에서 72.9ms로 약 66% 감소했습니다.'
 stack:
   [
     'TypeScript',
@@ -34,9 +38,9 @@ stack:
 ## Overview
 
 - 패러글라이딩 비행·관광 일정을 생성하고 모바일에서 편집하는 React Native 앱입니다.
-- 복잡한 일정 편집 경험을 모바일 제스처와 상태 분리, 성능 측정 기준까지 맞춰 구현했습니다.
+- 일정 카드를 손가락으로 옮길 때 발생한 렌더링 지연을 분석하고, 이동 중인 카드와 목록의 렌더링을 분리했습니다.
 - 일정 생성 단계와 서버 조회 데이터를 분리해 캐시와 임시 상태가 충돌하지 않도록 설계했습니다.
-- FE 2명, BE 2명, Designer 1명의 팀에서 모바일 Frontend를 담당했습니다.
+- FE 2명, BE 2명, 디자이너 1명의 팀에서 모바일 프론트엔드를 맡고 EAS 배포와 원스토어 출시를 진행했습니다.
 
 ## Key Features
 

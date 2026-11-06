@@ -43,8 +43,8 @@ const projectMedia: Record<
   'fly-on': [
     {
       src: '/projects/fly-on/dragdrop.gif',
-      alt: 'Fly:On 모바일 일정 카드 Drag & Drop 편집 화면',
-      caption: '모바일 일정 편집',
+      alt: 'Fly:On에서 일정 카드를 길게 눌러 원하는 순서로 옮기는 화면',
+      caption: '일정 카드를 길게 눌러 이동하고 비행·관광 일정의 순서를 바꾸는 화면',
     },
   ],
 };
@@ -132,6 +132,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   ];
   const isNpOis = project.slug === 'np-ois';
   const isNpWmsPicking = project.slug === 'np-wms-picking';
+  const isFlyOn = project.slug === 'fly-on';
   const hasAdditionalProblems = isNpOis || isNpWmsPicking;
   const mainProblems = hasAdditionalProblems ? orderedProblems.slice(0, 2) : orderedProblems;
   const additionalProblems = hasAdditionalProblems ? orderedProblems.slice(2) : [];
@@ -184,6 +185,23 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       </div>
     </section>
   ) : null;
+  const mediaContent = projectMedia[project.slug] ? (
+    <section className="mt-16" aria-label="프로젝트 실제 화면">
+      <SectionTitle eyebrow="Product screens" title="실제 사용 화면" />
+      <div className="mt-7 grid gap-6 lg:grid-cols-2">
+        {projectMedia[project.slug].map((media) => (
+          <figure key={media.src} className={`min-w-0 ${media.featured ? 'lg:col-span-2' : ''}`}>
+            <ZoomableImage
+              src={media.src}
+              alt={media.alt}
+              className="h-auto w-full rounded-lg border border-outline/70"
+            />
+            <figcaption className="mt-2 text-sm text-text-secondary">{media.caption}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  ) : null;
 
   return (
     <section className="w-full px-5 pb-24 pt-28 md:px-12 md:pt-36">
@@ -207,8 +225,23 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <p className="mt-5 max-w-4xl break-keep text-xl leading-9 text-white md:text-2xl md:leading-10">
               {project.summary}
             </p>
+            {isFlyOn ? (
+              <div className="mt-6 grid gap-4 border-l-2 border-primary pl-4 text-sm leading-7 sm:grid-cols-2 sm:gap-8">
+                <p className="break-keep text-white">
+                  <span className="block font-label text-xs font-bold text-primary">내 역할</span>
+                  일정 카드 편집·인증 상태 복원 구현, EAS 배포·원스토어 출시
+                </p>
+                <p className="break-keep text-white">
+                  <span className="block font-label text-xs font-bold text-primary">렌더링 개선</span>
+                  같은 로컬 드래그 동작의 React Profiler total commit duration 211.5ms → 72.9ms (약 66% 감소)
+                </p>
+              </div>
+            ) : null}
             {project.slug === 'codemate' && frontmatter.demo ? (
               <ProjectLink href={frontmatter.demo} label="서비스 열기 ↗" primary />
+            ) : null}
+            {isFlyOn && frontmatter.store ? (
+              <ProjectLink href={frontmatter.store} label="원스토어 앱 보기 ↗" primary />
             ) : null}
             <p className="mt-5 text-sm text-text-secondary">
               {[frontmatter.period, frontmatter.role].filter(Boolean).join(' · ')}
@@ -258,6 +291,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           ) : null}
         </section>
 
+        {isFlyOn ? mediaContent : null}
+
         {userFlowList ? (
           <section className="mt-16" aria-labelledby="project-user-flow">
             <SectionTitle id="project-user-flow" eyebrow="User flow" title="서비스 이용 흐름" />
@@ -303,28 +338,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </section>
         ) : null}
 
-        {projectMedia[project.slug] ? (
-          <section className="mt-16" aria-label="프로젝트 실제 화면">
-            <SectionTitle eyebrow="Product screens" title="실제 사용 화면" />
-            <div className="mt-7 grid gap-6 lg:grid-cols-2">
-              {projectMedia[project.slug].map((media) => (
-                <figure
-                  key={media.src}
-                  className={`min-w-0 ${media.featured ? 'lg:col-span-2' : ''}`}
-                >
-                  <ZoomableImage
-                    src={media.src}
-                    alt={media.alt}
-                    className="h-auto w-full rounded-lg border border-outline/70"
-                  />
-                  <figcaption className="mt-2 text-sm text-text-secondary">
-                    {media.caption}
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-          </section>
-        ) : null}
+        {!isFlyOn ? mediaContent : null}
 
         {mainProblems.length || codeMateLatency ? (
           <ProjectCases
