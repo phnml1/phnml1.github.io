@@ -151,16 +151,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const designSections = project.sections.filter((section) =>
     designSectionTitles.has(section.displayTitle) && section !== wmsSystemFlow,
   );
-  const codeMateLatency =
-    project.slug === 'codemate'
-      ? project.sections.find((section) => section.displayTitle === '채팅 저장 응답이 느린 문제')
-      : null;
   const codeMateCi =
     project.slug === 'codemate'
       ? project.sections.find((section) => section.displayTitle === 'CI 검증')
       : null;
-  const [latencyIntro = '', latencyDetails = ''] =
-    codeMateLatency?.content.split('<!-- chat-request-flow -->') ?? [];
   const userFlowList = frontmatter.userFlow?.length ? (
     <ol className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {frontmatter.userFlow.map((step, index) => (
@@ -190,7 +184,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       <SectionTitle eyebrow="Product screens" title="실제 사용 화면" />
       <div className="mt-7 grid gap-6 lg:grid-cols-2">
         {projectMedia[project.slug].map((media) => (
-          <figure key={media.src} className={`min-w-0 ${media.featured ? 'lg:col-span-2' : ''}`}>
+          <figure
+            key={media.src}
+            className={`min-w-0 ${media.featured ? 'lg:col-span-2 lg:mx-auto lg:w-full lg:max-w-5xl' : ''}`}
+          >
             <ZoomableImage
               src={media.src}
               alt={media.alt}
@@ -340,11 +337,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
         {!isFlyOn ? mediaContent : null}
 
-        {mainProblems.length || codeMateLatency ? (
+        {mainProblems.length ? (
           <ProjectCases
             blocks={mainProblems}
-            latencyIntro={latencyIntro}
-            latencyDetails={latencyDetails}
             title={hasAdditionalProblems ? '대표 기술 문제' : undefined}
           />
         ) : null}
@@ -353,8 +348,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           isNpOis ? (
             <ProjectCases
               blocks={additionalProblems}
-              latencyIntro=""
-              latencyDetails=""
               id="np-ois-optimization-cases"
               title="성능·리소스 최적화"
             />
@@ -373,8 +366,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               </summary>
               <ProjectCases
                 blocks={additionalProblems}
-                latencyIntro=""
-                latencyDetails=""
                 id="np-wms-picking-additional-case"
                 title="서버 상태 표시"
                 compact
@@ -534,29 +525,19 @@ type CaseStudyBlock = {
   problem: string;
   solution: string;
   result?: string;
-  details?: string;
 };
 
 function ProjectCases({
   blocks,
-  latencyIntro,
-  latencyDetails,
   id = 'project-cases',
   title = '문제 해결',
   compact = false,
 }: {
   blocks: ProblemSolutionBlock[];
-  latencyIntro: string;
-  latencyDetails: string;
   id?: string;
   title?: string;
   compact?: boolean;
 }) {
-  const [latencyBeforeResult, latencyResult] = splitAtMarker(latencyIntro, '<!-- case-result -->');
-  const [latencyProblem, latencySolution] = splitAtMarker(
-    latencyBeforeResult,
-    '<!-- case-solution -->',
-  );
   const cases: CaseStudyBlock[] = blocks.map((block) => {
     const [solution, result] = splitAtMarker(block.solutionContent, '<!-- case-result -->');
     return {
@@ -566,16 +547,6 @@ function ProjectCases({
       result,
     };
   });
-
-  if (latencyIntro) {
-    cases.splice(2, 0, {
-      title: '채팅 저장 응답이 느린 문제',
-      problem: latencyProblem,
-      solution: latencySolution,
-      result: latencyResult,
-      details: latencyDetails,
-    });
-  }
 
   if (cases.length === 0) return null;
 
@@ -606,22 +577,6 @@ function ProjectCases({
                 </StoryRow>
               ) : null}
             </div>
-            {caseStudy.details ? (
-              <details className="group border-t border-outline/70">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-sm font-bold text-primary marker:content-none">
-                  측정 조건과 상세 수치
-                  <span
-                    aria-hidden="true"
-                    className="text-lg font-normal transition-transform group-open:rotate-45"
-                  >
-                    +
-                  </span>
-                </summary>
-                <div className="pb-3">
-                  <MarkdownContent content={caseStudy.details} responsiveTables />
-                </div>
-              </details>
-            ) : null}
           </article>
         ))}
       </div>
