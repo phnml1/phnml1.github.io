@@ -39,10 +39,10 @@ type HomeProject = {
   summary: string;
   problem: string;
   contribution: string;
-  decision?: string;
   result: string;
   note?: string;
   isCompanyProject: boolean;
+  isCodeMate: boolean;
 };
 
 const featuredProjects = [
@@ -78,12 +78,12 @@ const selectedProjects: HomeProject[] = featuredProjects.map((item) => {
     type: item.type,
     period: project.frontmatter.period ?? '',
     summary: project.summary,
-    problem: project.frontmatter.problem ?? '',
-    contribution: project.frontmatter.contribution ?? '',
-    decision: project.frontmatter.decision,
-    result: project.frontmatter.result ?? '[입력 필요]',
+    problem: project.frontmatter.projectProblem ?? project.frontmatter.problem ?? '',
+    contribution: project.frontmatter.projectContribution ?? project.frontmatter.contribution ?? '',
+    result: project.frontmatter.projectResult ?? project.frontmatter.result ?? '',
     note: project.frontmatter.note,
     isCompanyProject: item.type.startsWith('회사 프로젝트'),
+    isCodeMate: item.slug === 'codemate',
   };
 });
 
@@ -218,16 +218,11 @@ function HomeProjectCard({ project }: { project: HomeProject }) {
           </h3>
           <p className="mt-3 break-keep text-base leading-7 text-white">{project.summary}</p>
           <div className="mt-5 grid gap-2 border-t border-outline/70 pt-4 text-sm leading-6">
-            <CardFact label="핵심 문제" value={project.problem} />
-            <CardFact label="내 역할" value={project.contribution} />
-            {project.decision ? <CardFact label="기술 선택 이유" value={project.decision} /> : null}
+            <CardFact label="해결 과제" value={project.problem} />
+            <CardFact label={project.isCodeMate ? '구현/개선' : '내 기여'} value={project.contribution} />
             <CardFact label="결과" value={project.result} />
           </div>
-          {project.isCompanyProject ? (
-            <p className="mt-4 text-xs font-semibold text-text-secondary">
-              사내 코드는 비공개입니다.
-            </p>
-          ) : null}
+   
           {project.note ? (
             <p className="mt-4 border-l-2 border-primary/60 pl-3 text-xs leading-5 text-text-secondary">
               {project.note}
@@ -248,6 +243,8 @@ function HomeProjectCard({ project }: { project: HomeProject }) {
 }
 
 function CardFact({ label, value }: { label: string; value: string }) {
+  if (!value) return null;
+
   return (
     <p className="grid gap-1 text-text-secondary sm:grid-cols-[104px_minmax(0,1fr)] sm:gap-3">
       <span className="font-bold text-primary">{label}</span>

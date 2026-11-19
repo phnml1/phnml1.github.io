@@ -134,6 +134,7 @@ export default function ProjectsPage() {
 
 function ProjectCard({ project }: { project: PortfolioProject }) {
   const { frontmatter } = project;
+  const isCodeMate = project.slug === 'codemate';
 
   return (
     <Link
@@ -157,17 +158,14 @@ function ProjectCard({ project }: { project: PortfolioProject }) {
         </div>
 
         <div className="mt-6 grid gap-3 border-t border-outline/70 pt-5">
-          <CardFact label="핵심 문제" value={frontmatter.problem} />
-          <CardFact label="내 역할" value={frontmatter.contribution} />
-          <CardFact label="기술 선택 이유" value={frontmatter.decision} />
-          <CardFact label="결과" value={frontmatter.result} />
+          <CardFact label="해결 과제" value={frontmatter.projectProblem ?? frontmatter.problem} />
+          <CardFact
+            label={isCodeMate ? '구현/개선' : '내 기여'}
+            value={frontmatter.projectContribution ?? frontmatter.contribution}
+          />
+          <CardFact label="결과" value={frontmatter.projectResult ?? frontmatter.result} />
         </div>
 
-        {COMPANY_PROJECTS.has(project.slug) ? (
-          <p className="mt-4 text-xs font-semibold text-text-secondary">
-            사내 코드는 비공개입니다.
-          </p>
-        ) : null}
 
         {frontmatter.note ? (
           <p className="mt-4 border-l-2 border-primary/60 pl-3 text-xs leading-5 text-text-secondary">
@@ -175,13 +173,15 @@ function ProjectCard({ project }: { project: PortfolioProject }) {
           </p>
         ) : null}
 
-        <div className="mt-auto flex items-center justify-end border-t border-outline/70 pt-4">
-          <span
-            aria-hidden="true"
-            className="text-2xl text-primary transition-transform group-hover:translate-x-1"
-          >
-            →
-          </span>
+        <div className="mt-auto pt-8">
+          <div className="flex items-center justify-end border-t border-outline/70 pt-4">
+            <span
+              aria-hidden="true"
+              className="text-2xl text-primary transition-transform group-hover:translate-x-1"
+            >
+              →
+            </span>
+          </div>
         </div>
       </article>
     </Link>

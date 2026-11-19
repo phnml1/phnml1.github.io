@@ -267,7 +267,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           <dl className={`divide-y divide-outline/70 border-y border-outline/70 ${isNpOis ? 'mt-6' : ''}`}>
             <ProjectFact label="사용자" value={frontmatter.audience} />
             <ProjectFact label="해결 과제" value={frontmatter.projectProblem ?? frontmatter.problem} />
-            <ProjectFact label="내 기여" value={frontmatter.projectContribution ?? frontmatter.contribution} />
+            <ProjectFact
+              label={project.slug === 'codemate' ? '구현/개선' : '내 기여'}
+              value={frontmatter.projectContribution ?? frontmatter.contribution}
+            />
             {!isNpOis && !isNpWmsPicking ? (
               <ProjectFact
                 label="기술 선택 이유"
@@ -276,11 +279,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             ) : null}
             <ProjectFact label="결과" value={frontmatter.projectResult ?? frontmatter.result} />
           </dl>
-          {companyProjects.has(project.slug) ? (
-            <p className="mt-4 text-sm font-semibold text-text-secondary">
-              사내 코드는 비공개입니다.
-            </p>
-          ) : null}
+       
           {frontmatter.note ? (
             <p className="mt-4 border-l-2 border-primary/60 pl-4 text-sm leading-7 text-text-secondary">
               {frontmatter.note}
